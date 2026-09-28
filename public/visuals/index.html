@@ -500,7 +500,8 @@
     <div class="fields">
       <label class="field">Image model
         <select id="imgModel">
-          <option value="runware:101@1" data-steps="32">FLUX.1 Dev (recommended)</option>
+          <option value="openai:gpt-image@2" data-steps="" selected>GPT Image 2 (OpenAI) · top quality, about $0.07 per image</option>
+          <option value="runware:101@1" data-steps="32">FLUX.1 Dev · cheapest good option</option>
           <option value="runware:100@1" data-steps="4">FLUX.1 Schnell (fastest)</option>
           <option value="openai:1@1" data-steps="">GPT Image 1 (OpenAI)</option>
           <optgroup label="All featured image models on Runware (loading…)" id="imgLive"></optgroup>
@@ -538,7 +539,7 @@
         </select>
       </label>
       <label class="field">Steps <small>32 for Dev, 4 for Schnell, empty for default</small>
-        <input type="number" id="steps" value="32" min="1" max="100">
+        <input type="number" id="steps" value="" min="1" max="100">
       </label>
       <label class="field">At the same time <small>Parallel requests</small>
         <input type="number" id="conc" value="3" min="1" max="8">
@@ -547,7 +548,7 @@
         <small>Short, template or hand-typed prompts are rewritten into a full hyper-real shot description by the AI photographer first. If that fails, the realism layers are added automatically.</small>
       </label>
     </div>
-    <p class="meta cost" id="modelNote" hidden>GPT Image uses its own fixed sizes, usually costs several times more than FLUX, and its model ID isn't confirmed yet. Press Generate on one image card first to test it and see the price.</p>
+    <p class="meta cost" id="modelNote" hidden>GPT Image uses its own fixed sizes and costs more than FLUX (GPT Image 2 is about $0.07 per image). Press Generate on one image card first to check the look and the exact price.</p>
     <div class="bar">
       <button class="primary" id="genBtn" disabled>
         <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3c.7 4.9 3 7.2 7.9 7.9-4.9.7-7.2 3-7.9 7.9-.7-4.9-3-7.2-7.9-7.9C7 10.2 9.3 7.9 10 3z" fill="currentColor"/><path d="M19 13c.3 2.2 1.3 3.2 3.5 3.5-2.2.3-3.2 1.3-3.5 3.5-.3-2.2-1.3-3.2-3.5-3.5 2.2-.3 3.2-1.3 3.5-3.5z" fill="currentColor"/></svg>
@@ -2059,6 +2060,7 @@ function renderAll(){ renderPrompts(); renderGrid(); refreshTimeline(); updateBu
 updateButtons();
 showStep(0, false);
 loadServerStatus();
+applyModelRules();
 $('#teamCode').addEventListener('change', () => { if (server.configured && !$('#imgLive').children.length) loadImageModels(); });
 
 /* ---------- motion (visual only) ---------- */
