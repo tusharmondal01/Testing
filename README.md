@@ -69,9 +69,12 @@ Every line of the script becomes its own image prompt in step 2. The goal is ima
 - *Visual style → Stunning photoreal* gives the polished premium-stock / National Geographic look: golden-hour light, god rays through mist, rich lush greens, crisp micro-detail, deep atmospheric layers, cosy warm-lamp interiors. The other styles keep the muted "unedited" look.
 - With this style the Claude brief allows golden light, volumetric rays and rich colour, the negative prompt stops blocking glow and HDR, and **Look** switches to *Vivid (3.5)*, which gives FLUX its richest colour.
 
-**Claude on Runware (default prompt writer)**
-- Prompts are written by Claude through Runware (`anthropic:claude@opus-4.8`, set in `DEFAULT_CLAUDE_MODEL`), billed to the Runware key, with no Anthropic key needed. Two lines are sent per request.
-- To use another Claude version, add its `anthropic:claude@...` ID to the text model list in /admin; the page picks it up automatically. If Runware rejects the ID, the relay falls back to the admin text model and the status line shows which model wrote the prompts.
+**Only a Runware key is needed**
+Everything (prompt writing and image generation) runs on the Runware key saved in /admin. No Anthropic, OpenAI or Google key is needed.
+
+**Prompt writer model** (step 2): pick which Runware text model writes the prompts: Claude Opus 4.8, GPT-5.5 / 5.4 / Pro / Mini / Nano, Gemini 3.1 Pro / Flash Lite, DeepSeek V4 Flash, any model approved in /admin, or paste any Runware text model ID from runware.ai/models. If Runware rejects an ID, the prompts are written by the /admin text model instead and the status line says so. The choice is remembered in the browser.
+
+**Image model** (step 3): besides FLUX.1 Dev, FLUX.1 Schnell and GPT Image 1, the list is filled live from Runware with every featured image model (grouped by architecture), so each ID is real and current. *Browse all image models* still searches the whole library, and *Paste a model ID* takes any ID.
 
 **Hyper-real prompt writing**
 - The default prompt writer is now the *Runware AI photographer*. It sends the full photographer brief (`claudeSystem()`) to the text model approved in /admin, so no Anthropic key is needed. *Runware Prompt Enhance* is still there as the fast, short option.

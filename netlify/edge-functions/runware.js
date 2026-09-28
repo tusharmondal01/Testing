@@ -1,6 +1,6 @@
 // Relay: the browser sends image/prompt tasks here, the server adds the secret
 // Runware key and forwards them. The key never reaches anyone's browser.
-import { openStore, json, fail, safeEqual, readSettings, readUsage, activeKey, RUNWARE_URL, VERSION, textModel, textBackup, textModels, textList, cleanMessage } from "../lib/shared.js";
+import { openStore, json, fail, safeEqual, readSettings, readUsage, activeKey, RUNWARE_URL, VERSION, textModel, textBackup, textModels, textList, cleanMessage, MODEL_ID } from "../lib/shared.js";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Errors that mean "try the next text model": outages, and a model ID Runware doesn't accept.
@@ -23,7 +23,6 @@ async function forward(apiKey, tasks) {
   }
 }
 
-const CLAUDE_ID = /^anthropic:claude@[A-Za-z0-9._-]+$/;
 const ALLOWED = new Set(["imageInference", "promptEnhance", "textInference", "modelSearch"]);
 const SEARCH_KEYS = ["search", "tags", "category", "type", "architecture", "conditioning", "featured", "limit", "offset", "taskUUID"];
 const MAX_TASKS = 12;
@@ -63,8 +62,9 @@ export default async (req) => {
     const s = rest.settings && typeof rest.settings === "object" ? { ...rest.settings } : {};
     s.maxTokens = Math.min(Number(s.maxTokens) || 4000, 8000);
     // The team may pick any model the admin approved; anything else falls back to the default.
-    // Claude on Runware (anthropic:claude@<version>) is always allowed for the prompt writer.
-    const model = textModels(settings).includes(rest.model) || CLAUDE_ID.test(String(rest.model || "")) ? rest.model : textModel(settings);
+    // The team may pick any Runware text model ID (Claude, GPT, Gemini...); it runs on the same Runware key.
+    // If Runware rejects it, the loop below falls back to the models approved in /admin.
+    const model = MODEL_ID.test(String(rest.model || "")) ? rest.model : textModel(settings);
     return { ...rest, model, deliveryMethod: "sync", settings: s };
   });
 

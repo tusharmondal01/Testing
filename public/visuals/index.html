@@ -421,12 +421,36 @@
     <div class="fields">
       <label class="field">Prompt writer
         <select id="promptModel">
-          <option value="runwareClaude" selected>Claude on Runware (strongest, recommended)</option>
-          <option value="runwareLLM">Runware AI photographer (admin text model)</option>
+          <option value="runwareLLM" selected>AI photographer on Runware (most detailed, recommended)</option>
           <option value="runware">Runware Prompt Enhance (short, fastest)</option>
-          <option value="claude">Claude (most detailed, free inside Claude)</option>
           <option value="template">Template only (no AI)</option>
         </select>
+      </label>
+      <label class="field" id="writerModelField">Prompt writer model <small>All run on your Runware key. No other API key is needed.</small>
+        <select id="writerModel">
+          <optgroup label="Approved in /admin" id="wmAdmin"></optgroup>
+          <optgroup label="Claude (Anthropic) via Runware">
+            <option value="anthropic:claude@opus-4.8" selected>Claude Opus 4.8 (best writing)</option>
+          </optgroup>
+          <optgroup label="GPT (OpenAI) via Runware">
+            <option value="openai:gpt@5.5">GPT-5.5</option>
+            <option value="openai:gpt@5.4">GPT-5.4</option>
+            <option value="openai:gpt@5.4-pro">GPT-5.4 Pro</option>
+            <option value="openai:gpt@5.4-mini">GPT-5.4 Mini (fast, cheap)</option>
+            <option value="openai:gpt@5.4-nano">GPT-5.4 Nano (fastest, cheapest)</option>
+          </optgroup>
+          <optgroup label="Gemini (Google) via Runware">
+            <option value="google:gemini@3.1-pro">Gemini 3.1 Pro</option>
+            <option value="google:gemini@3.1-flash-lite">Gemini 3.1 Flash Lite (fast, cheap)</option>
+          </optgroup>
+          <optgroup label="Open models via Runware">
+            <option value="deepseek:v4@flash">DeepSeek V4 Flash (fast, cheap)</option>
+          </optgroup>
+          <option value="custom">Paste any Runware text model ID…</option>
+        </select>
+      </label>
+      <label class="field" id="writerCustomField" hidden>Text model ID <small>Copy it from runware.ai/models (text models), e.g. creator:family@version</small>
+        <input type="text" id="writerCustom" placeholder="moonshotai:kimi@k2.6">
       </label>
       <label class="field">Visual style
         <select id="style">
@@ -479,6 +503,7 @@
           <option value="runware:101@1" data-steps="32">FLUX.1 Dev (recommended)</option>
           <option value="runware:100@1" data-steps="4">FLUX.1 Schnell (fastest)</option>
           <option value="openai:1@1" data-steps="">GPT Image 1 (OpenAI)</option>
+          <optgroup label="All featured image models on Runware (loading…)" id="imgLive"></optgroup>
           <option value="custom" data-steps="">Paste a model ID…</option>
         </select>
       </label>
@@ -1081,7 +1106,11 @@ async function loadServerStatus(){
     const j = await r.json();
     server.reachable = true; server.configured = !!j.configured; server.codeRequired = !!j.codeRequired;
     const tm = Array.isArray(j.textModels) ? j.textModels : [];
-    const pinned = tm.find(m => /^anthropic:/i.test(m.id)); if (pinned) claudeModelId = pinned.id;
+    const known = new Set([...$('#writerModel').options].map(o => o.value));
+    const extra = tm.filter(m => !known.has(m.id));
+    $('#wmAdmin').innerHTML = extra.map(m => `<option value="${esc(m.id)}">${esc(m.name || m.id)}</option>`).join('');
+    $('#wmAdmin').hidden = !extra.length;
+    try { const wm = localStorage.getItem('craftush-writer-model'); if (wm && extra.some(m => m.id === wm)) $('#writerModel').value = wm; } catch {}
     if (tm.length){
       let saved = ''; try { saved = localStorage.getItem('craftush-text-model') || ''; } catch {}
       $('#textModelSel').innerHTML = tm.map((m, i) => `<option value="${esc(m.id)}">${esc(m.name || m.id)}${i === 0 ? ' · default' : ''}</option>`).join('');
@@ -1089,9 +1118,33 @@ async function loadServerStatus(){
     }
   } catch { server.reachable = false; }
   $('#codeChip').hidden = !server.codeRequired;
+  if (server.reachable && server.configured && (!server.codeRequired || teamCode())) loadImageModels();
   if (server.reachable && !server.configured)
     setStatus('#s3', 'Image generation isn\'t set up yet. The admin needs to add the Runware key at /admin.', 'err');
 }
+/* Fills the image model list with every featured image model on Runware, straight from Runware's model search,
+   so each ID is real and current. "Browse all image models" still searches the full library. */
+async function loadImageModels(){
+  const group = $('#imgLive'); if (!group) return;
+  const seen = new Set([...$('#imgModel').options].map(o => o.value)), all = [];
+  try {
+    for (let offset = 0; offset < 200; offset += 50){
+      const json = await relay([{ taskType: 'modelSearch', taskUUID: uuid(), category: 'checkpoint', featured: true, limit: 50, offset }]);
+      const hit = (json.data || []).find(d => d.taskType === 'modelSearch') || {};
+      const list = hit.results || [];
+      all.push(...list);
+      if (list.length < 50 || all.length >= (hit.totalResults || 0)) break;
+    }
+  } catch (e){ group.label = 'Runware model list unavailable (use Browse or paste an ID)'; return; }
+  const byArch = {};
+  all.filter(m => m && m.air && !seen.has(m.air) && seen.add(m.air)).forEach(m => (byArch[m.architecture || 'other'] = byArch[m.architecture || 'other'] || []).push(m));
+  const keep = $('#imgModel').value;
+  group.label = `All featured image models on Runware (${all.length})`;
+  group.innerHTML = Object.keys(byArch).sort().flatMap(a => byArch[a].map(m =>
+    `<option value="${esc(m.air)}" data-arch="${esc(m.architecture || '')}" data-name="${esc(m.name)}" data-steps="${esc(m.defaultSteps || '')}" data-cfg="${esc(m.defaultCFG || '')}">${esc(m.name)}${m.version ? ' ' + esc(m.version) : ''} · ${esc(m.architecture || 'model')}</option>`)).join('');
+  $('#imgModel').value = keep;
+}
+
 async function relay(tasks){
   let res;
   try {
@@ -1262,23 +1315,37 @@ async function claudeBatch(batch, offset, drafts){
 }
 
 /* Same photographer brief, run on the Runware text model the admin approved (no Anthropic key needed). */
-/* Claude on Runware. Runware addresses it as anthropic:claude@<version>; an admin can pin another version
-   by adding an anthropic:claude@... model to the text model list in /admin. */
-const DEFAULT_CLAUDE_MODEL = 'anthropic:claude@opus-4.8';
-let claudeModelId = DEFAULT_CLAUDE_MODEL, lastWriterModel = '';
+/* Prompt writer model: any Runware text model (Claude, GPT, Gemini, DeepSeek...), all billed to the Runware key.
+   If Runware rejects the chosen ID, the relay falls back to the admin text model and the status line says so. */
+let lastWriterModel = '', writerFellBack = '';
+function writerModelId(){
+  const v = $('#writerModel').value;
+  return v === 'custom' ? $('#writerCustom').value.trim() : v;
+}
 async function runwareLLMBatch(batch, offset, drafts, model){
-  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: model || $('#textModelSel').value || 'default', includeCost: true,
+  const wanted = model || writerModelId() || $('#textModelSel').value || 'default';
+  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: wanted, includeCost: true,
     messages: [{ role: 'user', content: claudeSystem() + '\n\n---\n\n' + writerContent(batch, offset, drafts) }],
     settings: { maxTokens: Math.min(8000, 700 + batch.length * 650), temperature: 0.6 } }]);
   if (json.errors && json.errors.length) { const e = new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error'); throw e; }
   const t = (json.data || []).find(d => d.taskType === 'textInference');
   if (t && typeof t.cost === 'number') state.cost.prompts += t.cost;
-  if (json.model) lastWriterModel = json.model;
+  if (json.model){ lastWriterModel = json.model; if (json.model !== wanted) writerFellBack = wanted; }
   if (!t || !t.text) throw new Error('The AI returned no prompts');
   return parsePromptArray(t.text);
 }
-const runwareClaudeBatch = (batch, offset, drafts) => runwareLLMBatch(batch, offset, drafts, claudeModelId);
-const writerFn = w => w === 'claude' ? claudeBatch : w === 'runwareClaude' ? runwareClaudeBatch : runwareLLMBatch;
+const writerFn = w => w === 'claude' ? claudeBatch : runwareLLMBatch;
+$('#writerModel').addEventListener('change', () => {
+  $('#writerCustomField').hidden = $('#writerModel').value !== 'custom';
+  if ($('#writerModel').value === 'custom') $('#writerCustom').focus();
+  try { localStorage.setItem('craftush-writer-model', $('#writerModel').value); } catch {}
+});
+$('#writerCustom').addEventListener('input', () => { try { localStorage.setItem('craftush-writer-custom', $('#writerCustom').value.trim()); } catch {} });
+try {
+  const wm = localStorage.getItem('craftush-writer-model'), wc = localStorage.getItem('craftush-writer-custom');
+  if (wc) $('#writerCustom').value = wc;
+  if (wm && [...$('#writerModel').options].some(o => o.value === wm)){ $('#writerModel').value = wm; $('#writerCustomField').hidden = wm !== 'custom'; }
+} catch {}
 
 /* The stunning look needs FLUX's normal guidance to get rich colour and glowing light; the muted looks want low guidance. */
 $('#style').addEventListener('change', () => { $('#look').value = isStunning() ? '3.5' : '2.5'; });
@@ -1286,6 +1353,8 @@ if (isStunning()) $('#look').value = '3.5';
 
 $('#promptModel').addEventListener('change', () => {
   $('#anthField').hidden = $('#promptModel').value !== 'claude';
+  $('#writerModelField').hidden = $('#promptModel').value !== 'runwareLLM';
+  $('#writerCustomField').hidden = $('#promptModel').value !== 'runwareLLM' || $('#writerModel').value !== 'custom';
 });
 
 $('#promptBtn').addEventListener('click', async () => {
@@ -1298,10 +1367,11 @@ $('#promptBtn').addEventListener('click', async () => {
     updateButtons(); return;
   }
   if (writer === 'runware' && needCode('#s2')) return;
-  if ((writer === 'runwareLLM' || writer === 'runwareClaude') && needCode('#s2')) return;
-  const name = writer === 'runware' ? 'Runware' : writer === 'claude' ? 'Claude' : writer === 'runwareClaude' ? 'Claude on Runware' : 'the AI photographer';
-  const BATCH = writer === 'runware' ? 10 : writer === 'runwareClaude' ? 2 : 3;
-  lastWriterModel = '';
+  if (writer === 'runwareLLM' && needCode('#s2')) return;
+  if (writer === 'runwareLLM' && !writerModelId()){ setStatus('#s2', 'Paste a Runware text model ID, or pick one from the list.', 'err'); $('#writerCustom').focus(); return; }
+  const name = writer === 'runware' ? 'Runware' : writer === 'claude' ? 'Claude' : 'the AI photographer';
+  const BATCH = writer === 'runware' ? 10 : 2;
+  lastWriterModel = ''; writerFellBack = '';
   const batches = [];
   for (let i = 0; i < items.length; i += BATCH) batches.push(i);
   let done = 0, fellBack = 0, lastErr = '', authFail = false; const c0 = state.cost.prompts;
@@ -1330,7 +1400,7 @@ $('#promptBtn').addEventListener('click', async () => {
   else if (fellBack)
     setStatus('#s2', `${items.length - fellBack} prompts written by ${name}, ${fellBack} filled from a template. Review those before generating.`, 'err');
   else
-    setStatus('#s2', `All ${items.length} prompts written by ${name}${lastWriterModel ? ' (' + lastWriterModel + ')' : ''}${state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : ''}. Edit any of them before generating.`, 'ok');
+    setStatus('#s2', `All ${items.length} prompts written by ${name}${lastWriterModel ? ' (' + lastWriterModel + ')' : ''}${state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : ''}.${writerFellBack ? ` Runware didn’t accept ${writerFellBack}, so ${lastWriterModel} wrote them instead. Pick another writer model if you want.` : ' Edit any of them before generating.'}`, writerFellBack ? 'err' : 'ok');
   updateCost();
   updateButtons();
 });
@@ -1400,7 +1470,11 @@ $('#rows').addEventListener('click', e => {
 $('#imgModel').addEventListener('change', () => {
   const opt = $('#imgModel').selectedOptions[0];
   $('#customField').hidden = opt.value !== 'custom';
-  $('#steps').value = opt.dataset.steps;
+  $('#steps').value = opt.dataset.steps || '';
+  // Models from the live list carry their architecture, so negative prompt / size rules apply correctly.
+  state.picked = opt.dataset.arch !== undefined
+    ? { air: opt.value, name: opt.dataset.name, architecture: opt.dataset.arch, defaultSteps: +opt.dataset.steps || 0, defaultCFG: +opt.dataset.cfg || 0 }
+    : (opt.value === 'custom' ? state.picked : null);
   if (opt.value === 'custom') $('#customModel').focus();
   else $('#pickedInfo').textContent = 'Search every image model on Runware.';
   applyModelRules();
@@ -1550,8 +1624,9 @@ async function generateOne(i){
 async function strengthenBeforeGenerate(todo){
   const weak = todo.filter(i => isWeakPrompt(state.items[i].prompt));
   if (!weak.length) return;
-  const sel = $('#promptModel').value, writer = sel === 'claude' || sel === 'runwareLLM' ? sel : 'runwareClaude';
-  const size = writer === 'runwareClaude' ? 2 : 3;
+  const writer = $('#promptModel').value === 'claude' ? 'claude' : 'runwareLLM';
+  if (writer === 'runwareLLM' && !writerModelId()) return; // boostPrompt() still adds the realism layers
+  const size = 2;
   const groups = []; for (let k = 0; k < weak.length; k += size) groups.push(weak.slice(k, k + size));
   let done = 0, failed = 0;
   setStatus('#s3', `Strengthening ${weak.length} weak prompt${weak.length > 1 ? 's' : ''} into hyper-real shot descriptions… 0 of ${weak.length}`);
@@ -1984,6 +2059,7 @@ function renderAll(){ renderPrompts(); renderGrid(); refreshTimeline(); updateBu
 updateButtons();
 showStep(0, false);
 loadServerStatus();
+$('#teamCode').addEventListener('change', () => { if (server.configured && !$('#imgLive').children.length) loadImageModels(); });
 
 /* ---------- motion (visual only) ---------- */
 (function(){
