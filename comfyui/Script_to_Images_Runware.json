@@ -1,5 +1,5 @@
 {
-  "id": "3a885a6a-39ad-40a1-bc8a-585f92039acf",
+  "id": "8ab9ba73-fa2a-4acb-ae96-89b3e63c05d5",
   "revision": 0,
   "last_node_id": 15,
   "last_link_id": 14,
@@ -23,10 +23,10 @@
       "title": "READ ME: how to use",
       "properties": {},
       "widgets_values": [
-        "SCRIPT → 60-70 PHOTOREAL IMAGES (Runware only)\n\nFIRST TIME ONLY\n1. If a 'missing nodes' box appears, click Install (Runware),\n   then restart ComfyUI and drag this file in again.\n2. Settings (gear, bottom left) → search 'Runware' →\n   paste your key in 'Runware API key'.\n\nEVERY VIDEO\n1. Paste your script in the green 'PASTE SCRIPT HERE' box.\n2. Type how many images you want in 'NUMBER OF IMAGES' (e.g. 65).\n3. Set 'SCENE NUMBER' to 1.\n4. Next to the Run button, set the count to the SAME number (e.g. 65).\n5. Press Run. Claude plans all scenes once, then one image is\n   made per scene: scene_001, scene_002, ...\n\nImages: ComfyUI/output/script_video/\nAll scenes and prompts: see the 'ALL SCENES' box.\nRedo one image: set SCENE NUMBER to it, Run count 1, press Run.\n\nModels: Claude Fable 5 (planning + prompts), FLUX.2 [max] (images)."
+        "SCRIPT → 60-70 PHOTOREAL IMAGES (Runware only)\n\nFIRST TIME ONLY\n1. If a 'missing nodes' box appears, click Install (Runware),\n   then restart ComfyUI and drag this file in again.\n2. Settings (gear, bottom left) → search 'Runware' →\n   paste your key in 'Runware API key'.\n\nEVERY VIDEO\n1. Paste your script in the green 'PASTE SCRIPT HERE' box.\n2. Type how many images you want in 'NUMBER OF IMAGES' (just the\n   number, e.g. 65 - no brackets).\n3. Set 'SCENE NUMBER' to 1.\n4. Next to the Run button, set the count to the SAME number (e.g. 65).\n5. Press Run. Claude plans all scenes once, then one image is\n   made per scene: scene_001, scene_002, ...\n\nImages: ComfyUI/output/script_video/\nAll scenes and prompts: see the 'ALL SCENES' box.\nRedo one image: set SCENE NUMBER to it, Run count 1, press Run.\n\nOnly change: the green box, NUMBER OF IMAGES, SCENE NUMBER and the\nRun count. The small grey boxes are automatic: don't open or edit them.\n\nModels: Claude Fable 5 (planning + prompts), FLUX.2 [max] (images)."
       ],
       "widgets_values_named": {
-        "text": "SCRIPT → 60-70 PHOTOREAL IMAGES (Runware only)\n\nFIRST TIME ONLY\n1. If a 'missing nodes' box appears, click Install (Runware),\n   then restart ComfyUI and drag this file in again.\n2. Settings (gear, bottom left) → search 'Runware' →\n   paste your key in 'Runware API key'.\n\nEVERY VIDEO\n1. Paste your script in the green 'PASTE SCRIPT HERE' box.\n2. Type how many images you want in 'NUMBER OF IMAGES' (e.g. 65).\n3. Set 'SCENE NUMBER' to 1.\n4. Next to the Run button, set the count to the SAME number (e.g. 65).\n5. Press Run. Claude plans all scenes once, then one image is\n   made per scene: scene_001, scene_002, ...\n\nImages: ComfyUI/output/script_video/\nAll scenes and prompts: see the 'ALL SCENES' box.\nRedo one image: set SCENE NUMBER to it, Run count 1, press Run.\n\nModels: Claude Fable 5 (planning + prompts), FLUX.2 [max] (images)."
+        "text": "SCRIPT → 60-70 PHOTOREAL IMAGES (Runware only)\n\nFIRST TIME ONLY\n1. If a 'missing nodes' box appears, click Install (Runware),\n   then restart ComfyUI and drag this file in again.\n2. Settings (gear, bottom left) → search 'Runware' →\n   paste your key in 'Runware API key'.\n\nEVERY VIDEO\n1. Paste your script in the green 'PASTE SCRIPT HERE' box.\n2. Type how many images you want in 'NUMBER OF IMAGES' (just the\n   number, e.g. 65 - no brackets).\n3. Set 'SCENE NUMBER' to 1.\n4. Next to the Run button, set the count to the SAME number (e.g. 65).\n5. Press Run. Claude plans all scenes once, then one image is\n   made per scene: scene_001, scene_002, ...\n\nImages: ComfyUI/output/script_video/\nAll scenes and prompts: see the 'ALL SCENES' box.\nRedo one image: set SCENE NUMBER to it, Run count 1, press Run.\n\nOnly change: the green box, NUMBER OF IMAGES, SCENE NUMBER and the\nRun count. The small grey boxes are automatic: don't open or edit them.\n\nModels: Claude Fable 5 (planning + prompts), FLUX.2 [max] (images)."
       },
       "color": "#432",
       "bgcolor": "#653"
@@ -125,20 +125,24 @@
       "widgets_values_named": {
         "value": 65,
         "fixed": "fixed"
-      }
+      },
+      "color": "#232",
+      "bgcolor": "#353"
     },
     {
       "id": 4,
       "type": "StringFormat",
       "pos": [
-        600,
-        540
+        620,
+        250
       ],
       "size": [
         420,
         260
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 5,
       "mode": 0,
       "inputs": [
@@ -183,7 +187,7 @@
           ]
         }
       ],
-      "title": "Build request",
+      "title": "Build request (auto - don't edit)",
       "properties": {
         "Node name for S&R": "StringFormat"
       },
@@ -192,20 +196,24 @@
       ],
       "widgets_values_named": {
         "f_string": "NUMBER OF IMAGES: {a}\nFRAME: vertical 9:16 portrait frame\n\nSCRIPT:\n{b}"
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 5,
       "type": "RunwareBuild_messages",
       "pos": [
-        600,
-        840
+        620,
+        320
       ],
       "size": [
         420,
         110
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 8,
       "mode": 0,
       "inputs": [
@@ -245,7 +253,7 @@
           ]
         }
       ],
-      "title": "Message to Claude",
+      "title": "Message to Claude (auto - don't edit)",
       "properties": {
         "Node name for S&R": "RunwareBuild_messages",
         "cnr_id": "comfyui-runware",
@@ -258,20 +266,24 @@
       "widgets_values_named": {
         "role": "user",
         "content": ""
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 6,
       "type": "Runware_anthropic_claude_fable_5",
       "pos": [
-        1070,
-        30
+        620,
+        390
       ],
       "size": [
         520,
         760
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 9,
       "mode": 0,
       "inputs": [
@@ -439,7 +451,7 @@
           ]
         }
       ],
-      "title": "Claude Fable 5 - Visual Director (runs once)",
+      "title": "Claude Fable 5 plans all scenes (auto - don't edit)",
       "properties": {
         "Node name for S&R": "Runware_anthropic_claude_fable_5",
         "cnr_id": "comfyui-runware",
@@ -476,20 +488,24 @@
         "outputFormat": "TEXT",
         "settings.cache.ttl": "5m",
         "advanced_json": ""
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 7,
       "type": "RegexExtract",
       "pos": [
-        1070,
-        830
+        620,
+        460
       ],
       "size": [
         520,
         200
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 10,
       "mode": 0,
       "inputs": [
@@ -568,7 +584,7 @@
           ]
         }
       ],
-      "title": "Clean JSON",
+      "title": "Clean JSON (auto - don't edit)",
       "properties": {
         "Node name for S&R": "RegexExtract"
       },
@@ -589,18 +605,20 @@
         "multiline": false,
         "dotall": true,
         "group_index": 1
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 8,
       "type": "PreviewAny",
       "pos": [
-        1070,
-        1070
+        1120,
+        40
       ],
       "size": [
-        520,
-        360
+        560,
+        900
       ],
       "flags": {},
       "order": 11,
@@ -632,11 +650,11 @@
       "id": 9,
       "type": "PrimitiveInt",
       "pos": [
-        1640,
-        30
+        620,
+        40
       ],
       "size": [
-        420,
+        440,
         82
       ],
       "flags": {},
@@ -675,20 +693,24 @@
       "widgets_values_named": {
         "value": 1,
         "fixed": "increment"
-      }
+      },
+      "color": "#232",
+      "bgcolor": "#353"
     },
     {
       "id": 10,
       "type": "StringFormat",
       "pos": [
-        1640,
-        150
+        620,
+        530
       ],
       "size": [
         420,
         160
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 6,
       "mode": 0,
       "inputs": [
@@ -726,7 +748,7 @@
           ]
         }
       ],
-      "title": "Which scene",
+      "title": "Which scene (auto - don't edit)",
       "properties": {
         "Node name for S&R": "StringFormat"
       },
@@ -735,20 +757,24 @@
       ],
       "widgets_values_named": {
         "f_string": "scenes.{a}.prompt"
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 11,
       "type": "RunwareGet",
       "pos": [
-        1640,
-        350
+        620,
+        600
       ],
       "size": [
         420,
         110
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 12,
       "mode": 0,
       "inputs": [
@@ -779,7 +805,7 @@
           ]
         }
       ],
-      "title": "Get this scene's prompt",
+      "title": "Get this scene's prompt (auto - don't edit)",
       "properties": {
         "Node name for S&R": "RunwareGet",
         "cnr_id": "comfyui-runware",
@@ -790,20 +816,24 @@
       ],
       "widgets_values_named": {
         "path": ""
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 12,
       "type": "StringFormat",
       "pos": [
-        1640,
-        500
+        620,
+        670
       ],
       "size": [
         420,
         260
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 13,
       "mode": 0,
       "inputs": [
@@ -841,7 +871,7 @@
           ]
         }
       ],
-      "title": "Add photoreal style",
+      "title": "Add photoreal style (auto - don't edit)",
       "properties": {
         "Node name for S&R": "StringFormat"
       },
@@ -850,20 +880,24 @@
       ],
       "widgets_values_named": {
         "f_string": "{a} Photorealistic commercial photography of real human beings: natural skin texture, realistic facial anatomy, natural body proportions, authentic clothing, real-world environment, physically accurate lighting with natural shadows, cinematic but realistic, subtle depth of field, high-quality professional camera capture, modern Indian environment when appropriate. The image must look like a real photograph. No illustration, no cartoon, no anime, no comic style, no 3D render, no CGI, no plastic skin, no doll-like faces, no exaggerated expressions, no fantasy lighting, no surreal elements, no oversaturated colours, no fake-looking background, no readable text, no captions, no watermark, no logo."
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 13,
       "type": "StringFormat",
       "pos": [
-        1640,
-        800
+        620,
+        740
       ],
       "size": [
         420,
         160
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 7,
       "mode": 0,
       "inputs": [
@@ -901,7 +935,7 @@
           ]
         }
       ],
-      "title": "File name",
+      "title": "File name (auto - don't edit)",
       "properties": {
         "Node name for S&R": "StringFormat"
       },
@@ -910,20 +944,24 @@
       ],
       "widgets_values_named": {
         "f_string": "script_video/scene_{a:03d}"
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 14,
       "type": "Runware_bfl_flux_2_max",
       "pos": [
-        2110,
-        30
+        620,
+        810
       ],
       "size": [
         460,
         620
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": true
+      },
       "order": 14,
       "mode": 0,
       "inputs": [
@@ -1151,7 +1189,7 @@
           ]
         }
       ],
-      "title": "FLUX.2 [max] - image",
+      "title": "FLUX.2 [max] makes the image (auto - don't edit)",
       "properties": {
         "Node name for S&R": "Runware_bfl_flux_2_max",
         "cnr_id": "comfyui-runware",
@@ -1202,18 +1240,20 @@
         "ttl_value": 60,
         "outputFormat": "JPG",
         "outputQuality": 95
-      }
+      },
+      "color": "#333",
+      "bgcolor": "#444"
     },
     {
       "id": 15,
       "type": "SaveImage",
       "pos": [
-        2620,
-        30
+        1720,
+        40
       ],
       "size": [
-        420,
-        760
+        460,
+        900
       ],
       "flags": {},
       "order": 4,
