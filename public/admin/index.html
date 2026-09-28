@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Craftush · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#040804; --glass:rgba(12,24,13,.58); --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.13); --line-lime:rgba(124,255,46,.22);
+    --text:#EEF5EC; --muted:#8E9E8B; --faint:#6E7E6C; --dim:rgba(238,245,236,.36); --lime:#7CFF2E; --red:#FF7A6E; --ok:#95FF5E;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --display:"Inter Tight","Inter",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace; --ease:cubic-bezier(.16,1,.3,1); --spring:cubic-bezier(.34,1.56,.64,1);
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;color-scheme:dark}
+  body{margin:0;min-height:100vh}
+  [hidden]{display:none !important}
+  a{color:#B4FF6A}
+  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1000px 560px at 50% -14%,#1d6e17 0%,#0c2f0c 38%,transparent 72%),var(--bg)}
+  .bg::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1.2px);background-size:26px 26px;
+    mask-image:radial-gradient(ellipse at 50% 20%,#000 30%,transparent 75%)}
+  .wrap{max-width:880px;margin:0 auto;padding:22px 24px 80px}
+  .top{display:flex;align-items:center;justify-content:space-between;height:52px;margin-bottom:40px}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--display);font-weight:600;font-size:1.25rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+  .logo svg{filter:drop-shadow(0 0 10px #7CFF2E88)}
+  .tag{margin-left:10px;font-family:var(--mono);font-size:.64rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--lime)}
+  .tag::before{content:"[ ";opacity:.7} .tag::after{content:" ]";opacity:.7}
+  h1{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,5vw,3.4rem);line-height:1.02;letter-spacing:-.04em;margin:0 0 10px}
+  .lede{color:var(--muted);margin:0 0 30px}
+  .card{position:relative;overflow:hidden;background:var(--glass);border:1px solid var(--line);border-radius:26px;padding:30px 30px 30px;margin-bottom:18px;
+    backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 40px 90px -40px #000,inset 0 1px 0 rgba(255,255,255,.05)}
+  .card::after{content:"";position:absolute;left:50%;top:-1px;width:46%;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(180,255,106,.7),transparent)}
+  .card h2{font-family:var(--display);font-size:1.45rem;font-weight:400;letter-spacing:-.03em;margin:0 0 6px;display:flex;align-items:center;gap:12px}
+  .card p.help{color:var(--muted);font-size:.88rem;margin:0 0 20px;max-width:64ch}
+  .pill{font-family:var(--mono);font-size:.62rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--line-2);color:var(--muted)}
+  .pill.on{border-color:var(--line-lime);color:var(--lime);box-shadow:0 0 16px -6px var(--lime)}
+  .pill.off{border-color:rgba(255,122,110,.35);color:var(--red)}
+  label.field{display:flex;flex-direction:column;gap:8px;font-weight:500;font-size:.84rem;color:#D5DFD2}
+  input{font:inherit;font-size:.95rem;color:var(--text);background:rgba(255,255,255,.035);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;width:100%;transition:border-color .25s,box-shadow .25s,background .25s}
+  input::placeholder{color:#56654f}
+  input:focus-visible{outline:none;border-color:var(--line-lime);background:rgba(124,255,46,.04);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+  button{font:inherit;font-weight:500;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:11px 20px;
+    border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:var(--text);transition:transform .45s var(--spring),border-color .25s,background .25s,box-shadow .3s}
+  button:hover:not(:disabled){border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.08)}
+  button:active:not(:disabled){transform:scale(.96);transition-duration:.12s}
+  button.primary{background:#F1F6EE;color:#08120A;border-color:#F1F6EE;padding:6px 6px 6px 20px;font-weight:600}
+  button.primary::after{content:"";width:32px;height:32px;border-radius:50%;flex:none;
+    background:var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath d='M7 17L17 7M9 7h8v8' fill='none' stroke='%2308120A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+    box-shadow:0 0 16px #7CFF2E88;transition:transform .5s var(--spring)}
+  button.primary:hover:not(:disabled){background:#fff;border-color:#fff;box-shadow:0 12px 34px -12px #7CFF2E88}
+  button.primary:hover:not(:disabled)::after{transform:rotate(45deg)}
+  button.danger{color:var(--red);border-color:rgba(255,122,110,.25)}
+  button.danger:hover:not(:disabled){background:rgba(255,122,110,.08);border-color:rgba(255,122,110,.5)}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+  .status{font-size:.86rem;min-height:1.4em;margin:14px 0 0;color:var(--muted)}
+  .status.ok{color:var(--ok)} .status.err{color:var(--red)}
+  .keyline{font-size:.9rem;margin:0 0 16px;color:#C7D3C4;font-variant-numeric:tabular-nums}
+  .keyline b{font-family:var(--mono);font-weight:500;color:var(--lime);letter-spacing:.04em}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+  .stat span{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lime)}
+  .stat b{display:block;font-family:var(--display);font-size:2.2rem;font-weight:400;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
+  .small{font-size:.78rem;color:var(--faint);margin:0;font-family:var(--mono)}
+  .login{max-width:440px}
+  .small-save{padding:9px 18px;font-size:.84rem}
+  .mlist{display:grid;gap:8px}
+  .mrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.2)}
+  .mrow .rank{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);min-width:64px}
+  .mrow .nm{min-width:0}
+  .mrow .nm b{display:block;font-weight:500;font-size:.9rem}
+  .mrow .nm code{font-family:var(--mono);font-size:.74rem;color:var(--faint)}
+  .mrow .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .mrow .acts button{padding:6px 12px;font-size:.76rem}
+  .searchrow{display:flex;gap:10px}
+  .results{display:grid;gap:6px;margin-top:10px;max-height:320px;overflow:auto}
+  .res{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+  .res b{font-weight:500;font-size:.86rem;display:block}
+  .res small{font-family:var(--mono);font-size:.7rem;color:var(--faint)}
+  .res button{padding:6px 12px;font-size:.76rem}
+  .section-title{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin:44px 0 14px}
+  .section-title::before{content:"[ ";opacity:.7} .section-title::after{content:" ]";opacity:.7}
+  .cardgrid{display:grid;gap:14px}
+  .toolrow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:12px;align-items:end;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(0,0,0,.2)}
+  @media (max-width:760px){.toolrow{grid-template-columns:1fr}}
+  .toolrow .name{font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);grid-column:1/-1;display:flex;align-items:center;gap:10px}
+  .toolrow .name a{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--font);font-size:.8rem}
+  .switch{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;color:#D5DFD2;white-space:nowrap}
+  .switch input{accent-color:var(--lime);width:16px;height:16px}
+  .filebox{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:6px}
+  .filebox input[type=file]{font:inherit;font-size:.84rem;color:var(--muted);max-width:100%}
+  .filebox input[type=file]::file-selector-button{font:inherit;font-weight:500;font-size:.84rem;border-radius:999px;padding:9px 16px;margin-right:12px;border:1px solid var(--line-2);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
+  .fileinfo{font-size:.88rem;color:#C7D3C4;margin:0 0 14px}
+  .fileinfo b{font-family:var(--mono);font-weight:500;color:var(--lime)}
+  select{font:inherit;font-size:.93rem;color:var(--text);background:rgba(255,255,255,.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237CFF2E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 16px center;
+    border:1px solid var(--line-2);border-radius:14px;padding:12px 40px 12px 14px;width:100%;appearance:none;-webkit-appearance:none;cursor:pointer}
+  select option{background:#0c170c}
+  select:focus-visible{outline:none;border-color:var(--line-lime);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+  textarea{font:inherit;font-size:.9rem;color:var(--text);background:rgba(255,255,255,.035);border:1px solid var(--line-2);border-radius:14px;padding:11px 14px;width:100%;resize:vertical}
+  textarea:focus-visible{outline:none;border-color:var(--line-lime);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  @media (max-width:760px){.two{grid-template-columns:1fr}}
+  .fieldlist{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:16px;padding:6px;background:rgba(0,0,0,.2);display:grid;gap:4px}
+  .fitem{display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;align-items:center;padding:8px 10px;border-radius:12px}
+  .fitem:hover{background:rgba(255,255,255,.03)}
+  .fitem input[type=checkbox]{accent-color:var(--lime);width:16px;height:16px}
+  .fitem .fl{font-size:.82rem;color:#D5DFD2;min-width:0}
+  .fitem .fl small{display:block;font-family:var(--mono);font-size:.68rem;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fitem input[type=text]{padding:8px 12px;font-size:.82rem;border-radius:10px}
+  .fitem input[type=text]:disabled{opacity:.3}
+  @media (prefers-reduced-motion:no-preference){
+    .card,h1,.lede{animation:rise .9s var(--ease) backwards}
+    .lede{animation-delay:.08s} .card{animation-delay:.14s} .card:nth-of-type(2){animation-delay:.22s} .card:nth-of-type(3){animation-delay:.3s}
+    @keyframes rise{from{opacity:0;transform:translateY(18px);filter:blur(8px)}}
+    .status:not(:empty){animation:fade .5s var(--ease)} @keyframes fade{from{opacity:0;transform:translateY(6px)}}
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="/" aria-label="Craftush home">
+      <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6FF9E"/><stop offset="1" stop-color="#7CFF2E"/></linearGradient></defs>
+        <path d="M13 2c1 7.5 4.5 11 12 12-7.5 1-11 4.5-12 12-1-7.5-4.5-11-12-12 7.5-1 11-4.5 12-12z" fill="url(#lg)"/>
+        <path d="M25 1c.4 2.6 1.4 3.6 4 4-2.6.4-3.6 1.4-4 4-.4-2.6-1.4-3.6-4-4 2.6-.4 3.6-1.4 4-4z" fill="#7CFF2E"/>
+      </svg>
+      Craftush <span class="tag">Admin</span>
+    </a>
+    <button id="signOut" hidden>Sign out</button>
+  </header>
+
+  <!-- Sign in -->
+  <section id="loginView" class="login">
+    <h1>Admin <span style="color:var(--dim)">sign in.</span></h1>
+    <p class="lede">Manage the Runware key and team access for Craftush.</p>
+    <div class="card">
+      <label class="field">Admin password
+        <input type="password" id="pw" autocomplete="current-password" autofocus>
+      </label>
+      <div class="row"><button class="primary" id="loginBtn">Sign in</button></div>
+      <p class="status" id="loginStatus" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- Panel -->
+  <section id="panel" hidden>
+    <h1>Control <span style="color:var(--dim)">room.</span></h1>
+    <p class="lede">Your team generates images at <a href="/">craftush.netlify.app</a> without ever seeing the key.</p>
+
+    <div class="card">
+      <h2>Runware API key <span class="pill" id="keyPill">…</span></h2>
+      <p class="help">Stored securely on Netlify's servers and added to every request by the relay. It's checked with Runware before saving.</p>
+      <p class="keyline" id="keyLine"></p>
+      <label class="field">New key
+        <input type="password" id="newKey" autocomplete="off" placeholder="Paste a Runware API key to save or replace it">
+      </label>
+      <div class="row">
+        <button class="primary" id="saveKey">Save key</button>
+        <button id="testKey">Test current key</button>
+        <button class="danger" id="removeKey">Remove key</button>
+      </div>
+      <p class="status" id="keyStatus" aria-live="polite"></p>
+    </div>
+
+    <div class="card">
+      <h2>Team access code <span class="pill" id="codePill">…</span></h2>
+      <p class="help">When set, only people who enter this code on the main page can generate images, so strangers who find the link can't spend your credits. Leave it empty to turn it off. Change it anytime; everyone will be asked for the new one.</p>
+      <label class="field">Code
+        <input type="text" id="code" autocomplete="off" maxlength="64" placeholder="e.g. craftush-team-2026">
+      </label>
+      <div class="row"><button class="primary" id="saveCode">Save code</button></div>
+      <p class="status" id="codeStatus" aria-live="polite"></p>
+    </div>
+
+    <div class="card">
+      <h2>Text models <span class="pill on" id="textPill">AI</span></h2>
+      <p class="help">The AI models your team can pick for smart split (step 1 of Stunning Visuals). They run on your Runware key. The first one is the default, and if a model fails, the next one is tried automatically.</p>
+      <div class="mlist" id="textList"></div>
+      <p class="section-title" style="margin:22px 0 10px">Add a text model</p>
+      <div class="two">
+        <label class="field">Model ID<input type="text" id="addTextId" spellcheck="false" autocomplete="off" placeholder="provider:model@version"></label>
+        <label class="field">Friendly name (optional)<input type="text" id="addTextName" maxlength="60" placeholder="e.g. DeepSeek V4 Flash"></label>
+      </div>
+      <div class="row"><button class="primary" id="addText">Test &amp; add</button></div>
+      <p class="section-title" style="margin:22px 0 10px">Or search Runware's catalogue</p>
+      <div class="searchrow"><input type="text" id="textSearch" placeholder="e.g. claude, deepseek, gemini, gpt, llama"><button id="textSearchBtn">Search</button></div>
+      <div class="results" id="textResults"></div>
+      <p class="status" id="textStatus" aria-live="polite"></p>
+    </div>
+
+    <div class="card">
+      <h2>Usage</h2>
+      <p class="help">Counted by the relay from Runware's replies. Runware's own dashboard is the final word on billing.</p>
+      <div class="stats">
+        <div class="stat"><span>Images generated</span><b id="uImages">0</b></div>
+        <div class="stat"><span>Prompts written</span><b id="uPrompts">0</b></div>
+        <div class="stat"><span>Spent</span><b id="uCost">$0.00</b></div>
+      </div>
+      <p class="small" id="uSince"></p>
+      <div class="row"><button id="refresh">Refresh</button><button class="danger" id="resetUsage">Reset counters</button></div>
+      <p class="status" id="usageStatus" aria-live="polite"></p>
+    </div>
+    <p class="section-title">Dashboard</p>
+
+    <div class="card">
+      <h2>Dashboard cards</h2>
+      <p class="help">What your team sees on the three cards at craftush.netlify.app. Turn a card off to hide it.</p>
+      <div class="cardgrid" id="cardRows"></div>
+      <p class="status" id="cardStatus" aria-live="polite"></p>
+    </div>
+
+    <div class="card">
+      <h2>Thumbnail generator <span class="pill" id="thumbPill">…</span></h2>
+      <p class="help">Upload your thumbnail generator as a single HTML file. The team opens it from the first card, at <a href="/thumbnail" target="_blank" rel="noopener">/thumbnail</a>. Uploading a new file replaces the old one.</p>
+      <p class="fileinfo" id="thumbInfo"></p>
+      <div class="filebox"><input type="file" id="thumbFile" accept=".html,.htm,text/html"></div>
+      <div class="row"><button class="primary" id="uploadThumb">Upload HTML</button><button class="danger" id="removeThumb">Remove</button></div>
+      <p class="status" id="thumbStatus" aria-live="polite"></p>
+    </div>
+
+    <div class="card">
+      <h2>Idea to Video workflow <span class="pill" id="comfyPill">…</span></h2>
+      <p class="help">In ComfyUI, open your workflow and choose <b>Workflow → Export (API)</b>, then upload that JSON file here. The team uses it at <a href="/comfy/" target="_blank" rel="noopener">/comfy</a>.</p>
+      <p class="fileinfo" id="comfyInfo"></p>
+      <div class="filebox"><input type="file" id="comfyFile" accept=".json,application/json"></div>
+      <div class="row"><button class="primary" id="uploadWorkflow">Upload workflow</button><button class="danger" id="removeWorkflow">Remove</button></div>
+      <p class="status" id="comfyUpStatus" aria-live="polite"></p>
+
+      <div id="comfySettings" hidden>
+        <p class="section-title" style="margin-top:28px">Workflow settings</p>
+        <div class="two">
+          <label class="field">The team's idea goes into
+            <select id="promptKey"></select>
+          </label>
+          <label class="field">Negative prompt (optional, stays as saved)
+            <select id="negKey"></select>
+          </label>
+        </div>
+        <label class="field" style="margin-bottom:14px">Default ComfyUI address
+          <input type="text" id="comfyServer" spellcheck="false" placeholder="http://127.0.0.1:8000">
+        </label>
+        <label class="switch" style="margin-bottom:18px"><input type="checkbox" id="randomSeed" checked> New random seed for every video</label>
+        <p class="help" style="margin:14px 0 10px">Settings your team can change (tick up to 12, and give each a friendly name):</p>
+        <div class="fieldlist" id="fieldList"></div>
+        <div class="row"><button class="primary" id="saveComfy">Save workflow settings</button></div>
+        <p class="status" id="comfyStatus" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <p class="small" id="ver"></p>
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let PW = '';
+try { PW = sessionStorage.getItem('craftush-admin') || ''; } catch {}
+
+function setStatus(id, msg, kind = ''){ const el = $(id); el.textContent = msg; el.className = 'status ' + kind; }
+const when = iso => iso ? new Date(iso).toLocaleString() : '';
+const money = v => '$' + (v > 0 && v < 1 ? v.toFixed(3) : v.toFixed(2));
+
+async function call(action, extra = {}){
+  let r;
+  try {
+    r = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': PW },
+      body: JSON.stringify({ action, ...extra })
+    });
+  } catch { throw new Error('Couldn\'t reach the server. Check your connection.'); }
+  let j;
+  try { j = await r.json(); }
+  catch { throw new Error(r.status === 404 ? 'The admin server isn\'t deployed yet. Follow the setup guide (GitHub-linked deploy).' : 'Server answered with HTTP ' + r.status); }
+  if (!r.ok){ const e = new Error((j.errors && j.errors[0] && j.errors[0].message) || 'Something went wrong'); e.status = r.status; throw e; }
+  return j;
+}
+
+function render(v){
+  const k = v.key;
+  $('#keyPill').textContent = k.set ? 'Active' : 'Not set';
+  $('#keyPill').className = 'pill ' + (k.set ? 'on' : 'off');
+  $('#keyLine').innerHTML = k.set
+    ? `Saved key ends in <b>••••${k.last4.replace(/[<>&]/g, '')}</b>${k.updated ? ' · updated ' + when(k.updated) : ''}${k.source === 'environment' ? ' · from the RUNWARE_API_KEY environment variable' : ''}`
+    : 'No key yet. Your team can\'t generate images until you add one.';
+  $('#removeKey').disabled = k.source !== 'admin';
+  $('#testKey').disabled = !k.set;
+  $('#code').value = v.teamCode;
+  $('#codePill').textContent = v.teamCode ? 'Required' : 'Off';
+  $('#codePill').className = 'pill ' + (v.teamCode ? 'on' : '');
+  const u = v.usage || {};
+  $('#uImages').textContent = (u.images || 0).toLocaleString();
+  $('#uPrompts').textContent = (u.prompts || 0).toLocaleString();
+  $('#uCost').textContent = money(u.cost || 0);
+  $('#uSince').textContent = `Since ${when(u.since)}${u.last ? ' · last activity ' + when(u.last) : ''}`;
+  renderDashboard(v);
+  renderTextList(v.textList || []);
+  $('#ver').textContent = v.version ? 'Backend version ' + v.version : 'Backend version 1: the latest update is not live yet';
+}
+
+function showPanel(v){
+  $('#loginView').hidden = true; $('#panel').hidden = false; $('#signOut').hidden = false;
+  render(v);
+}
+function signOut(msg){
+  PW = ''; try { sessionStorage.removeItem('craftush-admin'); } catch {}
+  $('#panel').hidden = true; $('#signOut').hidden = true; $('#loginView').hidden = false;
+  $('#pw').value = ''; $('#pw').focus();
+  setStatus('#loginStatus', msg || '');
+}
+async function guarded(id, fn){
+  try { await fn(); }
+  catch (e){ if (e.status === 401) signOut('Your session ended. Sign in again.'); else setStatus(id, e.message, 'err'); }
+}
+
+async function login(){
+  PW = $('#pw').value;
+  if (!PW){ setStatus('#loginStatus', 'Enter the admin password.', 'err'); return; }
+  $('#loginBtn').disabled = true; setStatus('#loginStatus', 'Signing in…');
+  try {
+    const v = await call('get');
+    try { sessionStorage.setItem('craftush-admin', PW); } catch {}
+    setStatus('#loginStatus', ''); showPanel(v);
+  } catch (e){ PW = ''; setStatus('#loginStatus', e.message, 'err'); }
+  $('#loginBtn').disabled = false;
+}
+$('#loginBtn').addEventListener('click', login);
+$('#pw').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+$('#signOut').addEventListener('click', () => signOut());
+
+$('#saveKey').addEventListener('click', () => guarded('#keyStatus', async () => {
+  const key = $('#newKey').value.trim();
+  if (!key){ setStatus('#keyStatus', 'Paste a Runware key first.', 'err'); return; }
+  $('#saveKey').disabled = true; setStatus('#keyStatus', 'Checking the key with Runware…');
+  try { render(await call('saveKey', { key })); $('#newKey').value = ''; setStatus('#keyStatus', 'Key saved. Your team can generate images now.', 'ok'); }
+  finally { $('#saveKey').disabled = false; }
+}));
+$('#testKey').addEventListener('click', () => guarded('#keyStatus', async () => {
+  setStatus('#keyStatus', 'Testing…'); await call('testKey'); setStatus('#keyStatus', 'The key works.', 'ok');
+}));
+$('#removeKey').addEventListener('click', () => guarded('#keyStatus', async () => {
+  if (!confirm('Remove the saved Runware key? Your team won\'t be able to generate images until you add one again.')) return;
+  render(await call('removeKey')); setStatus('#keyStatus', 'Key removed.', 'ok');
+}));
+$('#saveCode').addEventListener('click', () => guarded('#codeStatus', async () => {
+  const code = $('#code').value.trim();
+  render(await call('saveCode', { code }));
+  setStatus('#codeStatus', code ? 'Saved. Share this code with your team.' : 'Code removed. Anyone with the link can generate images.', 'ok');
+}));
+$('#refresh').addEventListener('click', () => guarded('#usageStatus', async () => { render(await call('get')); setStatus('#usageStatus', 'Updated.', 'ok'); }));
+$('#resetUsage').addEventListener('click', () => guarded('#usageStatus', async () => {
+  if (!confirm('Reset the usage counters to zero?')) return;
+  render(await call('resetUsage')); setStatus('#usageStatus', 'Counters reset.', 'ok');
+}));
+
+// ---------- text models ----------
+let textListCache = [];
+function renderTextList(list){
+  textListCache = list.map(m => ({ ...m }));
+  $('#textList').innerHTML = list.map((m, i) => `<div class="mrow" data-i="${i}">
+    <span class="rank">${i === 0 ? 'Default' : 'Backup ' + i}</span>
+    <span class="nm"><b>${esc(m.name || m.id)}</b><code>${esc(m.id)}</code></span>
+    <span class="acts">${i ? '<button data-a="up">Make default</button>' : ''}<button data-a="test">Test</button>${list.length > 1 ? '<button class="danger" data-a="del">Remove</button>' : ''}</span>
+  </div>`).join('');
+}
+async function saveList(list, msg){
+  render(await call('saveTextList', { list })); if (msg) setStatus('#textStatus', msg, 'ok');
+}
+$('#textList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = +b.closest('.mrow').dataset.i, list = textListCache.map(m => ({ ...m }));
+  guarded('#textStatus', async () => {
+    if (b.dataset.a === 'up'){ const [m] = list.splice(i, 1); list.unshift(m); await saveList(list, `${m.name || m.id} is now the default.`); }
+    if (b.dataset.a === 'del'){ const [m] = list.splice(i, 1); await saveList(list, `Removed ${m.name || m.id}.`); }
+    if (b.dataset.a === 'test'){ setStatus('#textStatus', 'Asking the model to reply…'); const r = await call('testTextModel', { model: list[i].id }); setStatus('#textStatus', `✓ ${r.model} works${r.cost != null ? ' · cost $' + Number(r.cost).toFixed(5) : ''}.`, 'ok'); }
+  });
+});
+async function addTextModel(id, name){
+  id = String(id || '').trim(); if (!id){ setStatus('#textStatus', 'Enter a model ID first.', 'err'); return; }
+  if (textListCache.some(m => m.id === id)){ setStatus('#textStatus', 'That model is already in the list.', 'err'); return; }
+  setStatus('#textStatus', `Testing ${id}…`);
+  await call('testTextModel', { model: id });
+  await saveList([...textListCache, { id, name: String(name || '').trim() }], `✓ ${id} works and was added.`);
+}
+$('#addText').addEventListener('click', () => guarded('#textStatus', async () => { await addTextModel($('#addTextId').value, $('#addTextName').value); $('#addTextId').value = ''; $('#addTextName').value = ''; }));
+$('#textSearchBtn').addEventListener('click', () => guarded('#textStatus', async () => {
+  const q = $('#textSearch').value.trim(); if (!q){ setStatus('#textStatus', 'Type something to search for.', 'err'); return; }
+  setStatus('#textStatus', 'Searching Runware…'); $('#textResults').innerHTML = '';
+  const r = await call('searchModels', { search: q, limit: 30 });
+  $('#textResults').innerHTML = r.results.map(m => `<div class="res"><span><b>${esc(m.name)}${m.version ? ' · ' + esc(m.version) : ''}</b><small>${esc(m.air)} · ${esc([m.category, m.architecture].filter(Boolean).join(' · '))}</small></span><button data-air="${esc(m.air)}" data-name="${esc(m.name)}">Test &amp; add</button></div>`).join('');
+  setStatus('#textStatus', r.results.length ? `${r.total} results. Text models work only if Runware lists them as text models; Test & add checks that.` : 'No results. Runware’s catalogue search may not include text models; paste the ID from runware.ai instead.', r.results.length ? 'ok' : 'err');
+}));
+$('#textSearch').addEventListener('keydown', e => { if (e.key === 'Enter') $('#textSearchBtn').click(); });
+$('#textResults').addEventListener('click', e => { const b = e.target.closest('button[data-air]'); if (b) guarded('#textStatus', () => addTextModel(b.dataset.air, b.dataset.name)); });
+
+// ---------- dashboard ----------
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kb = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+const TOOL_LINKS = { thumbnail: '/thumbnail', visuals: '/visuals/', comfy: '/comfy/' };
+const TOOL_NAMES = { thumbnail: '01 · Thumbnail generator', visuals: '02 · Stunning Visuals', comfy: '03 · Idea to Video' };
+let lastView = null;
+
+function renderDashboard(v){
+  lastView = v;
+  const d = v.dashboard;
+  $('#cardRows').innerHTML = Object.keys(TOOL_NAMES).map(id => {
+    const c = d.cards[id];
+    return `<div class="toolrow" data-id="${id}">
+      <span class="name">${TOOL_NAMES[id]} <a href="${TOOL_LINKS[id]}" target="_blank" rel="noopener">Open ↗</a></span>
+      <label class="field">Title<input type="text" class="ct" maxlength="60" value="${esc(c.title)}"></label>
+      <label class="field">Description<input type="text" class="cd" maxlength="220" value="${esc(c.desc)}"></label>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="switch"><input type="checkbox" class="ce" ${c.enabled ? 'checked' : ''}> Show</label>
+        <button class="small-save">Save</button>
+      </div></div>`;
+  }).join('');
+
+  const t = d.thumb;
+  $('#thumbPill').textContent = t ? 'Uploaded' : 'Not set'; $('#thumbPill').className = 'pill ' + (t ? 'on' : 'off');
+  $('#thumbInfo').innerHTML = t ? `Current file <b>${esc(t.fileName)}</b> · ${kb(t.size)} · uploaded ${when(t.updated)}` : 'No file yet. The first card shows “Not set up yet” until you upload one.';
+  $('#removeThumb').disabled = !t;
+
+  const f = d.comfyFile, m = v.comfy;
+  $('#comfyPill').textContent = f ? 'Uploaded' : 'Not set'; $('#comfyPill').className = 'pill ' + (f ? 'on' : 'off');
+  $('#comfyInfo').innerHTML = f ? `Current workflow <b>${esc(f.fileName)}</b> · ${f.nodes} nodes · uploaded ${when(f.updated)}` : 'No workflow yet. The third card shows “Not set up yet” until you upload one.';
+  $('#removeWorkflow').disabled = !f;
+  $('#comfySettings').hidden = !m;
+  if (!m) return;
+  const texts = m.fields.filter(x => x.type === 'text');
+  const opt = (x, sel) => `<option value="${esc(x.key)}" ${x.key === sel ? 'selected' : ''}>${esc(x.title)} · ${esc(x.input)} — “${esc(String(x.value).slice(0, 40))}${String(x.value).length > 40 ? '…' : ''}”</option>`;
+  $('#promptKey').innerHTML = texts.map(x => opt(x, m.promptKey)).join('') || '<option value="">No text inputs found</option>';
+  $('#negKey').innerHTML = '<option value="">None</option>' + texts.map(x => opt(x, m.negKey)).join('');
+  $('#comfyServer').value = m.server || '';
+  $('#randomSeed').checked = m.randomSeed !== false;
+  const ex = Object.fromEntries((m.exposed || []).map(e => [e.key, e.label]));
+  $('#fieldList').innerHTML = m.fields.map((x, i) => {
+    const on = x.key in ex;
+    return `<div class="fitem" data-key="${esc(x.key)}">
+      <input type="checkbox" id="fx${i}" ${on ? 'checked' : ''} aria-label="Let the team change ${esc(x.title)} ${esc(x.input)}">
+      <label class="fl" for="fx${i}">${esc(x.title)} · ${esc(x.input)}<small>${esc(x.type)} · default ${esc(String(x.value).slice(0, 60))}</small></label>
+      <input type="text" placeholder="Name shown to the team" value="${esc(ex[x.key] || '')}" ${on ? '' : 'disabled'} maxlength="60">
+    </div>`;
+  }).join('');
+}
+
+$('#cardRows').addEventListener('click', e => {
+  const b = e.target.closest('.small-save'); if (!b) return;
+  const row = b.closest('.toolrow');
+  guarded('#cardStatus', async () => {
+    render(await call('saveCard', { id: row.dataset.id, title: row.querySelector('.ct').value, desc: row.querySelector('.cd').value, enabled: row.querySelector('.ce').checked }));
+    setStatus('#cardStatus', 'Card saved. The dashboard shows it right away.', 'ok');
+  });
+});
+$('#fieldList').addEventListener('change', e => {
+  if (e.target.type !== 'checkbox') return;
+  const txt = e.target.closest('.fitem').querySelector('input[type=text]');
+  txt.disabled = !e.target.checked; if (e.target.checked) txt.focus();
+});
+
+async function readFile(input, statusId){
+  const file = input.files && input.files[0];
+  if (!file){ setStatus(statusId, 'Choose a file first.', 'err'); return null; }
+  if (file.size > 8 * 1024 * 1024){ setStatus(statusId, 'That file is larger than 8 MB.', 'err'); return null; }
+  return { name: file.name, text: await file.text() };
+}
+$('#uploadThumb').addEventListener('click', () => guarded('#thumbStatus', async () => {
+  const f = await readFile($('#thumbFile'), '#thumbStatus'); if (!f) return;
+  setStatus('#thumbStatus', 'Uploading…');
+  render(await call('uploadThumb', { name: f.name, html: f.text })); $('#thumbFile').value = '';
+  setStatus('#thumbStatus', 'Uploaded. The Thumbnail Generator card now opens it.', 'ok');
+}));
+$('#removeThumb').addEventListener('click', () => guarded('#thumbStatus', async () => {
+  if (!confirm('Remove the thumbnail generator file?')) return;
+  render(await call('removeThumb')); setStatus('#thumbStatus', 'Removed.', 'ok');
+}));
+$('#uploadWorkflow').addEventListener('click', () => guarded('#comfyUpStatus', async () => {
+  const f = await readFile($('#comfyFile'), '#comfyUpStatus'); if (!f) return;
+  setStatus('#comfyUpStatus', 'Checking the workflow…');
+  render(await call('uploadWorkflow', { name: f.name, json: f.text })); $('#comfyFile').value = '';
+  setStatus('#comfyUpStatus', 'Workflow uploaded. Check the settings below, then save them.', 'ok');
+}));
+$('#removeWorkflow').addEventListener('click', () => guarded('#comfyUpStatus', async () => {
+  if (!confirm('Remove the ComfyUI workflow? Idea to Video will show “Not set up yet”.')) return;
+  render(await call('removeWorkflow')); setStatus('#comfyUpStatus', 'Removed.', 'ok');
+}));
+$('#saveComfy').addEventListener('click', () => guarded('#comfyStatus', async () => {
+  const exposed = [...document.querySelectorAll('#fieldList .fitem')]
+    .filter(r => r.querySelector('input[type=checkbox]').checked)
+    .map(r => ({ key: r.dataset.key, label: r.querySelector('input[type=text]').value.trim() }));
+  if (exposed.length > 12){ setStatus('#comfyStatus', 'Pick 12 settings or fewer.', 'err'); return; }
+  render(await call('saveComfy', { promptKey: $('#promptKey').value, negKey: $('#negKey').value, server: $('#comfyServer').value, randomSeed: $('#randomSeed').checked, exposed }));
+  setStatus('#comfyStatus', 'Saved. Idea to Video uses these settings now.', 'ok');
+}));
+
+if (PW) call('get').then(showPanel).catch(() => signOut());
+</script>
+</body>
+</html>

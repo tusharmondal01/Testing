@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Craftush · Idea to Video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js-anim")</script>
+<style>
+  :root{
+    --bg:#040804; --glass:rgba(12,24,13,.58); --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.13); --line-lime:rgba(124,255,46,.22);
+    --text:#EEF5EC; --muted:#8E9E8B; --faint:#6E7E6C; --dim:rgba(238,245,236,.36); --lime:#7CFF2E; --lime-2:#B4FF6A; --red:#FF7A6E; --ok:#95FF5E; --amber:#FFB84D;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --display:"Inter Tight","Inter",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace; --ease:cubic-bezier(.16,1,.3,1); --spring:cubic-bezier(.34,1.56,.64,1);
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;color-scheme:dark}
+  body{margin:0;min-height:100vh;overflow-x:hidden}
+  [hidden]{display:none !important}
+  a{color:var(--lime-2)}
+  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+    background:radial-gradient(1100px 620px at 50% -12%,#1d6e17 0%,#0c2f0c 38%,transparent 72%),radial-gradient(900px 700px at 100% 110%,#0b2a0b 0%,transparent 70%),var(--bg)}
+  .bg::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1.2px);background-size:26px 26px;mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 75%)}
+  .beam{position:absolute;left:70%;top:-10%;width:170px;height:92vh;transform:translateX(-50%);border-radius:50%;filter:blur(40px);opacity:.45;
+    background:linear-gradient(180deg,rgba(124,255,46,0) 0%,rgba(124,255,46,.26) 45%,rgba(180,255,106,.5) 88%,rgba(124,255,46,0) 100%)}
+  .wrap{max-width:1220px;margin:0 auto;padding:22px 28px 90px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:14px;height:52px;margin-bottom:10px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--display);font-weight:600;font-size:1.25rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+  .logo svg{filter:drop-shadow(0 0 10px #7CFF2E88)}
+  .back{font-size:.8rem;color:var(--muted);text-decoration:none;padding:7px 13px;border-radius:999px;border:1px solid var(--line);transition:color .25s,border-color .25s,background .25s}
+  .back:hover{color:var(--text);border-color:var(--line-2);background:rgba(255,255,255,.05)}
+  .keychip{display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 16px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line-2);width:280px}
+  .keychip div{display:flex;flex-direction:column;flex:1;min-width:0}
+  .keychip small{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lime)}
+  .keychip input{border:none !important;padding:0 !important;background:transparent !important;box-shadow:none !important;font-size:.88rem !important;height:20px}
+  .keychip svg{flex:none;width:30px;height:30px;padding:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px #7CFF2E99}
+  .keychip:focus-within{border-color:var(--line-lime);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+
+  .intro{padding:38px 0 30px;max-width:860px}
+  .eyebrow{display:inline-block;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:18px}
+  .eyebrow::before{content:"[ ";opacity:.7} .eyebrow::after{content:" ]";opacity:.7}
+  h1{font-family:var(--display);font-weight:400;font-size:clamp(2.4rem,5.4vw,4.4rem);line-height:1;letter-spacing:-.045em;margin:0 0 16px}
+  h1 .dim{color:var(--dim)}
+  .intro p{color:var(--muted);margin:0;max-width:56ch}
+
+  .grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{position:relative;overflow:hidden;background:var(--glass);border:1px solid var(--line);border-radius:28px;padding:32px;
+    backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 40px 90px -40px #000,inset 0 1px 0 rgba(255,255,255,.05)}
+  .panel::after{content:"";position:absolute;left:50%;top:-1px;width:46%;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(180,255,106,.7),transparent)}
+  .panel::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(480px circle at var(--mx,50%) var(--my,0%),rgba(124,255,46,.08),transparent 60%)}
+  .panel:hover::before{opacity:1}
+  .tag{display:block;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:12px}
+  .panel h2{font-family:var(--display);font-weight:400;font-size:1.9rem;letter-spacing:-.035em;line-height:1.05;margin:0 0 8px}
+  .panel h2 .dim{color:var(--dim)}
+  .panel .lede{color:var(--muted);font-size:.9rem;margin:0 0 22px}
+  @media (max-width:720px){.panel{padding:22px 18px;border-radius:22px}.keychip{width:auto;flex:1;max-width:220px}}
+
+  label.field{display:flex;flex-direction:column;gap:8px;font-weight:500;font-size:.84rem;color:#D5DFD2}
+  label.field small{order:3;font-weight:400;color:var(--faint);font-size:.76rem;line-height:1.4}
+  label.field > input,label.field > select,label.field > textarea{order:2}
+  input[type=text],input[type=password],input[type=number],select,textarea{
+    font:inherit;font-weight:400;font-size:.93rem;color:var(--text);background:rgba(255,255,255,.035);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;width:100%;
+    transition:border-color .25s,box-shadow .25s,background .25s}
+  input::placeholder,textarea::placeholder{color:#56654f}
+  select{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237CFF2E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 16px center}
+  select option{background:#0c170c}
+  textarea{resize:vertical;line-height:1.6}
+  input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--line-lime);background:rgba(124,255,46,.04);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+  #idea{min-height:150px;font-size:1.05rem;padding:18px 20px}
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:18px;align-items:start}
+  .check{display:flex;gap:10px;align-items:center;font-size:.88rem;color:#D5DFD2;padding-top:30px}
+  .check input{accent-color:var(--lime);width:16px;height:16px}
+
+  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:20px}
+  button{font:inherit;font-weight:500;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:11px 20px;
+    border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:var(--text);transition:transform .45s var(--spring),border-color .25s,background .25s,box-shadow .3s}
+  button:hover:not(:disabled){border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.08)}
+  button:active:not(:disabled){transform:scale(.96);transition-duration:.12s}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+  button.primary{background:#F1F6EE;color:#08120A;border-color:#F1F6EE;padding:6px 6px 6px 22px;font-weight:600}
+  button.primary::after{content:"";width:34px;height:34px;border-radius:50%;flex:none;
+    background:var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath d='M7 17L17 7M9 7h8v8' fill='none' stroke='%2308120A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+    box-shadow:0 0 16px #7CFF2E88;transition:transform .5s var(--spring)}
+  button.primary:hover:not(:disabled){background:#fff;border-color:#fff;box-shadow:0 12px 34px -12px #7CFF2E88}
+  button.primary:hover:not(:disabled)::after{transform:rotate(45deg)}
+  button.small{padding:6px 13px;font-size:.78rem}
+  .status{font-size:.86rem;color:var(--muted);min-height:1.4em;margin:12px 0 0}
+  .status.err{color:var(--red)} .status.ok{color:var(--ok)}
+  .progress{height:2px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:18px}
+  .progress span{display:block;height:100%;width:0;background:var(--lime);box-shadow:0 0 12px var(--lime);transition:width .4s var(--ease)}
+  .stage{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:10px;min-height:1.2em}
+
+  .conn{display:flex;align-items:center;gap:10px;font-size:.86rem;margin:4px 0 16px}
+  .dotc{width:9px;height:9px;border-radius:50%;background:#56654f;flex:none}
+  .dotc.ok{background:var(--lime);box-shadow:0 0 10px var(--lime)}
+  .dotc.bad{background:var(--red);box-shadow:0 0 10px var(--red)}
+  .dotc.wait{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+  .gpu{font-family:var(--mono);font-size:.72rem;color:var(--faint);margin:6px 0 0}
+  details{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+  summary{cursor:pointer;font-size:.88rem;color:var(--text);list-style:none;display:flex;align-items:center;gap:8px}
+  summary::before{content:"+";font-family:var(--mono);color:var(--lime);width:14px}
+  details[open] summary::before{content:"−"}
+  details ol{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:.84rem}
+  details li{margin-bottom:8px}
+  code{font-family:var(--mono);font-size:.8em;color:var(--lime-2);background:rgba(124,255,46,.08);padding:1px 6px;border-radius:6px}
+
+  .results{margin-top:28px}
+  .results h2{font-family:var(--display);font-weight:400;font-size:1.9rem;letter-spacing:-.035em;margin:0 0 4px}
+  .results .lede{color:var(--muted);font-size:.88rem;margin:0 0 18px}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .job{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:22px;padding:8px 8px 14px;transition:transform .6s var(--ease),border-color .4s,box-shadow .6s var(--ease)}
+  .job:hover{transform:translateY(-4px);border-color:var(--line-lime);box-shadow:0 24px 50px -24px #000,0 0 40px -18px #7CFF2E88}
+  .media{aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#0b140b;display:grid;place-items:center;position:relative}
+  .media video,.media img{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+  .media .msg{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:center;padding:12px}
+  .job.running .media,.job.queued .media{background:linear-gradient(100deg,#0b140b 30%,#173a12 50%,#0b140b 70%) 0 0/250% 100%}
+  .job.error .media .msg{color:var(--red)}
+  .job .meta{display:flex;align-items:center;gap:8px;margin:12px 8px 0;font-size:.74rem;color:var(--faint);font-family:var(--mono)}
+  .job .meta .st{flex:1}
+  .job.done .meta .st{color:var(--ok)}
+  .job .idea{margin:6px 8px 0;font-size:.86rem;color:#D5DFD2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .job .dl{display:inline-flex;gap:6px;flex-wrap:wrap;margin:10px 8px 0}
+  .job .dl a{font-size:.76rem;text-decoration:none;padding:6px 12px;border-radius:999px;border:1px solid var(--line-2);color:var(--text)}
+  .job .dl a:hover{border-color:var(--lime);color:#fff}
+  .empty{color:var(--faint);padding:26px;border:1px dashed var(--line-2);border-radius:18px;text-align:center;font-size:.9rem}
+  .notice{padding:26px;border-radius:22px;border:1px dashed var(--line-2);color:var(--muted);text-align:center}
+
+  @media (prefers-reduced-motion:no-preference){
+    .beam{animation:beam 7s ease-in-out infinite}
+    @keyframes beam{50%{opacity:.7;transform:translateX(-50%) scaleX(1.25)}}
+    .js-anim .rv{opacity:0;transform:translateY(28px);filter:blur(12px)}
+    .js-anim body.go .rv{opacity:1;transform:none;filter:none;transition:opacity 1.1s var(--ease),transform 1.3s var(--ease),filter 1.1s var(--ease);transition-delay:calc(var(--d,0) * 1ms)}
+    .job{animation:pop .8s var(--ease) backwards}
+    @keyframes pop{from{opacity:0;transform:translateY(16px) scale(.97);filter:blur(8px)}}
+    .job.running .media,.job.queued .media{animation:shimmer 1.6s linear infinite}
+    @keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+    .job.done .media video,.job.done .media img{animation:reveal 1s var(--ease)}
+    @keyframes reveal{from{opacity:0;filter:blur(14px) brightness(1.6);transform:scale(1.06)}}
+    .status:not(:empty){animation:fade .5s var(--ease)} @keyframes fade{from{opacity:0;transform:translateY(6px)}}
+    .dotc.wait{animation:blink 1s ease-in-out infinite} @keyframes blink{50%{opacity:.35}}
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="beam"></i></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <a class="logo" href="/" aria-label="Craftush dashboard">
+        <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6FF9E"/><stop offset="1" stop-color="#7CFF2E"/></linearGradient></defs>
+          <path d="M13 2c1 7.5 4.5 11 12 12-7.5 1-11 4.5-12 12-1-7.5-4.5-11-12-12 7.5-1 11-4.5 12-12z" fill="url(#lg)"/>
+          <path d="M25 1c.4 2.6 1.4 3.6 4 4-2.6.4-3.6 1.4-4 4-.4-2.6-1.4-3.6-4-4 2.6-.4 3.6-1.4 4-4z" fill="#7CFF2E"/>
+        </svg>
+        Craftush
+      </a>
+      <a class="back" href="/"><span aria-hidden="true">←</span> All tools</a>
+    </div>
+    <label class="keychip" id="codeChip" hidden title="Your admin gives you this code. It's remembered on this computer.">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="#0A1A05" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="#0A1A05" stroke-width="2" stroke-linecap="round"/></svg>
+      <div><small>Team access code · remembered here</small><input type="password" id="teamCode" autocomplete="off" placeholder="Enter your team code"></div>
+    </label>
+  </header>
+
+  <section class="intro">
+    <span class="eyebrow rv" style="--d:0">Idea to video</span>
+    <h1><span class="rv" style="--d:100;display:inline-block">Turn an idea</span> <span class="dim rv" style="--d:200;display:inline-block">into a video.</span></h1>
+    <p class="rv" style="--d:320">Describe what you want to see. Your team's ComfyUI workflow does the rest, and the finished video appears below.</p>
+  </section>
+
+  <div id="notice" class="notice" hidden></div>
+
+  <div class="grid rv" style="--d:420" id="app">
+    <section class="panel" aria-labelledby="hCreate">
+      <span class="tag">Create</span>
+      <h2 id="hCreate">Describe your <span class="dim">idea.</span></h2>
+      <p class="lede">Be specific about the subject, setting, movement and mood.</p>
+      <label class="field"><span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Idea</span>
+        <textarea id="idea" placeholder="e.g. A red fox walking through a neon-lit Tokyo alley in the rain, slow camera push-in, cinematic"></textarea>
+      </label>
+      <div class="fields" id="fields"></div>
+      <div class="bar">
+        <button class="primary" id="genBtn">Generate video</button>
+        <button id="stopBtn" disabled>Stop</button>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+      <p class="stage" id="stage"></p>
+      <p class="status" id="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="hConn">
+      <span class="tag">Connection</span>
+      <h2 id="hConn">ComfyUI <span class="dim">engine.</span></h2>
+      <p class="lede">Where your ComfyUI is running. Your admin sets the default.</p>
+      <div class="conn"><span class="dotc" id="connDot"></span><span id="connText">Not checked yet</span></div>
+      <label class="field">ComfyUI address
+        <input type="text" id="server" spellcheck="false" autocomplete="off" placeholder="http://127.0.0.1:8000">
+        <small>Saved on this computer only. <a href="#" id="resetServer">Use the admin default</a></small>
+      </label>
+      <p class="gpu" id="gpu"></p>
+      <div class="bar"><button id="testBtn">Test connection</button></div>
+      <details>
+        <summary>Setting up ComfyUI Desktop</summary>
+        <ol>
+          <li>Open ComfyUI Desktop and keep it running while you work. The workflow's models must be installed on it.</li>
+          <li>In ComfyUI, open <b>Settings</b> and find <b>Server-Config</b>. Set <b>Enable CORS header</b> to <code>https://craftush.netlify.app</code> (or <code>*</code>), then restart ComfyUI.</li>
+          <li>Use the address <code>http://127.0.0.1:8000</code> for ComfyUI Desktop, or <code>http://127.0.0.1:8188</code> for the portable version.</li>
+          <li>Use Chrome or Edge. If the browser asks to access devices on your local network, click <b>Allow</b>.</li>
+        </ol>
+      </details>
+    </section>
+  </div>
+
+  <section class="results" aria-labelledby="hRes">
+    <h2 id="hRes">Your videos</h2>
+    <p class="lede">Videos stay here while this page is open. Download the ones you want to keep.</p>
+    <div class="gallery" id="gallery"><div class="empty">Nothing yet. Describe an idea and press Generate video.</div></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const S = { cfg: null, clientId: uuid(), ws: null, jobs: [], active: null };
+
+  function setStatus(msg, kind = ''){ const el = $('#status'); el.textContent = msg; el.className = 'status ' + kind; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
+  const code = () => $('#teamCode').value.trim();
+  try { const saved = localStorage.getItem('craftush-team-code'); if (saved) $('#teamCode').value = saved; } catch {}
+  $('#teamCode').addEventListener('input', () => { try { localStorage.setItem('craftush-team-code', code()); } catch {} });
+  $('#teamCode').addEventListener('change', loadConfig);
+
+  // ---------- configuration from the admin ----------
+  async function loadConfig(){
+    let r, j;
+    try { r = await fetch('/api/tools?view=comfy', { headers: { 'x-team-code': code() }, cache: 'no-store' }); j = await r.json(); }
+    catch { return notice('This page only works on craftush.netlify.app.'); }
+    if (r.status === 401){ $('#codeChip').hidden = false; $('#teamCode').focus(); return notice('Enter your team access code at the top of the page.'); }
+    if (!r.ok) return notice((j.errors && j.errors[0] && j.errors[0].message) || 'Idea to Video isn’t available right now.');
+    $('#codeChip').hidden = !code();
+    S.cfg = j; $('#notice').hidden = true; $('#app').hidden = false;
+    let local = ''; try { local = localStorage.getItem('craftush-comfy-server') || ''; } catch {}
+    $('#server').value = local || j.server;
+    renderFields();
+    testConnection(true);
+  }
+  function notice(msg){ const n = $('#notice'); n.textContent = msg; n.hidden = false; $('#genBtn').disabled = true; }
+
+  function renderFields(){
+    const box = $('#fields');
+    box.innerHTML = (S.cfg.exposed || []).map((f, i) => {
+      const label = esc(f.label || `${f.title} · ${f.input}`);
+      if (f.type === 'bool') return `<label class="check"><input type="checkbox" data-i="${i}" ${f.value ? 'checked' : ''}> ${label}</label>`;
+      if (f.type === 'number') return `<label class="field">${label}<input type="number" data-i="${i}" value="${esc(f.value)}" step="any"></label>`;
+      return `<label class="field">${label}<input type="text" data-i="${i}" value="${esc(f.value)}"></label>`;
+    }).join('');
+  }
+
+  // ---------- connection ----------
+  const server = () => $('#server').value.trim().replace(/\/+$/, '');
+  $('#server').addEventListener('change', () => { try { localStorage.setItem('craftush-comfy-server', server()); } catch {} testConnection(); S.ws && S.ws.close(); S.ws = null; });
+  $('#resetServer').addEventListener('click', e => { e.preventDefault(); if (!S.cfg) return; $('#server').value = S.cfg.server; try { localStorage.removeItem('craftush-comfy-server'); } catch {} testConnection(); });
+  $('#testBtn').addEventListener('click', () => testConnection());
+  function conn(state, text){ $('#connDot').className = 'dotc ' + state; $('#connText').textContent = text; }
+  async function testConnection(quiet){
+    conn('wait', 'Checking…'); $('#gpu').textContent = '';
+    try {
+      const r = await fetch(server() + '/system_stats', { cache: 'no-store' });
+      const j = await r.json();
+      const dev = (j.devices || [])[0];
+      conn('ok', 'Connected to ComfyUI' + (j.system && j.system.comfyui_version ? ' ' + j.system.comfyui_version : ''));
+      if (dev) $('#gpu').textContent = `${dev.name || dev.type}${dev.vram_total ? ' · ' + (dev.vram_total / 1073741824).toFixed(0) + ' GB VRAM' : ''}`;
+      return true;
+    } catch {
+      conn('bad', 'Can’t reach ComfyUI at this address');
+      if (!quiet) setStatus('ComfyUI didn’t answer. Make sure it’s running and CORS is enabled (see “Setting up ComfyUI Desktop”).', 'err');
+      return false;
+    }
+  }
+
+  // ---------- live updates from ComfyUI ----------
+  function socket(){
+    if (S.ws && S.ws.readyState <= 1) return;
+    try {
+      const ws = new WebSocket(server().replace(/^http/i, 'ws') + '/ws?clientId=' + encodeURIComponent(S.clientId));
+      ws.onmessage = e => { if (typeof e.data === 'string') { try { onEvent(JSON.parse(e.data)); } catch {} } };
+      ws.onclose = () => { if (S.ws === ws) S.ws = null; };
+      S.ws = ws;
+    } catch { S.ws = null; }
+  }
+  const nodeTitle = id => { const n = S.cfg && S.cfg.workflow[id]; return n ? ((n._meta && n._meta.title) || n.class_type) : ''; };
+  function onEvent(m){
+    const d = m.data || {}, job = S.jobs.find(j => j.id && j.id === d.prompt_id);
+    if (m.type === 'status' && S.active && S.active.status === 'queued'){
+      const left = d.status && d.status.exec_info && d.status.exec_info.queue_remaining;
+      if (left > 1) stage(`In the queue · ${left - 1} ahead`);
+    }
+    if (!job) return;
+    if (m.type === 'execution_start'){ job.status = 'running'; stage('Starting…'); renderJobs(); }
+    if (m.type === 'executing' && d.node){ job.status = 'running'; job.node = d.node; stage(nodeTitle(d.node) || 'Working…'); }
+    if (m.type === 'progress'){ job.status = 'running'; const p = d.max ? d.value / d.max : 0; $('#bar').style.width = (p * 100).toFixed(1) + '%'; stage(`${nodeTitle(d.node) || 'Working'} · ${d.value}/${d.max}`); }
+    if (m.type === 'execution_error'){ finish(job, 'error', d.exception_message ? `${d.node_type || 'A node'} failed: ${d.exception_message}` : 'ComfyUI reported an error.'); }
+    if (m.type === 'execution_interrupted'){ finish(job, 'error', 'Stopped.'); }
+    if (m.type === 'execution_success' || (m.type === 'executing' && d.node === null)) collect(job);
+  }
+
+  // ---------- generate ----------
+  function setInput(wf, key, value){
+    const i = key.indexOf('.'), node = key.slice(0, i), input = key.slice(i + 1);
+    if (wf[node] && wf[node].inputs) wf[node].inputs[input] = value;
+  }
+  function buildPrompt(idea){
+    const wf = JSON.parse(JSON.stringify(S.cfg.workflow));
+    setInput(wf, S.cfg.promptKey, idea);
+    const exposedKeys = new Set();
+    document.querySelectorAll('#fields [data-i]').forEach(el => {
+      const f = S.cfg.exposed[+el.dataset.i]; exposedKeys.add(f.key);
+      const v = f.type === 'bool' ? el.checked : f.type === 'number' ? Number(el.value) : el.value;
+      setInput(wf, f.key, v);
+    });
+    if (S.cfg.randomSeed){
+      for (const [id, n] of Object.entries(wf)){
+        if (!n || !n.inputs) continue;
+        for (const k of ['seed', 'noise_seed']){
+          if (typeof n.inputs[k] === 'number' && !exposedKeys.has(id + '.' + k)) n.inputs[k] = Math.floor(Math.random() * 1e15);
+        }
+      }
+    }
+    return wf;
+  }
+  function comfyError(j){
+    const parts = [];
+    if (j.error) parts.push(j.error.message || String(j.error));
+    for (const [id, ne] of Object.entries(j.node_errors || {})){
+      const first = (ne.errors || [])[0];
+      if (first) parts.push(`${(ne.class_type || nodeTitle(id) || 'Node ' + id)}: ${first.message}${first.details ? ' (' + first.details + ')' : ''}`);
+    }
+    return parts.join(' · ') || 'ComfyUI rejected the workflow.';
+  }
+  $('#genBtn').addEventListener('click', async () => {
+    const idea = $('#idea').value.trim();
+    if (!S.cfg) return;
+    if (!idea){ setStatus('Describe your idea first.', 'err'); $('#idea').focus(); return; }
+    if (!(await testConnection(true))){ setStatus('ComfyUI didn’t answer. Make sure it’s running and CORS is enabled (see “Setting up ComfyUI Desktop”).', 'err'); return; }
+    socket();
+    const job = { id: null, idea, status: 'queued', files: [], started: Date.now(), server: server() };
+    S.jobs.unshift(job); S.active = job; renderJobs();
+    $('#genBtn').disabled = true; $('#stopBtn').disabled = false; $('#bar').style.width = '0'; stage('Sending to ComfyUI…'); setStatus('');
+    try {
+      const r = await fetch(server() + '/prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: buildPrompt(idea), client_id: S.clientId }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.prompt_id) return finish(job, 'error', comfyError(j));
+      job.id = j.prompt_id; stage('Waiting in the queue…'); renderJobs();
+      poll(job);
+    } catch { finish(job, 'error', 'Couldn’t send the job to ComfyUI.'); }
+  });
+  $('#stopBtn').addEventListener('click', async () => {
+    const job = S.active; if (!job) return;
+    try {
+      if (job.status === 'queued' && job.id) await fetch(server() + '/queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ delete: [job.id] }) });
+      await fetch(server() + '/interrupt', { method: 'POST' });
+    } catch {}
+    finish(job, 'error', 'Stopped.');
+  });
+
+  // Fallback for when live updates can't connect: ask ComfyUI's history every few seconds.
+  async function poll(job){
+    while (job.status === 'queued' || job.status === 'running'){
+      await new Promise(r => setTimeout(r, 2500));
+      if (job.status !== 'queued' && job.status !== 'running') return;
+      try {
+        const r = await fetch(job.server + '/history/' + encodeURIComponent(job.id), { cache: 'no-store' });
+        const h = await r.json(); const entry = h[job.id];
+        if (entry){ return applyHistory(job, entry); }
+      } catch {}
+    }
+  }
+  async function collect(job){
+    if (job.status === 'done' || job.status === 'error') return;
+    try {
+      const r = await fetch(job.server + '/history/' + encodeURIComponent(job.id), { cache: 'no-store' });
+      const h = await r.json(); if (h[job.id]) applyHistory(job, h[job.id]);
+    } catch {}
+  }
+  function applyHistory(job, entry){
+    if (job.status === 'done' || job.status === 'error') return;
+    const st = entry.status || {};
+    if (st.status_str === 'error'){
+      const msg = (st.messages || []).find(m => m[0] === 'execution_error');
+      return finish(job, 'error', msg ? `${msg[1].node_type || 'A node'} failed: ${msg[1].exception_message}` : 'ComfyUI reported an error.');
+    }
+    const files = [];
+    for (const out of Object.values(entry.outputs || {})){
+      for (const list of Object.values(out || {})){
+        if (!Array.isArray(list)) continue;
+        for (const f of list) if (f && f.filename) files.push(f);
+      }
+    }
+    const keep = files.filter(f => f.type === 'output');
+    job.files = (keep.length ? keep : files).map(f => ({
+      name: f.filename,
+      url: `${job.server}/view?filename=${encodeURIComponent(f.filename)}&subfolder=${encodeURIComponent(f.subfolder || '')}&type=${encodeURIComponent(f.type || 'output')}`,
+      video: /\.(mp4|webm|mov|mkv|m4v)$/i.test(f.filename),
+    }));
+    finish(job, 'done', job.files.length ? '' : 'Finished, but the workflow didn’t save any files. Check that it ends with a Save or Video Combine node.');
+  }
+  function finish(job, status, msg){
+    if (job.status === 'done' || job.status === 'error') return;
+    job.status = status; job.msg = msg || ''; job.ended = Date.now();
+    if (S.active === job){
+      S.active = null; $('#genBtn').disabled = false; $('#stopBtn').disabled = true;
+      $('#bar').style.width = status === 'done' ? '100%' : '0'; stage('');
+      if (status === 'done') setStatus(job.files.length ? `Done in ${Math.round((job.ended - job.started) / 1000)} s.` : job.msg, job.files.length ? 'ok' : 'err');
+      else setStatus(job.msg, 'err');
+    }
+    renderJobs();
+  }
+  const stage = t => { $('#stage').textContent = t; };
+
+  function renderJobs(){
+    const g = $('#gallery');
+    if (!S.jobs.length){ g.innerHTML = '<div class="empty">Nothing yet. Describe an idea and press Generate video.</div>'; return; }
+    g.innerHTML = S.jobs.map(j => {
+      const main = j.files.find(f => f.video) || j.files[0];
+      const media = j.status === 'done' && main
+        ? (main.video ? `<video src="${esc(main.url)}" controls loop muted playsinline></video>` : `<img src="${esc(main.url)}" alt="Result for: ${esc(j.idea)}">`)
+        : `<div class="msg">${esc(j.status === 'error' ? j.msg : j.status === 'queued' ? 'Waiting in the queue…' : j.status === 'running' ? 'Rendering…' : j.msg)}</div>`;
+      const label = { queued: 'Queued', running: 'Rendering', done: 'Ready', error: 'Failed' }[j.status];
+      const links = j.status === 'done' ? j.files.map(f => `<a href="${esc(f.url)}" download="${esc(f.name)}" target="_blank" rel="noopener">Download ${esc(f.name)}</a>`).join('') : '';
+      return `<article class="job ${j.status}"><div class="media">${media}</div>
+        <div class="meta"><span class="st">${label}</span><span>${new Date(j.started).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>
+        <p class="idea">${esc(j.idea)}</p>${links ? `<div class="dl">${links}</div>` : ''}</article>`;
+    }).join('');
+  }
+
+  // cursor glow
+  document.addEventListener('pointermove', e => {
+    const p = e.target.closest && e.target.closest('.panel'); if (!p) return;
+    const r = p.getBoundingClientRect(); p.style.setProperty('--mx', (e.clientX - r.left) + 'px'); p.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }, { passive: true });
+
+  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('go')));
+  loadConfig();
+})();
+</script>
+</body>
+</html>

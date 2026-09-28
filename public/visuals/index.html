@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Craftush · Stunning Visuals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js-anim")</script>
+<style>
+  :root{
+    --bg:#040804;
+    --bg-2:#07110a;
+    --glass:rgba(12,24,13,.58);
+    --glass-2:rgba(255,255,255,.035);
+    --line:rgba(255,255,255,.08);
+    --line-2:rgba(255,255,255,.13);
+    --line-lime:rgba(124,255,46,.22);
+    --text:#EEF5EC;
+    --muted:#8E9E8B;
+    --faint:#6E7E6C;
+    --dim:rgba(238,245,236,.36);
+    --lime:#7CFF2E;
+    --lime-2:#B4FF6A;
+    --lime-deep:#2DBE1B;
+    --red:#FF7A6E;
+    --ok:#95FF5E;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --display:"Inter Tight","Inter",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;color-scheme:dark}
+  body{margin:0;min-height:100vh;position:relative;overflow-x:hidden}
+  [hidden]{display:none !important}
+  ::selection{background:#7CFF2E55;color:#fff}
+  a{color:var(--lime-2)}
+
+  /* ---------- ambient background ---------- */
+  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+    background:
+      radial-gradient(1100px 620px at 50% -12%,#1d6e17 0%,#0c2f0c 38%,transparent 72%),
+      radial-gradient(900px 700px at 100% 110%,#0b2a0b 0%,transparent 70%),
+      var(--bg)}
+  .bg::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1.2px);background-size:26px 26px;
+    mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 75%)}
+  .beam{position:absolute;left:62%;top:-10%;width:180px;height:95vh;transform:translateX(-50%);
+    background:linear-gradient(180deg,rgba(124,255,46,0) 0%,rgba(124,255,46,.28) 45%,rgba(180,255,106,.55) 88%,rgba(124,255,46,0) 100%);
+    filter:blur(38px);opacity:.55;border-radius:50%}
+  .beam::after{content:"";position:absolute;left:50%;top:0;bottom:8%;width:3px;transform:translateX(-50%);
+    background:linear-gradient(180deg,transparent,rgba(210,255,170,.9) 70%,transparent);filter:blur(1.5px)}
+
+  .wrap{max-width:1220px;margin:0 auto;padding:22px 28px 140px}
+
+  /* ---------- top bar ---------- */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;height:52px;margin-bottom:10px}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--display);font-weight:600;font-size:1.25rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+  .logo svg{filter:drop-shadow(0 0 10px #7CFF2E88)}
+  .brand{display:flex;align-items:center;gap:14px}
+  .back{font-size:.8rem;color:var(--muted);text-decoration:none;padding:7px 13px;border-radius:999px;border:1px solid var(--line);transition:color .25s,border-color .25s,background .25s}
+  .back:hover{color:var(--text);border-color:var(--line-2);background:rgba(255,255,255,.05)}
+
+  /* team code pill (top right) */
+  .keychip{display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 16px;border-radius:999px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line-2);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    width:300px;transition:border-color .3s,box-shadow .3s}
+  .keychip div{display:flex;flex-direction:column;flex:1;min-width:0}
+  .keychip small{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);opacity:.85}
+  .keychip input{border:none !important;padding:0 !important;background:transparent !important;box-shadow:none !important;font-size:.88rem !important;height:20px}
+  .keychip input:focus-visible{outline:none}
+  .keychip svg{flex:none;width:30px;height:30px;padding:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px #7CFF2E99}
+  .keychip svg *{stroke:#0A1A05}
+  .keychip:focus-within{border-color:var(--line-lime);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;min-height:min(62vh,560px);margin:0 0 26px}
+  .hero-copy{position:relative;z-index:2}
+  .eyebrow{display:inline-block;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:22px}
+  .eyebrow::before{content:"[ ";opacity:.7}
+  .eyebrow::after{content:" ]";opacity:.7}
+  .hero h1{font-family:var(--display);font-weight:400;font-size:clamp(2.5rem,5.4vw,4.9rem);line-height:.98;letter-spacing:-.045em;margin:0 0 26px}
+  .hero h1 .ln{display:block}
+  .hero h1 .yl{color:var(--dim)}
+  .hero p{font-size:.98rem;color:var(--muted);margin:0;max-width:44ch;line-height:1.6}
+  .orb-wrap{position:absolute;right:-4%;top:50%;width:min(58vw,640px);aspect-ratio:1;transform:translateY(-50%);z-index:1;pointer-events:none}
+  #orb{width:100%;height:100%;display:block}
+  .orb-wrap::before{content:"";position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle,#2cc21a55,transparent 65%);filter:blur(30px)}
+  .scroll-hint{position:relative;grid-column:1;margin-top:30px;font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:8px;z-index:2}
+  .scroll-hint i{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;min-height:0;padding:10px 0 0}
+    .orb-wrap{position:relative;right:auto;top:auto;transform:none;width:100%;max-width:420px;margin:-10px auto -30px}
+    .scroll-hint{display:none}
+  }
+
+  /* ---------- app panels ---------- */
+  .app{position:relative}
+  .app-body{display:grid;gap:20px}
+  .step{position:relative;overflow:hidden;background:var(--glass);border:1px solid var(--line);border-radius:28px;padding:40px 40px 36px;
+    backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);min-width:0;
+    box-shadow:0 40px 90px -40px #000,inset 0 1px 0 rgba(255,255,255,.05)}
+  .step::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .4s;
+    background:radial-gradient(520px circle at var(--mx,50%) var(--my,0%),rgba(124,255,46,.09),transparent 60%)}
+  .step:hover::before{opacity:1}
+  .step::after{content:"";position:absolute;left:50%;top:-1px;width:46%;height:1px;transform:translateX(-50%);
+    background:linear-gradient(90deg,transparent,rgba(180,255,106,.7),transparent)}
+  .step-tag{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:14px}
+  .step h2{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.04;letter-spacing:-.04em;margin:0 0 12px;max-width:22ch}
+  .step h2 .dim{color:var(--dim)}
+  .step .lede{color:var(--muted);font-size:.94rem;margin:0 0 30px;max-width:62ch}
+  .sub{margin-top:34px;padding-top:28px;border-top:1px solid var(--line)}
+  .sub-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+  .sub-head h3{font-family:var(--display);font-weight:400;font-size:1.6rem;letter-spacing:-.03em;margin:0 0 4px}
+  .sub-head p{color:var(--muted);font-size:.86rem;margin:0}
+  .sub-actions{display:flex;align-items:center;gap:14px}
+  .step-foot{display:flex;justify-content:flex-end;margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+  @media (max-width:720px){
+    .step{padding:26px 20px 24px;border-radius:22px}
+    .keychip{width:auto;flex:1;max-width:240px}
+  }
+
+  /* ---------- fields ---------- */
+  label.field{display:flex;flex-direction:column;gap:8px;font-weight:500;font-size:.84rem;color:#D5DFD2}
+  label.field small{order:3;font-weight:400;color:var(--faint);font-size:.76rem;line-height:1.4}
+  input[type=text],input[type=password],input[type=number],select,textarea{
+    font:inherit;font-weight:400;font-size:.93rem;color:var(--text);background:rgba(255,255,255,.035);
+    border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;width:100%;
+    transition:border-color .25s,box-shadow .25s,background .25s}
+  input::placeholder,textarea::placeholder{color:#56654f}
+  input:hover,select:hover,textarea:hover{border-color:rgba(255,255,255,.2)}
+  select{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237CFF2E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 16px center}
+  select option{background:#0c170c;color:var(--text)}
+  select:disabled,input:disabled{opacity:.4;cursor:not-allowed}
+  textarea{resize:vertical;line-height:1.6}
+  input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--line-lime);background:rgba(124,255,46,.04);box-shadow:0 0 0 4px rgba(124,255,46,.12)}
+  button:focus-visible,.drop:focus-within,.chip:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+
+  .count-range{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;color:var(--muted)}
+  .count-range input{width:74px;padding:10px 12px;border-radius:999px;text-align:center}
+  .split-mode select{width:auto;min-width:230px;border-radius:999px;padding:11px 42px 11px 18px}
+  .row .sent .dur{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:.66rem;color:var(--lime);opacity:.75;white-space:nowrap}
+  .script-box{position:relative}
+  #script{min-height:220px;font-size:1rem;padding:18px 20px 36px}
+  #scriptMeta{position:absolute;right:16px;bottom:12px;font-family:var(--mono);font-size:.7rem;color:var(--faint);pointer-events:none;margin:0}
+
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:22px}
+  label.field > input,label.field > select,label.field > textarea{order:2}
+  .fields{align-items:start}
+  .fields .wide{grid-column:1/-1}
+  .fields .span2{grid-column:span 2}
+  @media (max-width:720px){.fields .span2{grid-column:1/-1}}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;color:#D5DFD2}
+  .check input{margin-top:3px;accent-color:var(--lime);width:16px;height:16px}
+
+  /* ---------- buttons ---------- */
+  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:18px 0 0}
+  button{font:inherit;font-weight:500;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:9px;
+    border-radius:999px;padding:11px 20px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:var(--text);
+    transition:transform .45s var(--spring),border-color .25s,background .25s,box-shadow .3s,color .25s}
+  button:hover:not(:disabled){border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.08)}
+  button:active:not(:disabled){transform:scale(.96);transition-duration:.12s}
+  button:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+  button.primary,button.next{background:#F1F6EE;color:#08120A;border-color:#F1F6EE;padding:6px 6px 6px 20px;font-weight:600}
+  button.primary > svg,button.next > svg{display:none}
+  button.primary::after,button.next::after{content:"";width:32px;height:32px;border-radius:50%;flex:none;
+    background:var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath d='M7 17L17 7M9 7h8v8' fill='none' stroke='%2308120A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+    box-shadow:0 0 16px #7CFF2E88;transition:transform .5s var(--spring)}
+  button.primary:hover:not(:disabled),button.next:hover:not(:disabled){background:#fff;border-color:#fff;box-shadow:0 12px 34px -12px #7CFF2E88}
+  button.primary:hover:not(:disabled)::after,button.next:hover:not(:disabled)::after{transform:rotate(45deg)}
+  button.next{background:transparent;color:var(--text);border-color:var(--line-lime)}
+  button.next:hover:not(:disabled){background:rgba(124,255,46,.08);border-color:var(--lime);color:#fff}
+  button.small{padding:6px 13px;font-size:.78rem;min-height:32px}
+  .status{font-size:.86rem;color:var(--muted);min-height:1.4em;margin:12px 0 0}
+  .bar .status{margin:0 0 0 6px}
+  .status.err{color:var(--red)}
+  .status.ok{color:var(--ok)}
+  .meta{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+  .cost{display:block;white-space:normal;margin:14px 0 0;max-width:80ch;font-size:.82rem}
+  #genMeta:not(:empty)::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+
+  /* ---------- prompt rows ---------- */
+  .rows{list-style:none;margin:22px 0 0;padding:8px;display:grid;gap:8px;max-height:min(62vh,640px);overflow:auto;
+    border:1px solid var(--line);border-radius:20px;background:rgba(0,0,0,.25);overscroll-behavior:contain;scrollbar-color:#2a3a28 transparent}
+  .rows:has(.empty){border:none;padding:0;background:none;max-height:none}
+  .row{display:grid;grid-template-columns:62px minmax(0,2fr) minmax(0,3fr);gap:16px;align-items:start;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);transition:border-color .3s,background .3s}
+  .row:hover{border-color:var(--line-2);background:rgba(255,255,255,.04)}
+  @media (max-width:760px){.row{grid-template-columns:54px 1fr}.row-right{grid-column:2}}
+  .row .num{font-family:var(--mono);font-size:.72rem;color:var(--lime);padding-top:6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .row .num::before{content:"[ ";opacity:.6}
+  .row .num::after{content:" ]";opacity:.6}
+  .row .sent{margin:4px 0 10px;font-size:.92rem;line-height:1.45;color:var(--text)}
+  .row textarea{font-size:.83rem;color:#C7D3C4;min-height:88px;background:rgba(0,0,0,.25)}
+  .row-actions{display:flex;flex-wrap:wrap;gap:6px}
+  .empty{color:var(--faint);padding:26px;margin:0;border:1px dashed var(--line-2);border-radius:18px;text-align:center}
+
+  /* ---------- image cards ---------- */
+  .sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:22px}
+  .frame{position:relative;margin:0;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:20px;padding:7px 7px 12px;min-width:0;
+    transition:transform .6s var(--ease),border-color .4s,box-shadow .6s var(--ease)}
+  .frame:hover{transform:translateY(-4px);border-color:var(--line-lime);box-shadow:0 24px 50px -24px #000,0 0 40px -18px #7CFF2E88}
+  .s-done{border-color:rgba(124,255,46,.14)}
+  .shot{background:#0b140b;border-radius:14px;display:grid;place-items:center;overflow:hidden}
+  .shot img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;transition:transform .6s var(--ease)}
+  .shot img:hover{transform:scale(1.05)}
+  .shot-msg{font-size:.76rem;color:var(--faint);padding:10px;text-align:center}
+  .s-loading .shot-msg{color:var(--lime);font-family:var(--mono);font-size:.7rem;letter-spacing:.06em}
+  .s-error .shot-msg{color:var(--red)}
+  .frame figcaption{display:flex;align-items:center;gap:8px;margin:10px 6px 0;min-width:0}
+  .fnum{font-family:var(--mono);font-size:.78rem;color:var(--text);font-variant-numeric:tabular-nums}
+  .fstate{font-size:.7rem;color:var(--faint);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .s-done .fstate{color:var(--ok)}
+  .s-idle .fstate,.s-loading .fstate{visibility:hidden}
+  .s-error .fstate{color:var(--red)}
+  .frame .regen{padding:4px 11px;font-size:.72rem;flex:none}
+  .fsent{font-size:.74rem;line-height:1.4;color:var(--faint);margin:6px 6px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  .progress{height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:visible;margin-top:22px}
+  .progress span{display:block;height:100%;width:0;background:var(--lime);box-shadow:0 0 12px var(--lime),0 0 2px var(--lime-2);transition:width .5s var(--ease)}
+
+  /* ---------- srt drop ---------- */
+  .drop{position:relative;display:flex;align-items:center;gap:18px;border:1px dashed var(--line-lime);border-radius:20px;
+    padding:26px;background:rgba(124,255,46,.03);cursor:pointer;margin-bottom:26px;transition:border-color .3s,background .3s,box-shadow .3s}
+  .drop:hover{border-color:rgba(124,255,46,.45);background:rgba(124,255,46,.05)}
+  .drop.over{border-color:var(--lime);background:rgba(124,255,46,.08);box-shadow:0 0 40px -10px #7CFF2E88 inset}
+  .drop input{position:absolute;opacity:0;width:1px;height:1px}
+  .drop svg{flex:none}
+  .drop svg path:first-child{fill:rgba(124,255,46,.08);stroke:var(--lime)}
+  .drop svg path:nth-child(2){stroke:var(--lime)}
+  .drop svg path:nth-child(3){stroke:#7a8c76}
+  .drop strong{display:block;font-weight:500}
+  .drop span{color:var(--muted);font-size:.86rem}
+
+  /* ---------- timeline ---------- */
+  .timeline{margin-top:26px}
+  .track{display:flex;height:78px;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:16px;padding:6px;gap:3px;overflow:hidden}
+  .clip{position:relative;min-width:2px;border-radius:8px;background:#123412 center/cover no-repeat;border-top:2px solid var(--lime);box-shadow:inset 0 0 0 1px rgba(124,255,46,.12)}
+  .clip b{position:absolute;left:6px;bottom:5px;font-family:var(--mono);font-size:.62rem;font-weight:500;color:#fff;text-shadow:0 1px 3px #000c}
+  .ruler{position:relative;height:24px;font-family:var(--mono);font-size:.64rem;color:var(--faint);margin:0 6px}
+  .ruler span{position:absolute;top:7px;transform:translateX(-50%)}
+  .ruler span::before{content:"";position:absolute;left:50%;top:-6px;height:5px;border-left:1px solid var(--line-2)}
+  .ruler span:first-child{transform:none}
+  .ruler span:first-child::before{left:0}
+
+  dialog{border:none;padding:0;background:transparent;max-width:92vw;color:var(--text)}
+  dialog::backdrop{background:#020502e6;backdrop-filter:blur(6px)}
+  dialog img{max-width:92vw;max-height:78vh;display:block;border-radius:20px;box-shadow:0 0 80px -20px #7CFF2E66}
+  dialog p{color:#DDE6DA;max-width:80ch;font-size:.9rem;margin:14px 0 0}
+  dialog button{margin-top:12px}
+  .pick-cell{display:flex;flex-direction:column;gap:8px;font-weight:500;font-size:.84rem;color:#D5DFD2}
+  .pick-cell button{justify-content:center}
+  .pick-cell small{color:var(--faint);font-size:.76rem;font-weight:400;line-height:1.4}
+  .pick-cell small b{color:var(--lime-2);font-weight:500}
+  #modelPicker{width:min(1080px,94vw);max-width:none}
+  .pm{background:#08120a;border:1px solid var(--line-2);border-radius:26px;padding:26px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 40px 100px -30px #000}
+  .pm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+  .pm-head h2{font-family:var(--display);font-weight:400;font-size:1.9rem;letter-spacing:-.035em;margin:0}
+  .pm-head h2 .dim{color:var(--dim)}
+  .pm-head button{margin-top:0}
+  .pm-tools{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+  .pm-tools .check{white-space:nowrap}
+  .pm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+  .chip-f{padding:7px 14px;font-size:.8rem}
+  .chip-f.on{background:rgba(124,255,46,.12);border-color:var(--line-lime);color:#fff}
+  .pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));grid-auto-rows:max-content;align-content:start;gap:12px;overflow:auto;padding:2px;min-height:200px;flex:1 1 auto}
+  .mcard{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.03);transition:border-color .3s,transform .5s var(--ease)}
+  .mcard:hover{border-color:var(--line-lime);transform:translateY(-3px)}
+  .mcard .mhero{aspect-ratio:4/3;background:#0b140b center/cover no-repeat}
+  .mcard .body{padding:12px 12px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .mcard b{font-weight:500;font-size:.88rem;line-height:1.3}
+  .mcard code{font-family:var(--mono);font-size:.68rem;color:var(--lime);word-break:break-all}
+  .mcard small{font-size:.7rem;color:var(--faint)}
+  .mcard button{margin-top:auto;align-self:flex-start;padding:6px 14px;font-size:.78rem}
+  .mcard.on{border-color:var(--lime);box-shadow:0 0 30px -12px var(--lime)}
+  .pm-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
+  .note{font-size:.82rem;color:var(--faint);max-width:72ch;margin:22px 0 0}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ---------- floating step dock ---------- */
+  .dock{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;max-width:calc(100vw - 24px);
+    background:rgba(14,22,14,.62);border:1px solid var(--line-2);border-radius:999px;padding:6px;
+    backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);
+    box-shadow:0 20px 50px -18px #000,inset 0 1px 0 rgba(255,255,255,.06)}
+  .stepper{position:relative;display:flex;align-items:center;gap:2px;list-style:none;margin:0;padding:0;overflow-x:auto;scrollbar-width:none}
+  .stepper::-webkit-scrollbar{display:none}
+  .stepper .dock-ind{position:absolute;z-index:0;top:0;left:0;height:100%;border-radius:999px;background:rgba(255,255,255,.09);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+    transition:transform .6s var(--ease),width .6s var(--ease);pointer-events:none}
+  .stepper li{position:relative;z-index:1}
+  .chip{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border-radius:999px;color:var(--muted);font-size:.86rem;font-weight:500;text-decoration:none;white-space:nowrap;cursor:pointer;transition:color .3s}
+  .chip:hover{color:var(--text)}
+  .chip b{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:.62rem;font-weight:500;color:var(--faint);border:1px solid var(--line-2);transition:all .4s var(--ease)}
+  .chip.viewing{color:var(--text)}
+  .chip.viewing b{border-color:var(--lime);color:var(--lime);box-shadow:0 0 12px -2px var(--lime)}
+  .chip.done b{background:var(--lime);border-color:var(--lime);font-size:0;box-shadow:0 0 12px -2px var(--lime)}
+  .chip.done b::after{content:"";width:7px;height:4px;border-left:1.6px solid #08120A;border-bottom:1.6px solid #08120A;transform:translateY(-1px) rotate(-45deg)}
+  @media (max-width:720px){.dock{bottom:12px;left:12px;right:12px;transform:none;max-width:none}.chip{padding:9px 12px;font-size:.8rem}}
+
+  /* ---------- motion ---------- */
+  @media (prefers-reduced-motion:no-preference){
+    html{scroll-behavior:smooth}
+    .beam{animation:beam 7s ease-in-out infinite}
+    @keyframes beam{50%{opacity:.8;transform:translateX(-50%) scaleX(1.25)}}
+    .js-anim .rv{opacity:0;transform:translateY(34px);filter:blur(12px)}
+    .js-anim .hero.go .rv{opacity:1;transform:none;filter:none;
+      transition:opacity 1.1s var(--ease),transform 1.3s var(--ease),filter 1.1s var(--ease);transition-delay:calc(var(--d,0) * 1ms)}
+    .js-anim .orb-wrap{opacity:0;transition:opacity 2s ease .3s}
+    .js-anim .hero.go .orb-wrap{opacity:1}
+    .js-anim .dock{opacity:0;transform:translate(-50%,30px)}
+    .js-anim .dock.go{opacity:1;transform:translate(-50%,0);transition:opacity .9s var(--ease) .7s,transform 1.1s var(--ease) .7s}
+    @media (max-width:720px){.js-anim .dock{transform:translateY(30px)}.js-anim .dock.go{transform:none}}
+    .step.enter{animation:panelIn .9s var(--ease)}
+    @keyframes panelIn{from{opacity:0;transform:translateY(22px) scale(.985);filter:blur(8px)}}
+    .step.enter .w{display:inline-block;animation:wordIn .9s var(--ease) backwards;animation-delay:calc(120ms + var(--i) * 45ms)}
+    @keyframes wordIn{from{opacity:0;transform:translateY(.45em);filter:blur(8px)}}
+    .step.enter .step-tag,.step.enter .lede{animation:fadeUp .8s var(--ease) backwards;animation-delay:.1s}
+    .step.enter .lede{animation-delay:.35s}
+    .s-loading .shot{background:linear-gradient(100deg,#0b140b 30%,#173a12 50%,#0b140b 70%) 0 0/250% 100%;animation:shimmer 1.6s linear infinite}
+    @keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+    .s-done .shot img{animation:imgIn 1s var(--ease) backwards}
+    @keyframes imgIn{from{opacity:0;transform:scale(1.1);filter:blur(16px) brightness(1.6)}}
+    .chip.nudge b{animation:nudge 1.6s var(--ease)}
+    @keyframes nudge{0%{box-shadow:0 0 0 0 #7CFF2EAA}100%{box-shadow:0 0 0 12px #7CFF2E00}}
+    .chip.done b::after{animation:tick .5s var(--spring)}
+    @keyframes tick{from{transform:translateY(-1px) rotate(-45deg) scale(0)}}
+    .status:not(:empty){animation:fadeUp .5s var(--ease)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}}
+    dialog[open]{animation:pop .6s var(--ease)}
+    dialog[open]::backdrop{animation:fadeIn .4s ease}
+    @keyframes pop{from{opacity:0;transform:scale(.92);filter:blur(10px)}}
+    @keyframes fadeIn{from{opacity:0}}
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="beam"></i></div>
+<div class="wrap">
+
+<header class="top">
+  <div class="brand"><a class="logo" href="/" aria-label="Craftush dashboard">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6FF9E"/><stop offset="1" stop-color="#7CFF2E"/></linearGradient></defs>
+      <path d="M13 2c1 7.5 4.5 11 12 12-7.5 1-11 4.5-12 12-1-7.5-4.5-11-12-12 7.5-1 11-4.5 12-12z" fill="url(#lg)"/>
+      <path d="M25 1c.4 2.6 1.4 3.6 4 4-2.6.4-3.6 1.4-4 4-.4-2.6-1.4-3.6-4-4 2.6-.4 3.6-1.4 4-4z" fill="#7CFF2E"/>
+    </svg>
+    Craftush
+  </a>
+  <a class="back" href="/"><span aria-hidden="true">←</span> All tools</a></div>
+    <label class="keychip" id="codeChip" hidden title="Your admin gives you this code. It's remembered on this computer.">
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="#0A1A05" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="#0A1A05" stroke-width="2" stroke-linecap="round"/></svg>
+    <div>
+      <small>Team access code · remembered here</small>
+      <input type="password" id="teamCode" autocomplete="off" placeholder="Enter your team code">
+    </div>
+  </label>
+</header>
+
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow rv" style="--d:0">AI powered visual storytelling</span>
+    <h1><span class="ln rv" style="--d:120">Turn Scripts into</span> <span class="ln rv" style="--d:220">Stunning Visuals.</span> <span class="ln rv yl" style="--d:320">In Minutes.</span></h1>
+    <p class="rv" style="--d:460">Paste a voiceover script and get one hyper-realistic image for every moment of it. Then drop in the SRT, and every image lands on a Premiere Pro timeline in order, timed to the narration.</p>
+  </div>
+  <div class="orb-wrap" aria-hidden="true"><canvas id="orb"></canvas></div>
+  <div class="scroll-hint rv" style="--d:620"><i></i>Start with step 01 below</div>
+</section>
+
+<main class="app">
+  <div class="app-body">
+
+  <!-- STEP 1 -->
+  <section class="step" id="st1" aria-labelledby="h1">
+    <span class="step-tag">Step 01 · Script</span>
+    <h2 id="h1">Paste your <span class="dim">script.</span></h2>
+    <p class="lede">AI reads the whole script, understands it, and splits it into complete moments at the cut speed you choose. Each moment becomes one image.</p>
+    <div class="script-box">
+      <label class="sr" for="script">Script</label>
+      <textarea id="script" placeholder="Paste your 3-minute voiceover script here…"></textarea>
+      <p class="meta" id="scriptMeta">0 words</p>
+    </div>
+    <div class="bar">
+      <label class="split-mode"><span class="sr">How to split the script</span>
+        <select id="splitMode">
+          <option value="smart" selected>Smart split by meaning (AI)</option>
+          <option value="stops">Split at every full stop</option>
+        </select>
+      </label>
+      <label class="split-mode" id="textModelWrap"><span class="sr">AI model for smart split</span>
+        <select id="textModelSel" title="AI model used to understand and split the script"><option value="">Default AI model</option></select>
+      </label>
+      <label class="split-mode"><span class="sr">Cut speed</span>
+        <select id="pace">
+          <option value="count" selected>Always 65–75 images</option>
+          <option value="fast">Fast cuts · about 2–3 s</option>
+          <option value="vfast">Very fast · max ~20 characters</option>
+          <option value="relaxed">Relaxed · about 3–6 s</option>
+        </select>
+      </label>
+      <span class="count-range" id="countRange">
+        <label><span class="sr">Fewest images</span><input type="number" id="minImg" value="65" min="2" max="500"></label>
+        <span aria-hidden="true">to</span>
+        <label><span class="sr">Most images</span><input type="number" id="maxImg" value="75" min="2" max="500"></label>
+        <span aria-hidden="true">images</span>
+      </span>
+      <button class="primary" id="splitBtn">Split script</button>
+      <span class="status" id="s1" aria-live="polite"></span>
+    </div>
+    <div class="step-foot"><button class="next" data-go="1">Next: Write Prompts <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step" id="st2" aria-labelledby="h2">
+    <span class="step-tag">Step 02 · Prompts</span>
+    <h2 id="h2">Write a prompt for <span class="dim">every moment.</span></h2>
+    <p class="lede">Each moment becomes one detailed, hyper-realistic prompt. Every prompt stays editable.</p>
+    <div class="fields">
+      <label class="field">Prompt writer
+        <select id="promptModel">
+          <option value="runware">Runware Prompt Enhance</option>
+          <option value="claude">Claude (most detailed, free inside Claude)</option>
+          <option value="template">Template only (no AI)</option>
+        </select>
+      </label>
+      <label class="field">Visual style
+        <select id="style">
+          <option value="real" selected>Real photograph (100% natural, recommended)</option>
+          <option value="phone">Everyday phone photo (most casual and believable)</option>
+          <option value="documentary">Documentary photojournalism</option>
+          <option value="nature">Nature &amp; landscape (natural daylight)</option>
+          <option value="cinematic">Cinematic film still (restrained)</option>
+          <option value="thumbnail">High-impact thumbnail photo</option>
+        </select>
+      </label>
+      <label class="field">Prompt strength <small>Higher means longer, more specific prompts for each image</small>
+        <select id="pstrength">
+          <option value="standard">Standard (70 to 100 words)</option>
+          <option value="rich" selected>Rich (110 to 150 words)</option>
+          <option value="max">Maximum (160 to 210 words)</option>
+        </select>
+      </label>
+      <label class="field span2">Characters &amp; look <small>Recurring people, place, era and mood, added to every prompt. Fill in before writing prompts, in English.</small>
+        <textarea id="notes" rows="2" placeholder="e.g. Ravi, a 28-year-old Indian man with short black hair and a white kurta; small-town Rajasthan in the 1990s; warm golden-hour light"></textarea>
+      </label>
+      <label class="field" id="anthField" hidden>Anthropic API key <small>Only needed when you open this file outside Claude</small>
+        <input type="password" id="anthKey" autocomplete="off" placeholder="Leave empty inside Claude">
+      </label>
+    </div>
+    <div class="bar">
+      <button class="primary" id="promptBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c.8 5.6 3.4 8.2 9 9-5.6.8-8.2 3.4-9 9-.8-5.6-3.4-8.2-9-9 5.6-.8 8.2-3.4 9-9z" fill="currentColor"/></svg>
+        Write prompts
+      </button>
+      <button id="exportBtn" disabled>Save prompts (.json)</button>
+      <button id="importBtn">Load prompts</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+    <p class="status" id="s2" aria-live="polite"></p>
+    <ol class="rows" id="rows"><li class="empty">Split a script in step 1 and the sentences appear here.</li></ol>
+    <div class="step-foot"><button class="next" data-go="2">Next: Generate Images <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step" id="st3" aria-labelledby="h3">
+    <span class="step-tag">Step 03 · Images</span>
+    <h2 id="h3">Generate the <span class="dim">images.</span></h2>
+    <p class="lede">Choose the model, frame shape and quality, then generate every image with Runware.</p>
+    <div class="fields">
+      <label class="field">Image model
+        <select id="imgModel">
+          <option value="runware:101@1" data-steps="32">FLUX.1 Dev (recommended)</option>
+          <option value="runware:100@1" data-steps="4">FLUX.1 Schnell (fastest)</option>
+          <option value="openai:1@1" data-steps="">GPT Image 1 (OpenAI)</option>
+          <option value="custom" data-steps="">Paste a model ID…</option>
+        </select>
+      </label>
+      <div class="field pick-cell">
+        <span>Runware library</span>
+        <button type="button" id="browseModels">Browse all image models</button>
+        <small id="pickedInfo">Search every image model on Runware.</small>
+      </div>
+      <label class="field" id="customField" hidden>Model ID <small>Copy it from Runware's model library, e.g. provider:123@1</small>
+        <input type="text" id="customModel" placeholder="provider:123@1">
+      </label>
+      <label class="field">Frame shape
+        <select id="aspect">
+          <option value="1344x768" data-hi="1920x1088" data-gpt="1536x1024" data-seq="1920x1080">16:9 landscape</option>
+          <option value="768x1344" data-hi="1088x1920" data-gpt="1024x1536" data-seq="1080x1920">9:16 vertical</option>
+          <option value="1024x1024" data-hi="1408x1408" data-gpt="1024x1024" data-seq="1080x1080">1:1 square</option>
+          <option value="1152x896" data-hi="1536x1152" data-gpt="1536x1024" data-seq="1440x1080">4:3 classic</option>
+        </select>
+      </label>
+      <label class="field">Quality <small>High detail is sharper in Premiere, about 2× the cost</small>
+        <select id="quality">
+          <option value="high" selected>High detail (Full HD)</option>
+          <option value="standard">Standard (faster, cheaper)</option>
+        </select>
+      </label>
+      <label class="field">Look <small>Lower guidance looks more like a real photo (FLUX.1 Dev only)</small>
+        <select id="look">
+          <option value="2.2">Raw natural (least AI look)</option>
+          <option value="2.5" selected>Natural photo (most realistic)</option>
+          <option value="3">Balanced</option>
+          <option value="3.5">Vivid (FLUX default)</option>
+        </select>
+      </label>
+      <label class="field">Steps <small>32 for Dev, 4 for Schnell, empty for default</small>
+        <input type="number" id="steps" value="32" min="1" max="100">
+      </label>
+      <label class="field">At the same time <small>Parallel requests</small>
+        <input type="number" id="conc" value="3" min="1" max="8">
+      </label>
+    </div>
+    <p class="meta cost" id="modelNote" hidden>GPT Image uses its own fixed sizes, usually costs several times more than FLUX, and its model ID isn't confirmed yet. Press Generate on one image card first to test it and see the price.</p>
+    <div class="bar">
+      <button class="primary" id="genBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3c.7 4.9 3 7.2 7.9 7.9-4.9.7-7.2 3-7.9 7.9-.7-4.9-3-7.2-7.9-7.9C7 10.2 9.3 7.9 10 3z" fill="currentColor"/><path d="M19 13c.3 2.2 1.3 3.2 3.5 3.5-2.2.3-3.2 1.3-3.5 3.5-.3-2.2-1.3-3.2-3.5-3.5 2.2-.3 3.2-1.3 3.5-3.5z" fill="currentColor"/></svg>
+        <span class="lbl">Generate images</span>
+      </button>
+      <button id="stopBtn" disabled>Stop</button>
+    </div>
+    <p class="meta cost" id="costMeta" aria-live="polite"></p>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <p class="status" id="s3" aria-live="polite"></p>
+
+    <div class="sub">
+      <div class="sub-head">
+        <div>
+          <h3>Generated Images</h3>
+          <p>Images are named in script order (001.jpg, 002.jpg…) so they stay in sequence everywhere.</p>
+        </div>
+        <div class="sub-actions">
+          <span class="meta" id="genMeta"></span>
+        </div>
+      </div>
+      <div class="sheet" id="sheet"></div>
+    </div>
+    <div class="step-foot"><button class="next" data-go="3">Next: Export to Premiere <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step" id="st4" aria-labelledby="h4">
+    <span class="step-tag">Step 04 · Export</span>
+    <h2 id="h4">Export to <span class="dim">Premiere Pro.</span></h2>
+    <p class="lede">Upload the SRT and download the XML. The subtitle timings decide when each image starts. Images butt up against each other, so the timeline has no gaps.</p>
+
+    <label class="drop" id="drop">
+      <input type="file" id="srtFile" accept=".srt,text/plain">
+      <svg width="34" height="40" viewBox="0 0 34 40" aria-hidden="true"><path d="M3 4a3 3 0 0 1 3-3h15l10 10v25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" fill="#FFF6D6" stroke="#F5B400" stroke-width="1.8"/><path d="M21 1v10h10" fill="none" stroke="#F5B400" stroke-width="1.8"/><path d="M9 22h16M9 27h12M9 32h14" stroke="#A67800" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <div>
+        <strong id="dropTitle">Choose an SRT file or drop it here</strong>
+        <span id="dropSub">Exported from Premiere, CapCut, Descript, or any caption tool</span>
+      </div>
+    </label>
+
+    <div class="fields">
+      <label class="field">Match images to
+        <select id="mode">
+          <option value="words">Script sentences</option>
+          <option value="cues">One image per subtitle line</option>
+        </select>
+      </label>
+      <label class="field">Frame rate
+        <select id="fps">
+          <option value="23.976">23.976</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+          <option value="29.97">29.97</option>
+          <option value="30" selected>30</option>
+          <option value="50">50</option>
+          <option value="59.94">59.94</option>
+          <option value="60">60</option>
+        </select>
+      </label>
+      <label class="field">Sequence name
+        <input type="text" id="seqName" value="Script images">
+      </label>
+      <label class="field">Slow zoom (Ken Burns)
+        <select id="motion">
+          <option value="alt" selected>Alternate zoom in and out</option>
+          <option value="in">Zoom in on every image</option>
+          <option value="out">Zoom out on every image</option>
+          <option value="none">No movement</option>
+        </select>
+      </label>
+      <label class="field">Zoom amount
+        <select id="zoomAmt">
+          <option value="0.06" selected>Subtle (6%)</option>
+          <option value="0.10">Medium (10%)</option>
+          <option value="0.15">Strong (15%)</option>
+        </select>
+      </label>
+      <label class="field">Motion transitions <small>50 styles, shuffled so none repeats</small>
+        <select id="trans">
+          <option value="0.5" selected>On, 0.5 s each</option>
+          <option value="1">On, 1 s each</option>
+          <option value="0">Off</option>
+        </select>
+      </label>
+      <label class="field wide">Folder where you'll unzip the images <small>So Premiere finds them without relinking. Example: C:\Users\you\Videos\project\images or /Users/you/Movies/images</small>
+        <input type="text" id="folder" placeholder="C:\Users\you\Videos\project\images">
+      </label>
+      <label class="check"><input type="checkbox" id="zero" checked> Start the first image at 0:00</label>
+      <label class="check"><input type="checkbox" id="fill" checked> Scale images to fill the frame</label>
+    </div>
+
+    <div class="bar">
+      <button class="primary" id="xmlBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download Premiere XML
+      </button>
+      <button id="zipBtn2" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download All (.zip)
+      </button>
+      <span class="meta" id="tlMeta"></span>
+    </div>
+    <p class="status" id="s4" aria-live="polite"></p>
+
+    <div class="timeline" id="timeline" hidden>
+      <div class="track" id="track"></div>
+      <div class="ruler" id="ruler"></div>
+    </div>
+    <p class="note">In Premiere Pro: File, Import, pick the .xml. If you left the folder blank, Premiere will ask you to locate 001.jpg once and then finds the rest.</p>
+  </section>
+
+  </div>
+</main>
+
+<nav class="dock" aria-label="Steps">
+  <ol class="stepper">
+      <li class="dock-ind" aria-hidden="true" role="presentation"></li>
+      <li><a class="chip" href="#st1"><b>1</b>Paste Script</a></li>
+      <li><a class="chip" href="#st2"><b>2</b>Write Prompts</a></li>
+      <li><a class="chip" href="#st3"><b>3</b>Generate Images</a></li>
+      <li><a class="chip" href="#st4"><b>4</b>Export to Premiere</a></li>
+    </ol>
+</nav>
+</div>
+
+<dialog id="modelPicker" aria-labelledby="pmTitle">
+  <div class="pm">
+    <div class="pm-head">
+      <div><span class="step-tag">Runware library</span><h2 id="pmTitle">Choose an <span class="dim">image model.</span></h2></div>
+      <button type="button" id="pmClose" aria-label="Close">Close</button>
+    </div>
+    <div class="pm-tools">
+      <input type="text" id="pmSearch" placeholder="Search models, e.g. realistic, flux, portrait, anime" autocomplete="off">
+      <label class="check"><input type="checkbox" id="pmFeatured" checked> Featured only</label>
+    </div>
+    <div class="pm-chips" id="pmChips" role="group" aria-label="Model family">
+      <button type="button" class="chip-f on" data-arch="">All</button>
+      <button type="button" class="chip-f" data-arch="flux1d">FLUX Dev</button>
+      <button type="button" class="chip-f" data-arch="flux1s">FLUX Schnell</button>
+      <button type="button" class="chip-f" data-arch="sdxl">SDXL</button>
+      <button type="button" class="chip-f" data-arch="sd3">SD 3</button>
+      <button type="button" class="chip-f" data-arch="pony">Pony</button>
+      <button type="button" class="chip-f" data-arch="sd1x">SD 1.5</button>
+    </div>
+    <div class="pm-grid" id="pmResults"></div>
+    <div class="pm-foot"><span class="meta" id="pmStatus" aria-live="polite"></span><button type="button" id="pmMore" hidden>Load more</button></div>
+  </div>
+</dialog>
+
+<dialog id="viewer">
+  <img id="viewerImg" alt="">
+  <p id="viewerText"></p>
+  <button id="viewerClose">Close</button>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const state = { items: [], cues: [], timeline: [], cancel: false, running: false, cost: { images: 0, prompts: 0, per: {} } };
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const padLen = () => Math.max(3, String(state.items.length).length);
+const numStr = i => String(i + 1).padStart(padLen(), '0');
+const fname = i => numStr(i) + '.jpg';
+const setStatus = (id, msg, kind = '') => { const el = $(id); el.textContent = msg; el.className = 'status ' + kind; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; };
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() :
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&3|8)).toString(16); }));
+const fmtTime = sec => { sec = Math.max(0, sec); const m = Math.floor(sec/60); const s = (sec - m*60); return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); };
+const fmtClock = sec => { const m = Math.floor(sec/60), s = Math.round(sec - m*60); return m + ':' + String(s).padStart(2,'0'); };
+
+function tokens(s){
+  return (String(s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+    .match(/[\p{L}\p{M}\p{N}']+/gu) || []).map(w => w.replace(/'/g,'')).filter(Boolean);
+}
+function downloadBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function b64ToBlob(b64, type = 'image/jpeg'){
+  const bin = atob(b64); const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type });
+}
+function blobToB64(blob){
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+}
+async function pool(list, limit, fn){
+  let k = 0;
+  const workers = Array.from({ length: Math.min(limit, list.length) }, async () => {
+    while (k < list.length && !state.cancel) { const idx = list[k++]; await fn(idx); }
+  });
+  await Promise.all(workers);
+}
+function isGpt(){ return /^openai:/i.test(imageModel()); }
+// Older SD 1.5 models are trained around 512–768 px, so keep their images near that size.
+function smallModel(){ return state.picked && state.picked.air === imageModel() && /^sd1/i.test(state.picked.architecture || ''); }
+function fitSmall(w, h){ const s = 768 / Math.max(w, h); return [Math.max(256, Math.round(w * s / 64) * 64), Math.max(256, Math.round(h * s / 64) * 64)]; }
+function imgSize(){ const o = $('#aspect').selectedOptions[0]; const wh = (isGpt() ? o.dataset.gpt : $('#quality').value === 'high' ? o.dataset.hi : o.value).split('x').map(Number); return smallModel() ? fitSmall(o.value.split('x')[0], o.value.split('x')[1]) : wh; }
+function seqSize(){ return $('#aspect').selectedOptions[0].dataset.seq.split('x').map(Number); }
+
+/* ---------- STEP 1: split ---------- */
+function splitSentences(text){
+  const abbr = /\b(mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|e\.g|i\.e|no|inc|ltd|co|mt|ft|approx)\.$/i;
+  const paras = text.replace(/\r/g,'').split(/\n+/).map(p => p.trim()).filter(Boolean);
+  const out = [];
+  for (const p of paras){
+    const parts = p.replace(/\s+/g,' ').split(/(?<=[.!?।…]["'”’)\]]*)\s+/);
+    let buf = '';
+    for (const part of parts){
+      buf = buf ? buf + ' ' + part : part;
+      if (abbr.test(buf) || /(^|\s)[A-Z]\.$/.test(buf)) continue;
+      out.push(buf.trim()); buf = '';
+    }
+    if (buf.trim()) out.push(buf.trim());
+  }
+  return out.filter(s => /[\p{L}\p{N}]/u.test(s));
+}
+
+$('#script').addEventListener('input', () => {
+  const w = tokens($('#script').value).length;
+  $('#scriptMeta').textContent = w ? `${w} words, about ${fmtClock(w / 150 * 60)} spoken` : '0 words';
+});
+
+/* ---------- smart split: AI decides where each complete moment ends ---------- */
+const WORD_RE = /[\p{L}\p{M}\p{N}']+/gu;
+const normWord = w => w.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/'/g, '');
+const secsFor = t => Math.max(1, Math.round((String(t).match(WORD_RE) || []).length / 2.5));
+
+const PACES = {
+  vfast: { maxW: 4, maxChars: 20, fold: 0, rule: 'Make every beat VERY short for rapid cuts: 2 to 4 words and at most about 20 characters (roughly 1 to 1.5 seconds). Keep words that must stay together (a name, a number with its unit, "not his family") in the same beat. Expect well over 100 beats for a 3-minute script.' },
+  fast: { maxW: 9, maxChars: 55, fold: 1, rule: 'Make beats short for fast cuts: about 5 to 8 words (roughly 2 to 3 seconds), never more than 9 words. Cut often; it is good to have 60 to 80 beats for a 3-minute script.' },
+  relaxed: { maxW: 18, maxChars: 120, fold: 2, rule: 'Aim for about 8 to 15 spoken words per beat (roughly 3 to 6 seconds). Meaning matters more than length: a strong beat can be 5 words, and one can reach 18 words if it is a single image.' },
+};
+const pace = () => PACES[$('#pace') ? $('#pace').value : 'fast'] || PACES.fast;
+const countMode = () => $('#pace') && $('#pace').value === 'count';
+function countRange(){
+  let lo = Math.round(+$('#minImg').value) || 65, hi = Math.round(+$('#maxImg').value) || 75;
+  lo = Math.max(2, Math.min(500, lo)); hi = Math.max(2, Math.min(500, hi));
+  if (lo > hi) [lo, hi] = [hi, lo];
+  return { lo, hi, mid: Math.round((lo + hi) / 2) };
+}
+$('#pace').addEventListener('change', () => { $('#countRange').hidden = !countMode(); });
+$('#splitMode').addEventListener('change', () => { $('#textModelWrap').hidden = $('#splitMode').value !== 'smart'; });
+$('#textModelSel').addEventListener('change', () => { try { localStorage.setItem('craftush-text-model', $('#textModelSel').value); } catch {} });
+['#minImg', '#maxImg'].forEach(s => $(s).addEventListener('input', () => { const { lo, hi } = countRange(); $('#pace').options[0].textContent = `Always ${lo}–${hi} images`; }));
+const JOINERS = new Set(('and but or so then while which who whose where when because as after before until though although if that with without into through across over under ' +
+  'aur lekin par magar jab tab kyunki isliye toh ki jo jahan phir ya ' + 'और लेकिन पर मगर जब तब क्योंकि इसलिए तो कि जो जहाँ फिर या').split(' '));
+// Splits a piece that is still too long at the most natural point, closest to its middle.
+function bestCut(seg, avoidScraps){
+  const words = [...seg.matchAll(/\S+/g)], n = words.length;
+  if (n < 2) return null;
+  let best = 1, bestScore = Infinity;
+  for (let k = 1; k < n; k++){
+    const cut = words[k].index, prev = words[k - 1][0], next = normWord(words[k][0].replace(/^[^\p{L}\p{N}]+/u, ''));
+    let score = Math.abs(cut - seg.length / 2) / Math.max(1, seg.length / n);
+    if (/[,;:—–।!?.)]$/.test(prev)) score -= 3;
+    else if (JOINERS.has(next)) score -= 2;
+    if (avoidScraps && n >= 4 && (k < 2 || n - k < 2)) score += 4; // avoid one-word scraps
+    if (score < bestScore){ bestScore = score; best = k; }
+  }
+  const cut = words[best].index;
+  return [seg.slice(0, cut).trim(), seg.slice(cut).trim()];
+}
+function splitLong(seg, P){
+  const n = (seg.match(/\S+/g) || []).length;
+  if (n < 2 || (n <= P.maxW && seg.length <= P.maxChars)) return [seg];
+  const [a, b] = bestCut(seg, P.maxW > 4);
+  return [...splitLong(a, P), ...splitLong(b, P)];
+}
+// Brings the number of pieces into the lo–hi range: split the longest, or join the shortest neighbours.
+function fitCount(segs, lo, hi){
+  const wc = s => (s.match(/\S+/g) || []).length;
+  const s = segs.map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  while (s.length > hi && s.length > 1){
+    let best = 0, bestScore = Infinity;
+    for (let i = 0; i < s.length - 1; i++){
+      let score = wc(s[i]) + wc(s[i + 1]);
+      if (/[.!?।]["')\]]*$/.test(s[i])) score += 3; // prefer joining inside a sentence
+      if (score < bestScore){ bestScore = score; best = i; }
+    }
+    s.splice(best, 2, s[best] + ' ' + s[best + 1]);
+  }
+  while (s.length < lo){
+    let li = -1, lw = 1;
+    s.forEach((x, i) => { const w = wc(x); if (w > lw){ lw = w; li = i; } });
+    if (li < 0) break; // every piece is already a single word
+    const parts = bestCut(s[li], true);
+    if (!parts) break;
+    s.splice(li, 1, ...parts);
+  }
+  return s;
+}
+function enforcePace(segs, P){
+  const out = [];
+  for (const s of segs) out.push(...splitLong(s.replace(/\s+/g, ' ').trim(), P));
+  // fold lone words into a neighbour when the combined piece still fits
+  const tidy = [];
+  for (const s of out){
+    const last = tidy[tidy.length - 1], n = (s.match(WORD_RE) || []).length;
+    if (last && n <= P.fold && (last + ' ' + s).length <= P.maxChars + 8) tidy[tidy.length - 1] = last + ' ' + s;
+    else tidy.push(s);
+  }
+  return tidy.filter(Boolean);
+}
+
+function lengthRule(chunk){
+  if (!countMode()) return pace().rule;
+  const { lo, hi, mid } = countRange();
+  const total = ($('#script').value.match(WORD_RE) || []).length || 1, here = (chunk.match(WORD_RE) || []).length;
+  const share = here / total, want = Math.max(1, Math.round(mid * share)), wLo = Math.max(1, Math.round(lo * share)), wHi = Math.max(1, Math.round(hi * share));
+  return `Split this text into between ${wLo} and ${wHi} beats (aim for exactly ${want}). It has ${here} words, so each beat is about ${Math.max(1, Math.round(here / want))} words. Hitting this number of beats is required.`;
+}
+
+function splitPrompt(chunk, part, parts){
+  return `You are a video editor preparing a voiceover script for a video that shows one image on screen at a time.
+
+Read the WHOLE script first and understand its meaning, story and flow. Then split it into "visual beats". A beat is one complete, self-contained moment that makes sense on its own and can be shown as ONE image.
+
+Rules:
+- Each beat is a complete phrase or thought. Never cut in the middle of an idea, a name, a number or words that belong together.
+- LENGTH: ${lengthRule(chunk)}
+- If one sentence holds two or more different visual ideas, split it at the natural boundary (a comma, "and", "but", "which", "while" and so on).
+- If short sentences next to each other describe the same image, join them into one beat.
+- Copy the words EXACTLY as written, in the original language and order. Do not translate, rewrite, correct, add or remove anything. Every word must appear in exactly one beat.
+${parts > 1 ? `\nThis is part ${part} of ${parts} of a longer script.\n` : ''}
+Return ONLY JSON in this form, with no commentary: {"beats": ["first beat", "second beat"]}
+
+SCRIPT:
+\"\"\"
+${chunk}
+\"\"\"`;
+}
+function parseBeats(text){
+  const t = String(text || '').replace(/```(?:json)?/gi, '').trim();
+  const a = t.indexOf('{'), b = t.lastIndexOf('}'), c = t.indexOf('['), d = t.lastIndexOf(']');
+  let data = null;
+  try { data = JSON.parse(a >= 0 && b > a && (c < 0 || a < c) ? t.slice(a, b + 1) : t.slice(c, d + 1)); } catch { return null; }
+  const list = Array.isArray(data) ? data : data && Array.isArray(data.beats) ? data.beats : null;
+  if (!list) return null;
+  return list.map(x => typeof x === 'string' ? x : x && (x.text || x.beat) || '').filter(s => s.trim());
+}
+function scriptChunks(text, maxWords = 1200){
+  const paras = text.split(/\n\s*\n|\n/).map(s => s.trim()).filter(Boolean), out = [];
+  let cur = [], n = 0;
+  const push = () => { if (cur.length){ out.push(cur.join('\n')); cur = []; n = 0; } };
+  for (const para of paras){
+    const pieces = (para.match(WORD_RE) || []).length > maxWords ? splitSentences(para) : [para];
+    for (const piece of pieces){
+      const w = (piece.match(WORD_RE) || []).length;
+      if (n + w > maxWords) push();
+      cur.push(piece); n += w;
+    }
+  }
+  push();
+  return out;
+}
+// Maps the AI's beats back onto the ORIGINAL text, so the exact words (and SRT timing) never change.
+function alignBeats(text, beats, fold = 2){
+  const toks = []; let m; WORD_RE.lastIndex = 0;
+  while ((m = WORD_RE.exec(text))) toks.push({ w: normWord(m[0]), i: m.index });
+  if (!toks.length || !beats.length) return null;
+  const bw = beats.map(b => (String(b).match(WORD_RE) || []).map(normWord)).filter(x => x.length);
+  const starts = [0]; let s = 0, exact = 0;
+  for (let b = 1; b < bw.length; b++){
+    const prevLen = bw[b - 1].length, first = bw[b];
+    const lo = s + Math.max(1, Math.floor(prevLen * 0.5)), hi = Math.min(toks.length - 1, s + prevLen * 2 + 10);
+    let found = -1;
+    for (const need of [3, 2, 1]){
+      const k = Math.min(need, first.length);
+      for (let j = lo; j <= hi && found < 0; j++){
+        let ok = true;
+        for (let q = 0; q < k; q++) if (!toks[j + q] || toks[j + q].w !== first[q]){ ok = false; break; }
+        if (ok) found = j;
+      }
+      if (found >= 0){ if (need >= 2 || first.length === 1) exact++; break; }
+    }
+    if (found < 0) found = Math.min(toks.length - 1, s + prevLen);
+    if (found <= s) continue;
+    starts.push(found); s = found;
+  }
+  const segs = starts.map((st, k) => text.slice(k === 0 ? 0 : toks[st].i, k + 1 < starts.length ? toks[starts[k + 1]].i : text.length).trim()).filter(Boolean);
+  // tidy: fold 1–2 word scraps into their neighbour
+  const out = [];
+  for (const sg of segs){
+    const n = (sg.match(WORD_RE) || []).length;
+    if (n <= fold && out.length) out[out.length - 1] += ' ' + sg; else out.push(sg);
+  }
+  if (fold && out.length > 1 && (out[0].match(WORD_RE) || []).length <= fold) out.splice(0, 2, out[0] + ' ' + out[1]);
+  return { segments: out.map(x => x.replace(/\s+/g, ' ')), matched: bw.length > 1 ? exact / (bw.length - 1) : 1 };
+}
+const cleanMsg = m => String(m || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+let splitModel = '';
+async function smartSplit(text){
+  const chunks = scriptChunks(text), beats = []; splitModel = '';
+  for (let i = 0; i < chunks.length; i++){
+    setStatus('#s1', chunks.length > 1 ? `Reading the script and finding complete moments… part ${i + 1} of ${chunks.length}` : 'Reading the whole script and finding complete moments…');
+    const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: $('#textModelSel').value || 'default', includeCost: true,
+      messages: [{ role: 'user', content: splitPrompt(chunks[i], i + 1, chunks.length) }], settings: { maxTokens: 6000, temperature: 0.2 } }]);
+    if (json.errors && json.errors.length) throw new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error');
+    if (json.model) splitModel = json.model;
+    const t = (json.data || []).find(d => d.taskType === 'textInference');
+    if (t && typeof t.cost === 'number') state.cost.prompts += t.cost;
+    const list = t && parseBeats(t.text);
+    if (!list || !list.length) throw new Error('The AI reply wasn’t in the expected format');
+    beats.push(...list);
+  }
+  const r = alignBeats(text, beats, countMode() ? 0 : pace().fold);
+  if (!r || !r.segments.length) throw new Error('The AI split couldn’t be matched to the script');
+  if (r.matched < 0.6) throw new Error('The AI changed too many words');
+  return r.segments;
+}
+
+$('#splitBtn').addEventListener('click', async () => {
+  const text = $('#script').value.trim();
+  if (!text){ setStatus('#s1', 'Paste a script first, then split it.', 'err'); return; }
+  let segs, note = '', smart = $('#splitMode').value === 'smart';
+  if (smart && needCode('#s1')) return;
+  $('#splitBtn').disabled = true;
+  try {
+    if (smart){
+      try { segs = await smartSplit(text); }
+      catch (e){ segs = splitSentences(text); const why = cleanMsg(e.message); note = ` Smart split didn’t work: ${why}${/[.!?]$/.test(why) ? '' : '.'} It split at full stops instead.`; smart = false; }
+    } else segs = splitSentences(text);
+  } finally { $('#splitBtn').disabled = false; }
+  let countNote = '';
+  if (countMode()){
+    const { lo, hi } = countRange();
+    segs = fitCount(segs, lo, hi);
+    if (segs.length < lo) countNote = ` The script only has enough words for ${segs.length} pieces.`;
+  } else segs = enforcePace(segs, pace());
+  state.items.forEach(it => it.url && URL.revokeObjectURL(it.url));
+  state.items = segs.map(t => ({ text: t, prompt: '', status: 'idle', b64: null, url: null, err: '' }));
+  const secs = segs.map(secsFor), avg = secs.reduce((a, b) => a + b, 0) / (secs.length || 1);
+  const summary = smart
+    ? `Found ${segs.length} complete moments, so ${segs.length} images, about ${avg.toFixed(1)} s each (${Math.min(...secs)} to ${Math.max(...secs)} s)${splitModel ? ', split by ' + splitModel : ''}.`
+    : `Split into ${segs.length} pieces, so ${segs.length} images, about ${avg.toFixed(1)} s each.`;
+  setStatus('#s1', summary + note + countNote, note || countNote ? 'err' : 'ok');
+  renderAll();
+  if (!note) showStep(1);
+});
+
+/* ---------- STEP 2: prompts ---------- */
+/* REALISM FIRST. Glossy terms (volumetric rays, luminous, saturated, HDR, cinematic grade) make FLUX images look AI-made,
+   so the look is a real, slightly imperfect photograph. Light always comes from what the scene really has. */
+const MASTER_LOOK = 'an authentic unedited photograph taken by a working photographer on location, natural light that matches the real setting and time of day, true-to-life muted colour with no colour grading, natural contrast, realistic depth of field with a sharp subject and a softly out-of-focus background, fine natural texture, tiny real-world imperfections such as dust, creases, scuffs, uneven light and slight lens softness at the edges, candid and unposed';
+
+/* Outdoor-only extras, added only when the scene is a forest, river, mountain, sunrise and similar. */
+const NATURE_LIGHT = 'soft natural sunlight filtering through the scene with a gentle haze in the air';
+
+const STYLES = {
+  real: 'unedited RAW photograph, Canon EOS R5, 35mm f/2.8, natural available light, true-to-life colour, realistic skin with visible pores, fine lines and small imperfections, natural film-like grain, candid and unposed, photorealistic',
+  phone: 'candid photograph taken on an iPhone 15 Pro main camera, natural available light, slightly imperfect framing, true-to-life colour, realistic skin texture, mild natural noise in shadows, everyday real-life look, photorealistic',
+  documentary: 'documentary photojournalism, candid unposed moment, Leica M11 with a 35mm lens, available light, true-to-life colour, realistic skin and textures, subtle grain, unretouched, photorealistic',
+  nature: 'unedited RAW landscape photograph, Sony A7R V, 24mm f/8, natural daylight, sun rays through mist only where the weather really produces them, layered depth from foreground to background, natural greens and earthy tones, crisp fine detail in leaves, bark, moss and water, true-to-life colour, photorealistic',
+  cinematic: 'cinematic film still, ARRI Alexa, 35mm lens, motivated natural light, restrained natural colour grade, shallow depth of field, realistic textures, subtle 35mm film grain, photorealistic',
+  thumbnail: 'high-impact photorealistic photo, bold close-up subject, strong natural rim light, true-to-life colour, realistic skin texture, crisp detail, uncluttered background'
+};
+
+const STYLE_TAGS = {
+  real: 'unedited RAW photo, Canon EOS R5, 35mm f/2.8, natural available light, true-to-life colour, realistic skin with pores and small imperfections, natural grain, candid, photorealistic',
+  phone: 'candid iPhone 15 Pro photo, natural available light, true-to-life colour, realistic skin texture, mild natural noise, everyday real-life look, photorealistic',
+  documentary: 'documentary photo, candid moment, Leica 35mm, available light, true-to-life colour, realistic textures, subtle grain, unretouched, photorealistic',
+  nature: 'unedited RAW landscape photo, Sony A7R V, 24mm f/8, natural daylight, layered depth, natural greens, crisp detail in leaves, bark and moss, true-to-life colour, photorealistic',
+  cinematic: 'cinematic film still, ARRI Alexa, 35mm lens, motivated natural light, restrained natural grade, shallow depth of field, realistic textures, subtle film grain, photorealistic',
+  thumbnail: 'photorealistic photo, bold close-up, natural rim light, true-to-life colour, realistic skin texture, crisp detail'
+};
+
+/* Sent as negativePrompt to models that honour it. FLUX ignores it, so the same rules are also written into the positive prompt. */
+const NEGATIVE_PROMPT = 'text, letters, words, captions, subtitles, writing, handwriting, signage text, logos, watermark, signature, cartoon, illustration, painting, drawing, anime, 3D render, CGI, digital art, artstation, plastic skin, waxy skin, airbrushed skin, beauty filter, perfect symmetry, oversaturated, neon colours, HDR, glowing, over-sharpened, bokeh balls, lens flare, fantasy, surreal, dreamy, blurry, low resolution, jpeg artifacts, distorted hands, extra fingers, extra limbs, deformed face, cross-eyed, uncanny eyes, duplicate subject, cropped head, collage, split screen, frame border, stock photo pose, staring at camera';
+
+/* Positive-side guard, works even on models that ignore negative prompts. */
+const NO_TEXT_TAIL = 'Purely visual frame with no readable text, no lettering, no captions, no signs, no logos, no watermark; any paper, screen, book or sign is shown blurred or turned away so no words are visible.';
+
+/* How much detail each prompt should carry. */
+const STRENGTH = {
+  standard: { words: '70 to 100', label: 'Standard' },
+  rich: { words: '110 to 150', label: 'Rich' },
+  max: { words: '160 to 210', label: 'Maximum' }
+};
+const strength = () => STRENGTH[($('#pstrength') && $('#pstrength').value) || 'rich'] || STRENGTH.rich;
+
+/* ---------- Craftush server relay (the Runware key stays on the server) ---------- */
+const server = { reachable: false, configured: true, codeRequired: false };
+function teamCode(){ return $('#teamCode').value.trim(); }
+try { const saved = localStorage.getItem('craftush-team-code'); if (saved) $('#teamCode').value = saved; } catch {}
+$('#teamCode').addEventListener('input', () => { try { localStorage.setItem('craftush-team-code', teamCode()); } catch {} });
+function needCode(statusId){
+  if (server.codeRequired && !teamCode()){
+    $('#codeChip').hidden = false; setStatus(statusId, 'Enter your team access code at the top of the page first.', 'err'); $('#teamCode').focus();
+    return true;
+  }
+  return false;
+}
+async function loadServerStatus(){
+  try {
+    const r = await fetch('/api/runware', { method: 'GET', cache: 'no-store' });
+    const j = await r.json();
+    server.reachable = true; server.configured = !!j.configured; server.codeRequired = !!j.codeRequired;
+    const tm = Array.isArray(j.textModels) ? j.textModels : [];
+    if (tm.length){
+      let saved = ''; try { saved = localStorage.getItem('craftush-text-model') || ''; } catch {}
+      $('#textModelSel').innerHTML = tm.map((m, i) => `<option value="${esc(m.id)}">${esc(m.name || m.id)}${i === 0 ? ' · default' : ''}</option>`).join('');
+      if (tm.some(m => m.id === saved)) $('#textModelSel').value = saved;
+    }
+  } catch { server.reachable = false; }
+  $('#codeChip').hidden = !server.codeRequired;
+  if (server.reachable && !server.configured)
+    setStatus('#s3', 'Image generation isn\'t set up yet. The admin needs to add the Runware key at /admin.', 'err');
+}
+async function relay(tasks){
+  let res;
+  try {
+    res = await fetch('/api/runware', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-team-code': teamCode() },
+      body: JSON.stringify(tasks)
+    });
+  } catch { throw new Error('Couldn\'t reach the Craftush server. Images can only be generated on craftush.netlify.app.'); }
+  let json;
+  try { json = await res.json(); }
+  catch {
+    throw new Error(res.status === 404 || res.status === 405
+      ? 'The Craftush server isn\'t available here. Open craftush.netlify.app to generate images.'
+      : res.status >= 500 ? `The server took too long or failed (HTTP ${res.status}). Try again, or lower "At the same time".`
+      : 'Server answered with HTTP ' + res.status);
+  }
+  if (res.status === 401){
+    server.codeRequired = true; $('#codeChip').hidden = false; $('#teamCode').focus();
+    const e = new Error((json.errors && json.errors[0] && json.errors[0].message) || 'Wrong team access code.'); e.auth = true; throw e;
+  }
+  return json;
+}
+
+/* Scene-aware light: adds haze / sun rays ONLY when the line is clearly about the outdoors. */
+const OUTDOOR_RE = /forest|jungle|river|stream|waterfall|mountain|valley|hill|lake|sea|ocean|beach|sunrise|sunset|sunlight|nature|tree|garden|field|farm|village|jungle|path|trail|jangal|nadi|pahad|sooraj|suraj|prakriti|पहाड़|नदी|जंगल|सूरज/i;
+const lightFor = (sentence) => OUTDOOR_RE.test(sentence) ? NATURE_LIGHT : '';
+
+/* Turns a spoken line into a short English visual seed for Runware's enhancer (which has a small input limit). */
+function visualSeed(sentence){
+  const clean = sentence.replace(/[.!?।…]+$/,'').trim();
+  return `Candid real-life photograph, natural available light, that literally shows the meaning of: "${clean}". One specific real person, place or object doing a real action. Ordinary everyday realism, not staged, not artistic. No text.`.slice(0, 290);
+}
+
+async function runwareEnhanceBatch(batch){
+  const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
+  const tag = STYLE_TAGS[$('#style').value];
+  const tasks = batch.map(s => ({
+    taskType: 'promptEnhance', taskUUID: uuid(),
+    prompt: visualSeed(s),
+    promptMaxLength: 300, promptVersions: 1, includeCost: true
+  }));
+  const json = await relay(tasks);
+  if (json.errors && json.errors.length && !(json.data || []).length) throw new Error(json.errors[0].message || 'Runware returned an error');
+  const byId = {};
+  (json.data || []).forEach(d => {
+    const t = d.text || d.enhancedPrompt || d.prompt; if (t && !byId[d.taskUUID]) byId[d.taskUUID] = t;
+    if (typeof d.cost === 'number') state.cost.prompts += d.cost;
+  });
+  return tasks.map((t, k) => {
+    const txt = (byId[t.taskUUID] || '').trim();
+    const lt = lightFor(batch[k]);
+    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${lt ? lt + '. ' : ''}${tag}. ${MASTER_LOOK}. ${NO_TEXT_TAIL}` : '';
+  });
+}
+
+function fallbackPrompt(sentence){
+  const style = STYLES[$('#style').value];
+  const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
+  const lt = lightFor(sentence);
+  return `A real photograph that literally shows the meaning of: ${sentence.replace(/[.!?।…]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${lt ? lt + '. ' : ''}${style}. ${MASTER_LOOK}. ${NO_TEXT_TAIL}`;
+}
+
+/* ---------- System prompt for the Claude prompt writer ---------- */
+function claudeSystem(){
+  const st = strength();
+  return `You are a documentary photographer and photo editor. You turn lines of a Hinglish / Hindi / English video voiceover into prompts for a FLUX text-to-image model. Your two goals, in this order, are: (1) every image must be 100% RELEVANT to what the line says, and (2) every image must look like a REAL, unedited photograph that nobody could tell was AI-made.
+
+GOAL 1: RELEVANCE (the image must match the line)
+1. UNDERSTAND first. The line may be Hindi, Hinglish or English. Work out the exact meaning and the emotion, then write the prompt in clear English. Use the FULL SCRIPT to know the topic, the audience and where this line sits in the story (opening hook, problem, turning point, advice, ending).
+2. Decide what a viewer should think when they see the image while hearing this line. Then show THAT, literally.
+3. Choose the scene using this order of preference:
+   a. LITERAL. If the line names or clearly implies a person, place, object or action (degree, college, job, salary, phone, money, exam, family, city, road), photograph exactly that in a real situation.
+   b. RELATABLE REAL-LIFE MOMENT. If the line is about an idea (habits, skills, growth, mindset, doubt, pressure), show one ordinary real person living that idea in a specific real moment: a student studying late at a desk for effort, a young man on a crowded metro looking tired for pressure, a girl learning to code on a laptop at a kitchen table for skills. It must be something a photographer could actually shoot.
+   c. PLAIN OBJECT OR PLACE. Only if no person fits: one real object or place that directly stands for the idea (a worn notebook with pen on a desk, an empty exam hall).
+   NEVER use: glowing lightbulbs, brains, gears, floating icons, arrows, ladders to the sky, chess pieces, hourglasses, handshakes, fantasy landscapes, or any stock-photo cliché. NEVER use a symbol when a real moment exists. NEVER show a scene unrelated to the line just because it is pretty. A forest, mountain or river is allowed ONLY when the line itself is about nature, a journey, a crossroads or a fresh start.
+4. One frame = one idea = one main subject. Never a collage, split screen, comparison or before/after.
+5. Continuity: keep the same recurring people, place, era and clothing across lines, describing them with identical words every time (use the CHARACTERS & LOOK note). Vary the shot size and angle between neighbouring lines so the video does not feel repetitive.
+6. Default setting is contemporary India (urban and small-town) unless the script or the CHARACTERS & LOOK note says otherwise: real Indian faces, everyday clothing, real streets, homes, classrooms, offices, buses, chai stalls.
+
+GOAL 2: REAL PHOTOGRAPH, NOT AI-LOOKING
+Write the prompt as one flowing paragraph of ${st.words} words, in this order:
+1. SUBJECT: who or what, with concrete detail (approximate age, build, hair, clothing with colours and fabric, expression, posture; or the object, its material and condition).
+2. ACTION: what they are doing right now, mid-action and unposed, and where they are looking (usually away from the camera, at their task).
+3. SETTING: the exact real place with 3 to 5 ordinary real details (a steel almirah, a plastic chair, a ceiling fan, posters on a wall, tiled floor, stacked books, a steel tiffin, an auto-rickshaw), plus the time of day and weather.
+4. LIGHT: only light that truly exists in that place. Daylight from a window, overcast sky, harsh midday sun, an overhead tube light, a desk lamp at night, street lights. Say where it comes from. Do NOT invent golden rays, mist, glow, lens flares or dramatic backlight unless the setting really produces them.
+5. CAMERA: a real lens and distance, for example "35mm at f/2.8, eye level, medium shot" or "50mm at f/2, over-the-shoulder". Vertical framing.
+6. REAL-PHOTO DETAILS: pick 3 from: visible skin pores and fine lines, flyaway hair, creased or slightly worn clothes, dust or fingerprints on surfaces, scuffed edges, uneven light, natural shadow falloff, mild grain, slight softness at the edges of the frame, an ordinary imperfect background.
+7. END with the style keywords supplied below, then exactly this sentence: "${NO_TEXT_TAIL}"
+
+REALISM RULES
+- Colours are true-to-life and slightly muted, like an unedited camera file. Never write vivid, vibrant, saturated, dramatic, epic, stunning, cinematic glow, HDR, volumetric, ethereal, magical, dreamy or masterpiece. Never write hyper-realistic, 8k, 4k, ultra-detailed, render, CGI, digital art, illustration, artstation or trending. These words make images look fake.
+- People: real ordinary faces, not models. Natural asymmetry, real skin, real hair. Correct hands and anatomy: keep hands simple (holding a pen, resting on a desk, in pockets) or out of frame. At most two people unless the line is about a crowd; in a crowd, keep the faces in the background soft and small.
+- Faces: candid expression matching the emotion, eyes usually not looking into the camera. No posed smiles, no stock-photo grins.
+- Text: the image must contain NO readable text. Certificates, degrees, marksheets, newspapers, book covers, posters, shop signs, phone and laptop screens are the usual cause of garbled letters. If the line is about a degree or certificate, show a person holding a rolled or folded document, seen from the side or behind, or a stack of books and a graduation cap on a desk, never a readable page. Show screens turned away or lit but blurred, with no visible interface.
+- Specific beats generic: "a 22-year-old Indian woman in a faded green cotton kurta typing on a dented silver laptop at a wooden kitchen table, a steel glass of water beside her" is good; "a person working" is bad. Never write "beautiful", "stunning", "amazing", "perfect" or "a scene of".
+
+QUALITY CHECK before you answer, for every prompt:
+- If someone read only the voiceover line and then saw this image, would it feel obviously connected? If not, rewrite it.
+- Does it name real, ordinary details rather than pretty adjectives? If not, rewrite it.
+- Is any part of it something a real camera could not capture? If so, remove it.
+
+WORKED EXAMPLES (learn the thinking, do not copy the wording)
+Line: "Degree hona zaroori hai," -> A 23-year-old Indian man in a plain white shirt and dark trousers walking out of a university gate, holding a rolled degree tube loosely at his side, shot from slightly behind so his face is in soft profile, mid-afternoon overcast daylight, crowded campus road with parked scooters, tea stall and flowering trees behind, 35mm at f/2.8, eye level, ...
+Line: "lekin career sirf degree se nahi banta!" -> A young Indian woman in her early twenties, hair tied back, sitting cross-legged on a bed at night learning to code on a laptop, a highlighted notebook and a steel glass beside her, a warm desk lamp on the left and a ceiling fan overhead, she is looking at the screen with a focused, slightly tired expression, screen turned away from camera, 35mm at f/2, ...
+Line: "Aapki daily habits, skills aur self-growth hi" -> Early-morning scene in a small Indian apartment balcony: a 25-year-old man in a grey t-shirt reading a paperback beside a steel cup of chai, soft cool daylight from the left, a row of potted plants and a drying rack behind him, ...
+
+OUTPUT: return ONLY a JSON array of strings, one prompt per numbered line, same order and same count. No markdown fences, no commentary, no keys.`;
+}
+
+async function claudeBatch(batch, offset){
+  const script = $('#script').value.trim().slice(0, 6000);
+  const style = STYLES[$('#style').value];
+  const notes = $('#notes').value.trim();
+  const all = state.items.map(it => it.text);
+  const list = batch.map((s, k) => {
+    const i = offset + k, prev = all[i - 1], next = all[i + 1];
+    return `${i + 1}. ${s}` + (prev || next ? `\n   (context only, do not illustrate: before = "${prev || 'start of video'}" / after = "${next || 'end of video'}")` : '');
+  }).join('\n');
+  const outdoorLines = batch.map((s, k) => lightFor(s) ? `${offset + k + 1}` : '').filter(Boolean);
+  const content =
+`FULL SCRIPT (context only, for topic, audience, tone and story position):
+"""${script}"""
+
+STYLE KEYWORDS TO END EVERY PROMPT WITH (before the no-text sentence): ${style}${notes ? `\nCHARACTERS & LOOK (describe exactly the same way in every prompt where they appear): ${notes}` : ''}${outdoorLines.length ? `\nOUTDOOR NATURE LINES (natural sunlight and light haze are allowed here): ${outdoorLines.join(', ')}` : ''}
+
+Write one prompt for each of these ${batch.length} lines:
+${list}`;
+
+  const headers = { 'Content-Type': 'application/json' };
+  const key = $('#anthKey').value.trim();
+  if (key){
+    headers['x-api-key'] = key;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers,
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, system: claudeSystem(), messages: [{ role: 'user', content }] })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const text = (data.content || []).map(b => b.type === 'text' ? b.text : '').join('\n').replace(/```json|```/g, '').trim();
+  const arr = JSON.parse(text.slice(text.indexOf('['), text.lastIndexOf(']') + 1));
+  if (!Array.isArray(arr)) throw new Error('Unexpected format');
+  return arr.map(String);
+}
+
+$('#promptModel').addEventListener('change', () => {
+  $('#anthField').hidden = $('#promptModel').value !== 'claude';
+});
+
+$('#promptBtn').addEventListener('click', async () => {
+  const items = state.items; if (!items.length) return;
+  const writer = $('#promptModel').value;
+  if (writer === 'template'){
+    items.forEach(it => it.prompt = fallbackPrompt(it.text));
+    renderPrompts();
+    setStatus('#s2', `All ${items.length} prompts filled from the template. Edit any of them before generating.`, 'ok');
+    updateButtons(); return;
+  }
+  if (writer === 'runware' && needCode('#s2')) return;
+  const name = writer === 'runware' ? 'Runware' : 'Claude';
+  const BATCH = writer === 'runware' ? 10 : 3;
+  const batches = [];
+  for (let i = 0; i < items.length; i += BATCH) batches.push(i);
+  let done = 0, fellBack = 0, lastErr = '', authFail = false; const c0 = state.cost.prompts;
+  $('#promptBtn').disabled = true;
+  setStatus('#s2', `Writing prompts with ${name}… 0 of ${items.length}`);
+  state.cancel = false;
+  await pool(batches, 3, async start => {
+    const slice = items.slice(start, start + BATCH).map(it => it.text);
+    let prompts = [];
+    try { prompts = writer === 'runware' ? await runwareEnhanceBatch(slice) : await claudeBatch(slice, start); }
+    catch (e) { lastErr = e.message; if (e.auth) authFail = true; console.warn('Prompt batch failed', e); }
+    if (authFail) return;
+    slice.forEach((s, k) => {
+      const p = (prompts[k] || '').trim();
+      if (!p) fellBack++;
+      items[start + k].prompt = p || fallbackPrompt(s);
+    });
+    done += slice.length;
+    setStatus('#s2', `Writing prompts with ${name}… ${Math.min(done, items.length)} of ${items.length}`);
+    renderPrompts();
+  });
+  $('#promptBtn').disabled = false;
+  if (authFail){ setStatus('#s2', lastErr + ' Then press Write prompts again.', 'err'); updateButtons(); return; }
+  if (fellBack === items.length)
+    setStatus('#s2', `${name} didn't return prompts${lastErr ? ' (' + lastErr + ')' : ''}, so every sentence got a template prompt. Fix the issue and write prompts again.`, 'err');
+  else if (fellBack)
+    setStatus('#s2', `${items.length - fellBack} prompts written by ${name}, ${fellBack} filled from a template. Review those before generating.`, 'err');
+  else
+    setStatus('#s2', `All ${items.length} prompts written by ${name}${state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : ''}. Edit any of them before generating.`, 'ok');
+  updateCost();
+  updateButtons();
+});
+
+$('#exportBtn').addEventListener('click', () => {
+  const data = { script: $('#script').value, items: state.items.map(it => ({ text: it.text, prompt: it.prompt })) };
+  downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), 'prompts.json');
+});
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data.items)) throw new Error();
+    if (data.script) { $('#script').value = data.script; $('#script').dispatchEvent(new Event('input')); }
+    state.items = data.items.map(it => ({ text: String(it.text || ''), prompt: String(it.prompt || ''), status: 'idle', b64: null, url: null, err: '' }));
+    setStatus('#s2', `Loaded ${state.items.length} sentences and prompts.`, 'ok');
+    renderAll();
+  } catch { setStatus('#s2', 'That file isn\'t a prompts file saved from this page.', 'err'); }
+  e.target.value = '';
+});
+
+function renderPrompts(){
+  const list = $('#rows');
+  if (!state.items.length){ list.innerHTML = '<li class="empty">Split a script in step 1 and the sentences appear here.</li>'; return; }
+  const active = document.activeElement;
+  const focusIdx = active && active.classList.contains('prompt') ? active.closest('.row').dataset.i : null;
+  list.innerHTML = state.items.map((it, i) => `
+    <li class="row" data-i="${i}">
+      <span class="num">${numStr(i)}</span>
+      <div>
+        <p class="sent">${esc(it.text)}<span class="dur">≈ ${secsFor(it.text)} s</span></p>
+        <div class="row-actions">
+          ${i < state.items.length - 1 ? '<button class="small" data-act="merge">Merge with next</button>' : ''}
+          <button class="small" data-act="remove">Remove</button>
+        </div>
+      </div>
+      <div class="row-right">
+        <label class="sr" for="p${i}">Prompt for image ${numStr(i)}</label>
+        <textarea class="prompt" id="p${i}" rows="3" placeholder="The prompt appears here after you write prompts, or type your own">${esc(it.prompt)}</textarea>
+      </div>
+    </li>`).join('');
+  if (focusIdx !== null){ const t = $('#p' + focusIdx); if (t) t.focus(); }
+}
+$('#rows').addEventListener('input', e => {
+  if (!e.target.classList.contains('prompt')) return;
+  state.items[+e.target.closest('.row').dataset.i].prompt = e.target.value;
+  updateButtons();
+});
+$('#rows').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn || state.running) return;
+  const i = +btn.closest('.row').dataset.i; const it = state.items[i];
+  if (btn.dataset.act === 'merge'){
+    const nx = state.items[i + 1];
+    it.text = it.text + ' ' + nx.text;
+    it.prompt = it.prompt || nx.prompt;
+    if (nx.url) URL.revokeObjectURL(nx.url);
+    state.items.splice(i + 1, 1);
+  } else if (btn.dataset.act === 'remove'){
+    if (it.url) URL.revokeObjectURL(it.url);
+    state.items.splice(i, 1);
+  }
+  renderAll();
+});
+
+/* ---------- STEP 3: Runware ---------- */
+$('#imgModel').addEventListener('change', () => {
+  const opt = $('#imgModel').selectedOptions[0];
+  $('#customField').hidden = opt.value !== 'custom';
+  $('#steps').value = opt.dataset.steps;
+  if (opt.value === 'custom') $('#customModel').focus();
+  else $('#pickedInfo').textContent = 'Search every image model on Runware.';
+  applyModelRules();
+});
+$('#customModel').addEventListener('input', applyModelRules);
+function applyModelRules(){
+  const gpt = isGpt();
+  $('#quality').disabled = gpt;
+  $('#look').disabled = imageModel() !== 'runware:101@1';
+  $('#steps').disabled = gpt;
+  if (gpt) $('#steps').value = '';
+  $('#modelNote').hidden = !gpt;
+  renderGrid(); refreshTimeline(); updateCost();
+}
+['#imgModel', '#aspect', '#quality', '#steps', '#customModel'].forEach(s => $(s).addEventListener('input', () => updateCost()));
+/* ---------- Runware image model browser ---------- */
+const picker = { q: '', arch: '', featured: true, offset: 0, total: 0, busy: false, seq: 0 };
+function pickModel(m){
+  state.picked = { air: m.air, name: m.name, architecture: m.architecture || '', defaultSteps: m.defaultSteps, defaultCFG: m.defaultCFG };
+  $('#imgModel').value = 'custom'; $('#customField').hidden = false; $('#customModel').value = m.air;
+  if (m.defaultSteps) $('#steps').value = m.defaultSteps; else $('#steps').value = '';
+  $('#pickedInfo').innerHTML = `Using <b>${esc(m.name)}</b> (${esc(m.architecture || 'model')})${m.defaultSteps ? ` · ${m.defaultSteps} steps` : ''}.`;
+  applyModelRules();
+  $('#modelPicker').close();
+  setStatus('#s3', `${m.name} selected. Press Generate on one image card first to check the look and price.`, 'ok');
+}
+async function searchModels(reset){
+  if (picker.busy && !reset) return;
+  const seq = ++picker.seq;
+  if (reset){ picker.offset = 0; picker.total = 0; $('#pmResults').innerHTML = ''; }
+  picker.busy = true; $('#pmMore').hidden = true; $('#pmStatus').textContent = 'Loading models from Runware…';
+  try {
+    const task = { taskType: 'modelSearch', taskUUID: uuid(), category: 'checkpoint', limit: 24, offset: picker.offset };
+    if (picker.q) task.search = picker.q;
+    if (picker.arch) task.architecture = picker.arch;
+    if (picker.featured) task.featured = true;
+    const json = await relay([task]);
+    if (seq !== picker.seq) return;
+    if (json.errors && json.errors.length) throw new Error(cleanMsg(json.errors[0].message));
+    const hit = (json.data || []).find(d => d.taskType === 'modelSearch') || {};
+    const list = hit.results || [];
+    picker.total = hit.totalResults ?? list.length; picker.offset += list.length;
+    const cur = imageModel();
+    $('#pmResults').insertAdjacentHTML('beforeend', list.map(m => `<article class="mcard${m.air === cur ? ' on' : ''}">
+      <div class="mhero"${m.heroImage ? ` style="background-image:url('${esc(String(m.heroImage).replace(/'/g, '%27'))}')"` : ''}></div>
+      <div class="body"><b>${esc(m.name)}${m.version ? ' · ' + esc(m.version) : ''}</b><code>${esc(m.air)}</code>
+        <small>${esc([m.architecture, m.defaultWidth && m.defaultHeight ? m.defaultWidth + '×' + m.defaultHeight : '', m.defaultSteps ? m.defaultSteps + ' steps' : ''].filter(Boolean).join(' · '))}</small>
+        <button type="button" data-m='${esc(JSON.stringify({ air: m.air, name: m.name, architecture: m.architecture, defaultSteps: m.defaultSteps, defaultCFG: m.defaultCFG }))}'>${m.air === cur ? 'In use' : 'Use this model'}</button></div></article>`).join(''));
+    $('#pmStatus').textContent = picker.offset ? `Showing ${picker.offset} of ${picker.total} models` : 'No models match. Try another search or turn off “Featured only”.';
+    $('#pmMore').hidden = picker.offset >= picker.total || !list.length;
+  } catch (e){
+    if (seq === picker.seq) $('#pmStatus').textContent = 'Couldn’t load models: ' + cleanMsg(e.message);
+  } finally { if (seq === picker.seq) picker.busy = false; }
+}
+$('#browseModels').addEventListener('click', () => { if (needCode('#s3')) return; $('#modelPicker').showModal(); if (!$('#pmResults').children.length) searchModels(true); $('#pmSearch').focus(); });
+$('#pmClose').addEventListener('click', () => $('#modelPicker').close());
+$('#modelPicker').addEventListener('click', e => { if (e.target === $('#modelPicker')) $('#modelPicker').close(); });
+let pmTimer;
+$('#pmSearch').addEventListener('input', () => { clearTimeout(pmTimer); pmTimer = setTimeout(() => { picker.q = $('#pmSearch').value.trim(); searchModels(true); }, 350); });
+$('#pmFeatured').addEventListener('change', () => { picker.featured = $('#pmFeatured').checked; searchModels(true); });
+$('#pmChips').addEventListener('click', e => {
+  const c = e.target.closest('.chip-f'); if (!c) return;
+  document.querySelectorAll('.chip-f').forEach(x => x.classList.toggle('on', x === c));
+  picker.arch = c.dataset.arch; searchModels(true);
+});
+$('#pmMore').addEventListener('click', () => searchModels(false));
+$('#pmResults').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (b) pickModel(JSON.parse(b.dataset.m)); });
+
+function imageModel(){
+  const v = $('#imgModel').value;
+  return v === 'custom' ? $('#customModel').value.trim() : v;
+}
+['#aspect', '#quality'].forEach(s => $(s).addEventListener('change', () => { renderGrid(); refreshTimeline(); }));
+
+/* FLUX and GPT Image ignore negative prompts (or reject the field); other checkpoints (SD, SDXL and similar) use it. */
+function supportsNegative(){
+  const m = imageModel();
+  if (m === 'runware:101@1' || m === 'runware:100@1' || isGpt()) return false;
+  const arch = state.picked && state.picked.air === m ? String(state.picked.architecture || '') : '';
+  return !/flux|openai|gpt/i.test(arch);
+}
+
+async function runware(prompt){
+  const [w, h] = imgSize();
+  const task = {
+    taskType: 'imageInference', taskUUID: uuid(),
+    positivePrompt: prompt.slice(0, 2900), model: imageModel(),
+    width: w, height: h, numberResults: 1, outputType: 'base64Data', outputFormat: 'JPG', includeCost: true
+  };
+  if (supportsNegative() && !runware.noNeg) task.negativePrompt = NEGATIVE_PROMPT;
+  const steps = parseInt($('#steps').value, 10); if (steps > 0) task.steps = steps;
+  if (task.model === 'runware:101@1' && !runware.noCFG) task.CFGScale = parseFloat($('#look').value) || 2.5;
+  const json = await relay([task]);
+  if (json.errors && json.errors.length){
+    const msg = json.errors[0].message || 'Runware returned an error';
+    if (task.CFGScale !== undefined && /cfg/i.test(msg + JSON.stringify(json.errors[0]))){ runware.noCFG = true; return runware(prompt); }
+    if (task.negativePrompt !== undefined && /negative/i.test(msg + JSON.stringify(json.errors[0]))){ runware.noNeg = true; return runware(prompt); }
+    throw new Error(msg);
+  }
+  const d = (json.data || []).find(x => x.imageBase64Data || x.imageURL);
+  if (!d) throw new Error('Runware returned no image');
+  const cost = typeof d.cost === 'number' ? d.cost : null;
+  if (d.imageBase64Data) return { b64: d.imageBase64Data, cost };
+  const img = await fetch(d.imageURL); return { b64: await blobToB64(await img.blob()), cost };
+}
+function costKey(){ return [imageModel(), imgSize().join('x'), $('#steps').value].join('|'); }
+$('#imgModel').addEventListener('change', () => { $('#look').disabled = imageModel() !== 'runware:101@1'; });
+function money(v){ return '$' + (v > 0 && v < 0.01 ? v.toFixed(4) : v.toFixed(3)); }
+function updateCost(){
+  const el = $('#costMeta'); if (!el) return;
+  const c = state.cost, k = c.per[costKey()];
+  const n = state.items.length, missing = state.items.filter(it => !it.b64).length;
+  const parts = [];
+  if (k && k.n){
+    const avg = k.sum / k.n;
+    parts.push(`About ${money(avg)} per image with these settings`);
+    if (missing) parts.push(`the ${missing} remaining will cost about ${money(avg * missing)}`);
+  } else if (n){
+    parts.push('The price per image shows after the first one. To check it before a full batch, press Generate on a single image card');
+  }
+  if (c.images + c.prompts > 0) parts.push(`spent this session: ${money(c.images + c.prompts)}`);
+  el.textContent = parts.map(p => p.replace(/^./, m => m.toUpperCase()) + '.').join(' ');
+}
+
+async function generateOne(i){
+  const it = state.items[i]; if (!it) return;
+  it.status = 'loading'; it.err = ''; updateCell(i);
+  try {
+    const base = it.prompt || fallbackPrompt(it.text);
+    const { b64, cost } = await runware(/no readable text/i.test(base) ? base : base.replace(/\s+$/,'') + ' ' + NO_TEXT_TAIL);
+    if (cost !== null){
+      state.cost.images += cost;
+      const k = state.cost.per[costKey()] || (state.cost.per[costKey()] = { sum: 0, n: 0 });
+      k.sum += cost; k.n++;
+    }
+    if (it.url) URL.revokeObjectURL(it.url);
+    it.b64 = b64; it.url = URL.createObjectURL(b64ToBlob(b64)); it.status = 'done';
+  } catch (e) {
+    if (e.auth){ it.status = 'idle'; state.cancel = true; state.authStop = true; setStatus('#s3', e.message + ' Then press Generate again.', 'err'); }
+    else { it.status = 'error'; it.err = e.message; }
+  }
+  updateCell(i); updateProgress(); refreshTimeline();
+}
+
+$('#genBtn').addEventListener('click', async () => {
+  if (needCode('#s3')) return;
+  if (!imageModel()){ setStatus('#s3', 'Paste a Runware model ID, or pick FLUX.1 Dev from the list.', 'err'); $('#customModel').focus(); return; }
+  const todo = state.items.map((it, i) => it.b64 ? -1 : i).filter(i => i >= 0);
+  if (!todo.length) return;
+  state.running = true; state.cancel = false; updateButtons();
+  setStatus('#s3', `Generating ${todo.length} images…`);
+  const conc = Math.min(8, Math.max(1, parseInt($('#conc').value, 10) || 3));
+  await pool(todo, conc, generateOne);
+  state.running = false;
+  const failed = state.items.filter(it => it.status === 'error');
+  if (state.authStop) state.authStop = false; // the access-code message is already showing
+  else if (state.cancel) setStatus('#s3', 'Stopped. Press generate again to continue with the rest.');
+  else if (failed.length) setStatus('#s3', `${failed.length} image${failed.length > 1 ? 's' : ''} failed: ${failed[0].err} Press generate again to retry only those.`, 'err');
+  else setStatus('#s3', 'Every image is ready. Head to step 4 to download them.', 'ok');
+  updateButtons();
+});
+$('#stopBtn').addEventListener('click', () => { state.cancel = true; $('#stopBtn').disabled = true; setStatus('#s3', 'Stopping after the images already in progress…'); });
+
+async function downloadZip(sid){
+  if (typeof JSZip === 'undefined'){ setStatus(sid, 'The zip library didn\'t load. Check your connection and reload the page.', 'err'); return; }
+  $('#zipBtn2').disabled = true; setStatus(sid, 'Packing the zip…');
+  const zip = new JSZip(); const log = [];
+  state.items.forEach((it, i) => {
+    if (it.b64) zip.file(fname(i), it.b64, { base64: true });
+    log.push(`${fname(i)}\nSentence: ${it.text}\nPrompt: ${it.prompt}\n`);
+  });
+  zip.file('prompts.txt', log.join('\n'));
+  const blob = await zip.generateAsync({ type: 'blob' });
+  downloadBlob(blob, 'images.zip');
+  setStatus(sid, `Downloaded images.zip with ${state.items.filter(it => it.b64).length} images and prompts.txt.`, 'ok');
+  updateButtons();
+}
+$('#zipBtn2').addEventListener('click', () => downloadZip('#s4'));
+
+function cellHTML(it, i){
+  const [w, h] = imgSize();
+  const label = { idle: 'Waiting', loading: 'Generating…', done: 'Ready', error: 'Failed' }[it.status];
+  const msg = it.status === 'loading' ? 'Generating…' : it.status === 'error' ? esc(it.err) : 'Not generated yet';
+  return `<figure class="frame s-${it.status}" data-i="${i}">
+    <div class="shot" style="aspect-ratio:${w}/${h}">${it.url
+      ? `<img src="${it.url}" alt="Image ${numStr(i)}: ${esc(it.text)}" data-act="view">`
+      : `<span class="shot-msg">${msg}</span>`}</div>
+    <figcaption>
+      <span class="fnum">${fname(i)}</span><span class="fstate">${label}</span>
+      <button class="regen" data-act="regen" ${it.status === 'loading' ? 'disabled' : ''}>${it.url ? 'Redo' : 'Generate'}</button>
+    </figcaption>
+    <p class="fsent">${esc(it.text)}</p>
+  </figure>`;
+}
+function renderGrid(){ $('#sheet').innerHTML = state.items.map(cellHTML).join(''); updateProgress(); }
+function updateCell(i){
+  const el = $(`#sheet .frame[data-i="${i}"]`);
+  if (el) el.outerHTML = cellHTML(state.items[i], i);
+}
+function updateProgress(){
+  const n = state.items.length, d = state.items.filter(it => it.b64).length;
+  $('#bar').style.width = n ? (d / n * 100) + '%' : '0';
+  $('#genMeta').textContent = n ? `${d} of ${n} ready` : '';
+  updateCost();
+  updateButtons();
+}
+$('#sheet').addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const i = +t.closest('.frame').dataset.i;
+  if (t.dataset.act === 'regen'){
+    if (needCode('#s3')) return;
+    generateOne(i);
+  } else if (t.dataset.act === 'view'){
+    const it = state.items[i];
+    $('#viewerImg').src = it.url; $('#viewerImg').alt = 'Image ' + numStr(i);
+    $('#viewerText').textContent = `${fname(i)}: ${it.text}`;
+    $('#viewer').showModal();
+  }
+});
+$('#viewerClose').addEventListener('click', () => $('#viewer').close());
+$('#viewer').addEventListener('click', e => { if (e.target === $('#viewer')) $('#viewer').close(); });
+
+/* ---------- STEP 4: SRT + XML ---------- */
+function toSec(t){
+  const m = String(t).match(/(?:(\d+):)?(\d+):(\d+)[,.](\d+)/);
+  if (!m) return NaN;
+  return (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4]) / Math.pow(10, m[4].length);
+}
+function parseSRT(txt){
+  const blocks = txt.replace(/^\uFEFF/, '').replace(/\r/g, '').split(/\n\s*\n/);
+  const cues = [];
+  for (const b of blocks){
+    const lines = b.split('\n').filter(l => l.trim() !== '');
+    const ti = lines.findIndex(l => l.includes('-->'));
+    if (ti < 0) continue;
+    const [a, z] = lines[ti].split('-->').map(s => s.trim().split(/\s+/)[0]);
+    const start = toSec(a), end = toSec(z);
+    if (isNaN(start) || isNaN(end)) continue;
+    const text = lines.slice(ti + 1).join(' ').replace(/<[^>]+>/g, '').replace(/\{[^}]*\}/g, '').trim();
+    cues.push({ start, end: Math.max(end, start), text });
+  }
+  return cues.sort((x, y) => x.start - y.start);
+}
+async function loadSRT(file){
+  if (!file) return;
+  const cues = parseSRT(await file.text());
+  if (!cues.length){ setStatus('#s4', 'No subtitle timings found in that file. Make sure it\'s an .srt file.', 'err'); return; }
+  state.cues = cues;
+  $('#dropTitle').textContent = file.name;
+  $('#dropSub').textContent = `${cues.length} subtitle lines, ${fmtClock(cues[cues.length - 1].end)} long. Choose another file to replace it.`;
+  refreshTimeline();
+}
+$('#srtFile').addEventListener('change', e => loadSRT(e.target.files[0]));
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => loadSRT(e.dataTransfer.files[0]));
+['#mode', '#fps', '#zero'].forEach(s => $(s).addEventListener('change', refreshTimeline));
+$('#motion').addEventListener('change', () => { $('#zoomAmt').disabled = $('#motion').value === 'none'; });
+
+function rateInfo(){
+  const v = $('#fps').value;
+  const map = { '23.976': [24, true], '29.97': [30, true], '59.94': [60, true] };
+  const [tb, ntsc] = map[v] || [Math.round(+v), false];
+  return { tb, ntsc, fps: ntsc ? tb * 1000 / 1001 : tb };
+}
+
+function computeStarts(){
+  const items = state.items, cues = state.cues;
+  const mode = $('#mode').value;
+  if (mode === 'cues'){
+    const n = Math.min(items.length, cues.length);
+    return { starts: cues.slice(0, n).map(c => c.start), end: cues[n - 1].end, count: n,
+      note: items.length !== cues.length ? `${items.length} images but ${cues.length} subtitle lines, so only the first ${n} are placed.` : '' };
+  }
+  const sw = [], st = [];
+  cues.forEach(c => {
+    const w = tokens(c.text); const span = c.end - c.start;
+    w.forEach((x, j) => { sw.push(x); st.push(c.start + span * j / w.length); });
+  });
+  if (!sw.length) return null;
+  const scriptTotal = items.reduce((a, it) => a + tokens(it.text).length, 0) || 1;
+  let p = 0, k = 0, misses = 0, matched = 0;
+  const starts = items.map(it => {
+    const toks = tokens(it.text); let first = null;
+    if (!toks.length) first = Math.min(p, sw.length - 1);
+    for (const w of toks){
+      let hit = -1;
+      for (let j = p; j < Math.min(p + 12, sw.length); j++) if (sw[j] === w){ hit = j; break; }
+      let map;
+      if (hit >= 0){ map = hit; p = hit + 1; misses = 0; matched++; }
+      else {
+        misses++;
+        if (misses > 20){ p = Math.min(sw.length - 1, Math.round(k * sw.length / scriptTotal)); misses = 0; }
+        map = Math.min(p, sw.length - 1);
+      }
+      if (first === null) first = map;
+      k++;
+    }
+    return st[first];
+  });
+  const pct = Math.round(matched / scriptTotal * 100);
+  return { starts, end: cues[cues.length - 1].end, count: items.length,
+    note: pct < 70 ? `Only ${pct}% of script words matched the subtitles, so some timings are estimated. Check that the SRT is from this script.` : `${pct}% of script words matched the subtitles.` };
+}
+
+function refreshTimeline(){
+  const ok = state.items.length && state.cues.length;
+  $('#timeline').hidden = !ok;
+  state.timeline = [];
+  if (!ok){ $('#tlMeta').textContent = ''; updateButtons(); return; }
+  const r = computeStarts();
+  if (!r){ setStatus('#s4', 'The subtitles have no readable words to match against.', 'err'); updateButtons(); return; }
+  const { fps } = rateInfo();
+  const n = r.count;
+  const sf = r.starts.map(s => Math.round(s * fps));
+  if ($('#zero').checked) sf[0] = 0;
+  for (let i = 1; i < n; i++) if (sf[i] <= sf[i - 1]) sf[i] = sf[i - 1] + 1;
+  const endF = Math.max(Math.round(r.end * fps), sf[n - 1] + 1);
+  state.timeline = sf.map((s, i) => ({ i, start: s, end: i < n - 1 ? sf[i + 1] : endF }));
+
+  const total = endF;
+  const lens = state.timeline.map(c => (c.end - c.start) / fps);
+  $('#tlMeta').textContent = `${n} images, ${fmtClock(total / fps)} total, ${Math.min(...lens).toFixed(1)}s to ${Math.max(...lens).toFixed(1)}s each`;
+  setStatus('#s4', r.note, r.note.startsWith('Only') || r.note.includes('only the first') ? 'err' : 'ok');
+
+  $('#track').innerHTML = state.timeline.map(c => {
+    const it = state.items[c.i];
+    const bg = it.url ? `background-image:url('${it.url}')` : '';
+    return `<div class="clip" style="flex:${c.end - c.start} 0 0;${bg}" title="${fname(c.i)}  ${fmtTime(c.start / fps)} to ${fmtTime(c.end / fps)}"><b>${c.end - c.start > total / 60 ? numStr(c.i) : ''}</b></div>`;
+  }).join('');
+  const secs = total / fps;
+  const stepS = secs > 600 ? 60 : secs > 240 ? 30 : secs > 90 ? 15 : 10;
+  let ticks = '';
+  for (let s = 0; s < secs; s += stepS) ticks += `<span style="left:${s / secs * 100}%">${fmtClock(s)}</span>`;
+  $('#ruler').innerHTML = ticks;
+  updateButtons();
+}
+
+function pathUrl(folder, name){
+  let f = folder.trim().replace(/\\/g, '/');
+  if (!f) return 'file://localhost/' + encodeURIComponent(name);
+  if (!f.endsWith('/')) f += '/';
+  const enc = (f + name).split('/').map(seg => /^[A-Za-z]:$/.test(seg) ? seg.replace(':', '%3a') : encodeURIComponent(seg)).join('/');
+  return 'file://localhost' + (enc.startsWith('/') ? '' : '/') + enc;
+}
+const xesc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+
+const TRANSITIONS = [
+  ['Cross Dissolve', 'Dissolve'], ['Additive Dissolve', 'Dissolve'], ['Non-Additive Dissolve', 'Dissolve'], ['Ripple Dissolve', 'Dissolve'],
+  ['Dither Dissolve', 'Dissolve'], ['Fade In Fade Out Dissolve', 'Dissolve'], ['Dip to Color Dissolve', 'Dissolve', 0], ['Dip to Color Dissolve', 'Dissolve', 255],
+  ['Cross Zoom', '3D Simulation'], ['Cube Spin', '3D Simulation'], ['Spin3D', '3D Simulation'], ['Spinback3D', '3D Simulation'], ['Swing', '3D Simulation'], ['Zoom', '3D Simulation'],
+  ['Cross Iris', 'Iris'], ['Diamond Iris', 'Iris'], ['Oval Iris', 'Iris'], ['Point Iris', 'Iris'], ['Rectangle Iris', 'Iris'], ['Star Iris', 'Iris'],
+  ['Page Peel', 'Page Peel'],
+  ['Band Slide', 'Slide'], ['Box Slide', 'Slide'], ['Center Split Slide', 'Slide'], ['Multi Spin Slide', 'Slide'], ['Push Slide', 'Slide'],
+  ['Slide', 'Slide'], ['Spin Slide', 'Slide'], ['Split Slide', 'Slide'], ['Swap Slide', 'Slide'],
+  ['Cross Stretch', 'Stretch'], ['Squash', 'Stretch'], ['Squash and Stretch', 'Stretch'], ['Stretch', 'Stretch'],
+  ['Band Wipe', 'Wipe'], ['Center Wipe', 'Wipe'], ['Checker Wipe', 'Wipe'], ['Checkerboard Wipe', 'Wipe'], ['Clock Wipe', 'Wipe'],
+  ['Edge Wipe', 'Wipe'], ['Gradient Wipe', 'Wipe'], ['Inset Wipe', 'Wipe'], ['Jaws Wipe', 'Wipe'], ['Random Edge Wipe', 'Wipe'],
+  ['V Wipe', 'Wipe'], ['Venetian Blind Wipe', 'Wipe'], ['Wrap Wipe', 'Wipe'], ['Zig Zag Block Wipe', 'Wipe'],
+  ['Channel Map', 'Map'], ['Luminance Map', 'Map']
+];
+function transitionPicker(){
+  let bag = [], last = -1;
+  return () => {
+    if (!bag.length){
+      bag = TRANSITIONS.map((_, i) => i);
+      for (let i = bag.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+      if (bag[bag.length - 1] === last) [bag[0], bag[bag.length - 1]] = [bag[bag.length - 1], bag[0]];
+    }
+    return (last = bag.pop());
+  };
+}
+function transitionXML(t, start, end, rate){
+  const [id, cat, dip] = TRANSITIONS[t];
+  const label = dip === undefined ? id : dip ? 'Dip to White' : 'Dip to Black';
+  const dissolve = cat === 'Dissolve' ? `
+            <wipecode>0</wipecode>
+            <wipeaccuracy>100</wipeaccuracy>` : '';
+  const color = dip === undefined ? '' : `
+            <parameter><parameterid>color</parameterid><name>Color</name><value><alpha>255</alpha><red>${dip}</red><green>${dip}</green><blue>${dip}</blue></value></parameter>`;
+  return `        <transitionitem>
+          <start>${start}</start>
+          <end>${end}</end>
+          <alignment>start</alignment>
+          ${rate}
+          <effect>
+            <name>${xesc(label)}</name>
+            <effectid>${xesc(id)}</effectid>
+            <effectcategory>${xesc(cat)}</effectcategory>
+            <effecttype>transition</effecttype>
+            <mediatype>video</mediatype>${dissolve}
+            <startratio>0</startratio>
+            <endratio>1</endratio>
+            <reverse>${Math.random() < 0.5 ? 'TRUE' : 'FALSE'}</reverse>${color}
+          </effect>
+        </transitionitem>`;
+}
+
+function buildXML(){
+  const r = rateInfo();
+  const rate = `<rate><timebase>${r.tb}</timebase><ntsc>${r.ntsc ? 'TRUE' : 'FALSE'}</ntsc></rate>`;
+  const [sw, sh] = seqSize(); const [iw, ih] = imgSize();
+  const scale = (Math.max(sw / iw, sh / ih) * 100).toFixed(3);
+  const folder = $('#folder').value;
+  const total = state.timeline[state.timeline.length - 1].end;
+  const tl = state.timeline, tFrames = Math.round((parseFloat($('#trans').value) || 0) * r.fps);
+  const post = tl.map((c, k) => {
+    if (!tFrames || k === tl.length - 1) return 0;
+    const d = Math.min(tFrames, Math.floor((tl[k + 1].end - tl[k + 1].start) / 3));
+    return d >= 4 ? d : 0;
+  });
+  const pick = transitionPicker();
+  const clips = state.timeline.map((c, k) => {
+    const name = fname(c.i); const len = c.end - c.start; const id = k + 1; const media = len + post[k];
+    const motion = $('#motion').value, zoom = parseFloat($('#zoomAmt').value) || 0;
+    const dir = motion === 'in' ? 1 : motion === 'out' ? -1 : motion === 'alt' ? (k % 2 ? -1 : 1) : 0;
+    const base = $('#fill').checked ? +scale : 100, big = base * (1 + zoom);
+    const s0 = (dir < 0 ? big : base).toFixed(3), s1 = (dir > 0 ? big : base).toFixed(3);
+    const scaleParam = dir === 0
+      ? `<value>${base.toFixed(3)}</value>`
+      : `<value>${s0}</value>
+                <keyframe><when>0</when><value>${s0}</value></keyframe>
+                <keyframe><when>${len}</when><value>${s1}</value></keyframe>`;
+    const filter = ($('#fill').checked || dir !== 0) ? `
+          <filter>
+            <effect>
+              <name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory>
+              <effecttype>motion</effecttype><mediatype>video</mediatype>
+              <parameter authoringApp="PremierePro"><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax>${scaleParam}</parameter>
+            </effect>
+          </filter>` : '';
+    return `        <clipitem id="clipitem-${id}">
+          <masterclipid>masterclip-${id}</masterclipid>
+          <name>${xesc(name)}</name>
+          <enabled>TRUE</enabled>
+          <duration>${media}</duration>
+          ${rate}
+          <start>${c.start}</start>
+          <end>${c.end}</end>
+          <in>0</in>
+          <out>${len}</out>
+          <alphatype>none</alphatype>
+          <file id="file-${id}">
+            <name>${xesc(name)}</name>
+            <pathurl>${xesc(pathUrl(folder, name))}</pathurl>
+            ${rate}
+            <duration>${media}</duration>
+            <media>
+              <video>
+                <samplecharacteristics>
+                  ${rate}
+                  <width>${iw}</width><height>${ih}</height>
+                  <anamorphic>FALSE</anamorphic><pixelaspectratio>square</pixelaspectratio><fielddominance>none</fielddominance>
+                </samplecharacteristics>
+              </video>
+            </media>
+          </file>${filter}
+        </clipitem>` + (post[k] ? '\n' + transitionXML(pick(), c.end, c.end + post[k], rate) : '');
+  }).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xmeml>
+<xmeml version="4">
+  <sequence id="sequence-1">
+    <uuid>${uuid()}</uuid>
+    <name>${xesc($('#seqName').value.trim() || 'Script images')}</name>
+    <duration>${total}</duration>
+    ${rate}
+    <timecode>
+      ${rate}
+      <string>00:00:00:00</string>
+      <frame>0</frame>
+      <displayformat>NDF</displayformat>
+    </timecode>
+    <media>
+      <video>
+        <format>
+          <samplecharacteristics>
+            ${rate}
+            <width>${sw}</width><height>${sh}</height>
+            <anamorphic>FALSE</anamorphic><pixelaspectratio>square</pixelaspectratio><fielddominance>none</fielddominance>
+          </samplecharacteristics>
+        </format>
+        <track>
+${clips}
+          <enabled>TRUE</enabled>
+          <locked>FALSE</locked>
+        </track>
+      </video>
+    </media>
+  </sequence>
+</xmeml>
+`;
+}
+
+$('#xmlBtn').addEventListener('click', () => {
+  if (!state.timeline.length) return;
+  const xml = buildXML();
+  const name = ($('#seqName').value.trim() || 'Script images').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'timeline';
+  downloadBlob(new Blob([xml], { type: 'application/xml' }), name + '.xml');
+  state.xmlDone = true; updateButtons();
+  setStatus('#s4', `Downloaded ${name}.xml with ${state.timeline.length} images on the timeline.`, 'ok');
+});
+
+/* ---------- shared ---------- */
+function updateButtons(){
+  const n = state.items.length;
+  const missing = state.items.filter(it => !it.b64).length;
+  const hasImg = state.items.some(it => it.b64);
+  $('#promptBtn').disabled = !n || state.running;
+  $('#exportBtn').disabled = !n;
+  $('#genBtn').disabled = !n || !missing || state.running;
+  $('#genBtn .lbl').textContent = !n ? 'Generate images' : missing === n ? `Generate ${n} images` : missing ? `Generate ${missing} remaining` : 'All images ready';
+  $('#stopBtn').disabled = !state.running || state.cancel;
+  $('#zipBtn2').disabled = !hasImg || state.running;
+  $('#xmlBtn').disabled = !state.timeline.length;
+  markSteps();
+}
+function markSteps(){
+  const it = state.items, n = it.length;
+  const done = [n > 0, n > 0 && it.every(x => x.prompt.trim()), n > 0 && it.every(x => x.b64), !!state.xmlDone && state.timeline.length > 0];
+  document.querySelectorAll('.step').forEach((s, k) => s.classList.toggle('done', done[k]));
+  const cur = done.indexOf(false);
+  document.querySelectorAll('.chip').forEach((c, k) => {
+    c.classList.toggle('done', done[k]); c.classList.toggle('current', k === cur);
+    if (k === cur && k > 0 && prevDone.length && !prevDone[k - 1] && done[k - 1]){ c.classList.remove('nudge'); void c.offsetWidth; c.classList.add('nudge'); }
+  });
+  prevDone = done;
+}
+let prevDone = [];
+function showStep(k, scroll = true){
+  document.querySelectorAll('.step').forEach((s, j) => { s.hidden = j !== k; });
+  document.querySelectorAll('.chip').forEach((c, j) => {
+    c.classList.toggle('viewing', j === k);
+    if (j === k) c.setAttribute('aria-current', 'step'); else c.removeAttribute('aria-current');
+  });
+  const st = document.querySelector('.stepper'), ch = document.querySelectorAll('.chip')[k];
+  const cr = ch.getBoundingClientRect(), sr = st.getBoundingClientRect();
+  st.scrollTo({ left: st.scrollLeft + (cr.left - sr.left) - st.clientWidth / 2 + cr.width / 2 });
+  if (window.moveInd) moveInd();
+  const s = document.querySelectorAll('.step')[k];
+  s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter');
+  if (scroll){
+    const y = document.querySelector('.app').getBoundingClientRect().top + scrollY - 12;
+    if (scrollY > y) scrollTo({ top: y });
+  }
+}
+document.querySelectorAll('.chip').forEach((c, k) => c.addEventListener('click', e => { e.preventDefault(); showStep(k); }));
+document.addEventListener('click', e => { const b = e.target.closest('.next'); if (b) showStep(+b.dataset.go); });
+function renderAll(){ renderPrompts(); renderGrid(); refreshTimeline(); updateButtons(); }
+updateButtons();
+showStep(0, false);
+loadServerStatus();
+
+/* ---------- motion (visual only) ---------- */
+(function(){
+  const root = document.documentElement, anim = root.classList.contains('js-anim');
+
+  // Headline words, so each step's title can reveal word by word.
+  document.querySelectorAll('.step h2').forEach(el => {
+    let i = 0;
+    const walk = node => [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3){
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(p => {
+          if (!p) return;
+          if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(p)); return; }
+          const s = document.createElement('span'); s.className = 'w'; s.style.setProperty('--i', i++); s.textContent = p; frag.appendChild(s);
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) walk(n);
+    });
+    walk(el);
+  });
+
+  // Sliding highlight in the step dock.
+  window.moveInd = () => {
+    const ind = document.querySelector('.dock-ind'), cur = document.querySelector('.chip.viewing');
+    if (!ind || !cur) return;
+    const li = cur.parentElement;
+    ind.style.width = li.offsetWidth + 'px';
+    ind.style.transform = 'translateX(' + li.offsetLeft + 'px)';
+  };
+  moveInd();
+  addEventListener('resize', moveInd);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInd);
+
+  if (anim){
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelector('.hero').classList.add('go');
+      document.querySelector('.dock').classList.add('go');
+    }));
+  }
+
+  // Soft glow that follows the cursor across each panel.
+  document.addEventListener('pointermove', e => {
+    const s = e.target.closest && e.target.closest('.step');
+    if (!s) return;
+    const r = s.getBoundingClientRect();
+    s.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    s.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }, { passive: true });
+
+  // Hero: a morphing sphere of glowing particles that leans toward the cursor.
+  const c = document.getElementById('orb'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const N = 2600, pts = [];
+  for (let i = 0; i < N; i++){
+    const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), th = i * 2.399963;
+    pts.push([Math.cos(th) * r, y, Math.sin(th) * r, Math.random()]);
+  }
+  let w = 0, h = 0, t = 0, mx = 0, my = 0, tx = 0, ty = 0, running = false, inView = true;
+  function size(){
+    const dpr = Math.min(2, devicePixelRatio || 1), b = c.getBoundingClientRect();
+    w = b.width; h = b.height; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function draw(){
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'lighter';
+    const R = Math.min(w, h) * 0.33, cx = w / 2, cy = h / 2;
+    tx += (mx - tx) * 0.05; ty += (my - ty) * 0.05;
+    const ay = t * 0.18 + tx * 0.7, ax = 0.35 + ty * 0.5;
+    const ca = Math.cos(ay), sa = Math.sin(ay), cb = Math.cos(ax), sb = Math.sin(ax);
+    for (const [x0, y0, z0, q] of pts){
+      const n = 1 + 0.16 * Math.sin(3 * x0 + t * 0.9) * Math.cos(3 * y0 - t * 0.7) + 0.08 * Math.sin(5 * z0 + t * 1.3) + (q - 0.5) * 0.05;
+      const x = x0 * n, y = y0 * n, z = z0 * n;
+      const X = x * ca - z * sa; let Z = x * sa + z * ca;
+      const Y = y * cb - Z * sb; Z = y * sb + Z * cb;
+      const p = 2.6 / (2.6 - Z), d = Math.max(0, Math.min(1, (Z + 1.2) / 2.4));
+      const a = 0.16 + d * 0.8, s = (0.7 + d * 1.8) * (q > 0.97 ? 2.2 : 1);
+      ctx.fillStyle = q > 0.9 ? 'rgba(210,255,160,' + a + ')' : 'rgba(' + (50 + d * 80 | 0) + ',' + (190 + d * 65 | 0) + ',' + (35 + d * 25 | 0) + ',' + a + ')';
+      ctx.fillRect(cx + X * R * p, cy + Y * R * p, s, s);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  function loop(){
+    if (!inView || document.hidden){ running = false; return; }
+    running = true; t += 0.016; draw(); requestAnimationFrame(loop);
+  }
+  const start = () => { if (!running && anim) loop(); };
+  size();
+  addEventListener('resize', () => { size(); if (!anim) draw(); });
+  addEventListener('pointermove', e => { mx = e.clientX / innerWidth - 0.5; my = e.clientY / innerHeight - 0.5; }, { passive: true });
+  if (!anim){ draw(); return; }
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { inView = es[0].isIntersecting; start(); }).observe(c);
+  document.addEventListener('visibilitychange', start);
+  start();
+})();
+</script>
+</body>
+</html>
