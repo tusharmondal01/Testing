@@ -65,6 +65,14 @@ Every line of the script becomes its own image prompt in step 2. The goal is ima
 **No garbled text**
 - Certificates, documents, signs and screens are shown small, from behind, or blurred. Every prompt ends with a no-text sentence (`NO_TEXT_TAIL`), added automatically to edited or older prompts at generation time.
 
-**Prompt strength** (step 2): Standard (70 to 100 words), Rich (110 to 150, default) or Maximum (160 to 210).
+**Hyper-real prompt writing**
+- The default prompt writer is now the *Runware AI photographer*. It sends the full photographer brief (`claudeSystem()`) to the text model approved in /admin, so no Anthropic key is needed. *Runware Prompt Enhance* is still there as the fast, short option.
+- Every prompt is built as a ten-layer shot description: shot and framing, subject, wardrobe, action and micro-expression, hands and props, setting in three depth layers (foreground, midground, background), time, weather and air, light physics (source, direction, hard or soft, colour temperature, shadows, catchlight, bounce), camera and optics (lens, aperture, distance, focus), and real-photo texture.
+- Prompts are composed for the chosen **Frame shape** (16:9, 9:16, 1:1 or 4:3) instead of always assuming vertical.
+- "Hyper-real" means more physical facts, not hype words. Words like *8k* or *hyper-realistic* are still banned because they make FLUX images look fake.
 
-To change the look for the whole team, edit `MASTER_LOOK`, `STYLES`, `STYLE_TAGS` and `claudeSystem()` at the top of the "STEP 2: prompts" section.
+**Prompt strength** (step 2): Standard (70 to 100 words), Rich (110 to 150), Maximum (160 to 210, default) or Ultra hyper-real (200 to 250).
+
+**Strengthen before generating** (step 3, on by default): right before images are generated, any weak prompt (empty, template, under about 90 words, or missing light, lens and texture details) is rebuilt by the AI photographer. It keeps the prompt's idea. If the AI isn't available, `boostPrompt()` adds the `REALISM_LAYERS` (composition, skin, materials, light, lens) when the prompt is sent, so a thin prompt never reaches the image model.
+
+To change the look for the whole team, edit `MASTER_LOOK`, `STYLES`, `STYLE_TAGS`, `REALISM_LAYERS` and `claudeSystem()` at the top of the "STEP 2: prompts" section.
