@@ -74,6 +74,15 @@ Every line of the script becomes its own image prompt in step 2. The goal is ima
 - Images use only **GPT Image 2** (`openai:gpt-image@2`, `IMAGE_MODEL`).
 - Only the Runware key saved in /admin is needed.
 
+**Visual Director pipeline (default prompt writer)** – `public/visuals/director.js`
+Built from the "Runware Bulk Image Generation" plan: the pipeline adds a visual-planning layer instead of turning each line straight into a prompt.
+1. **Scene segmentation** (step 1, *By scene*): Claude splits where a new meaningful visual idea starts, aiming softly for the image range (default 60 to 70) without forcing it.
+2. **Casting**: Claude reads the title and whole script and writes the **Character & style bible** (topic, setting, one profile per recurring person). It is editable; every prompt copies these profiles word for word so people stay consistent. Empty it to recast.
+3. **Visual plan**: for every line Claude returns a structured scene (`scene_type`, `visual_concept`, `character_ids`, `main_subject`, `action`, `environment`, `time_of_day`, `lighting`, `emotion`, `shot`, `camera`, `composition`, `key_props`, `same_scene_as_previous`, `text_in_image: false`). Planned 12 lines at a time in order, so shot variety and continuity carry across the video. Shot, emotion, place and characters show as chips under each line.
+4. **Prompt engineering**: each structured scene becomes a detailed photorealistic prompt, then the permanent `GLOBAL_STYLE` and `AVOID` layers are appended.
+5. **Quality control** (step 3): after each image, Claude looks at it (Runware `inputs.images`) and checks realism, subject, action, place, text, faces and hands, and composition. Images under the pass score are regenerated with a corrected prompt (up to 1 or 2 times); the best attempt is kept and each card shows its score. If the account can't check images, generation continues without checks and says so.
+*Direct: one prompt per line* keeps the earlier behaviour.
+
 **How a script becomes prompts**
 1. Enter the **Video title** and paste the script (step 1). Claude reads the title and the whole script first.
 2. **Split by scene** (default): a new image starts where a line ends or a new situation begins (new place, person, time, action, feeling or idea).

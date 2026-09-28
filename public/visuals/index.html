@@ -148,6 +148,11 @@
   .row .sent .dur{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:.66rem;color:var(--lime);opacity:.75;white-space:nowrap}
   .script-box{position:relative}
   .title-field{margin-bottom:14px}
+  .scene-plan{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+  .chip-s{font-size:.72rem;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:#B9C7B5;background:rgba(255,255,255,.03);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qc{font-size:.72rem;margin-left:8px;padding:2px 7px;border-radius:999px}
+  .qc-ok{color:#0B1A07;background:var(--lime)}
+  .qc-warn{color:#1A1405;background:#F2C14E}
   #script{min-height:220px;font-size:1rem;padding:18px 20px 36px}
   #scriptMeta{position:absolute;right:16px;bottom:12px;font-family:var(--mono);font-size:.7rem;color:var(--faint);pointer-events:none;margin:0}
 
@@ -400,16 +405,16 @@
       <label class="split-mode"><span class="sr">Cut speed</span>
         <select id="pace">
           <option value="scene" selected>By scene · new image where a line ends or a new situation starts</option>
-          <option value="count">Always 65–75 images</option>
+          <option value="count">Exactly within the image range</option>
           <option value="fast">Fast cuts · about 2–3 s</option>
           <option value="vfast">Very fast · max ~20 characters</option>
           <option value="relaxed">Relaxed · about 3–6 s</option>
         </select>
       </label>
-      <span class="count-range" id="countRange" hidden>
-        <label><span class="sr">Fewest images</span><input type="number" id="minImg" value="65" min="2" max="500"></label>
+      <span class="count-range" id="countRange">
+        <label><span class="sr">Fewest images</span><input type="number" id="minImg" value="60" min="2" max="500"></label>
         <span aria-hidden="true">to</span>
-        <label><span class="sr">Most images</span><input type="number" id="maxImg" value="75" min="2" max="500"></label>
+        <label><span class="sr">Most images</span><input type="number" id="maxImg" value="70" min="2" max="500"></label>
         <span aria-hidden="true">images</span>
       </span>
       <button class="primary" id="splitBtn">Split script</button>
@@ -424,9 +429,10 @@
     <h2 id="h2">Write a prompt for <span class="dim">every moment.</span></h2>
     <p class="lede">Each moment becomes one detailed, hyper-realistic prompt. Every prompt stays editable.</p>
     <div class="fields">
-      <label class="field">Prompt writer
+      <label class="field">Prompt writer <small>Claude Sonnet 5 on Runware. The Visual Director casts characters, plans every scene and shot, then writes the prompts.</small>
         <select id="promptModel">
-          <option value="runwareLLM" selected>Claude Sonnet 5 on Runware</option>
+          <option value="director" selected>Visual Director (recommended)</option>
+          <option value="runwareLLM">Direct: one prompt per line</option>
         </select>
       </label>
       <select id="writerModel" hidden><option value="anthropic:claude@sonnet-5" selected>Claude Sonnet 5</option></select>
@@ -453,6 +459,9 @@
       </label>
       <label class="field span2">Characters &amp; look <small>Recurring people, place, era and mood, added to every prompt. Fill in before writing prompts, in English.</small>
         <textarea id="notes" rows="2" placeholder="e.g. Ravi, a 28-year-old Indian man with short black hair and a white kurta; small-town Rajasthan in the 1990s; warm golden-hour light"></textarea>
+      </label>
+      <label class="field span2" id="bibleField">Character &amp; style bible <small>Filled by the Visual Director from the whole script: one line per recurring person, used word for word in every prompt so people stay the same. Edit it and press Write prompts again to apply. Empty it to recast.</small>
+        <textarea id="bible" rows="4" placeholder="topic: ...&#10;setting: modern Indian city offices and homes, present day&#10;employee_01: Indian man, about 28 years old, short black hair, wearing a light-blue cotton oxford shirt and navy chinos (young professional)"></textarea>
       </label>
       <label class="field" id="anthField" hidden>Anthropic API key <small>Only needed when you open this file outside Claude</small>
         <input type="password" id="anthKey" autocomplete="off" placeholder="Leave empty inside Claude">
@@ -518,6 +527,15 @@
       </label>
       <label class="field">At the same time <small>Parallel requests</small>
         <input type="number" id="conc" value="3" min="1" max="8">
+      </label>
+      <label class="field span2 check"><span><input type="checkbox" id="qcOn" checked> Check every image with Claude and redo the ones that fail</span>
+        <small>Claude looks at each image: real photo (not cartoon or CGI), right subject, action and place, no text, no distorted faces or hands. Failed images are regenerated with a corrected prompt. Adds a small text cost per image.</small>
+      </label>
+      <label class="field">Redo failed images <small>Extra attempts per image</small>
+        <select id="qcRetries"><option value="1" selected>Up to 1 time</option><option value="2">Up to 2 times</option><option value="0">Never (only mark them)</option></select>
+      </label>
+      <label class="field">Pass score <small>Minimum score out of 10</small>
+        <select id="qcMin"><option value="6">6 (lenient)</option><option value="7" selected>7 (recommended)</option><option value="8">8 (strict)</option></select>
       </label>
       <label class="field span2 check"><span><input type="checkbox" id="autoStrong" checked> Strengthen weak prompts before generating</span>
         <small>Short, template or hand-typed prompts are rewritten into a full hyper-real shot description by the AI photographer first. If that fails, the realism layers are added automatically.</small>
@@ -769,10 +787,10 @@ function countRange(){
   if (lo > hi) [lo, hi] = [hi, lo];
   return { lo, hi, mid: Math.round((lo + hi) / 2) };
 }
-$('#pace').addEventListener('change', () => { $('#countRange').hidden = !countMode(); });
-$('#splitMode').addEventListener('change', () => { $('#textModelWrap').hidden = $('#splitMode').value !== 'smart'; });
+$('#pace').addEventListener('change', () => { $('#countRange').hidden = !countMode() && $('#pace').value !== 'scene'; });
+
 $('#textModelSel').addEventListener('change', () => { try { localStorage.setItem('craftush-text-model', $('#textModelSel').value); } catch {} });
-['#minImg', '#maxImg'].forEach(s => $(s).addEventListener('input', () => { const { lo, hi } = countRange(); $('#pace').options[0].textContent = `Always ${lo}–${hi} images`; }));
+['#minImg', '#maxImg'].forEach(s => $(s).addEventListener('input', () => { const { lo, hi } = countRange(); $('#pace').querySelector('option[value="count"]').textContent = `Exactly ${lo}–${hi} images`; }));
 const JOINERS = new Set(('and but or so then while which who whose where when because as after before until though although if that with without into through across over under ' +
   'aur lekin par magar jab tab kyunki isliye toh ki jo jahan phir ya ' + 'और लेकिन पर मगर जब तब क्योंकि इसलिए तो कि जो जहाँ फिर या').split(' '));
 // Splits a piece that is still too long at the most natural point, closest to its middle.
@@ -834,6 +852,11 @@ function enforcePace(segs, P){
 }
 
 function lengthRule(chunk){
+  if ($('#pace').value === 'scene'){
+    const { lo, hi } = countRange();
+    const total = ($('#script').value.match(WORD_RE) || []).length || 1, here = (chunk.match(WORD_RE) || []).length, share = here / total;
+    return `${pace().rule} One meaningful visual idea = one image: a line that is not visual on its own, or that adds no new visual idea, joins its neighbour; a line that moves to a new situation starts a new beat. Aim for roughly ${Math.max(1, Math.round(lo * share))} to ${Math.max(1, Math.round(hi * share))} beats for this text (about ${lo} to ${hi} for the whole script), but meaningful visual changes matter more than hitting the number exactly.`;
+  }
   if (!countMode()) return pace().rule;
   const { lo, hi, mid } = countRange();
   const total = ($('#script').value.match(WORD_RE) || []).length || 1, here = (chunk.match(WORD_RE) || []).length;
@@ -1337,6 +1360,7 @@ $('#promptModel').addEventListener('change', () => {
 $('#promptBtn').addEventListener('click', async () => {
   const items = state.items; if (!items.length) return;
   const writer = $('#promptModel').value;
+  if (writer === 'director') return runDirector();
   if (writer === 'template'){
     items.forEach(it => it.prompt = fallbackPrompt(it.text));
     renderPrompts();
@@ -1383,7 +1407,7 @@ $('#promptBtn').addEventListener('click', async () => {
 });
 
 $('#exportBtn').addEventListener('click', () => {
-  const data = { title: $('#videoTitle').value, script: $('#script').value, items: state.items.map(it => ({ text: it.text, prompt: it.prompt })) };
+  const data = { title: $('#videoTitle').value, bible: $('#bible').value, script: $('#script').value, items: state.items.map(it => ({ text: it.text, prompt: it.prompt, scene: it.scene || null })) };
   downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), 'prompts.json');
 });
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
@@ -1393,8 +1417,9 @@ $('#importFile').addEventListener('change', async e => {
     const data = JSON.parse(await f.text());
     if (!Array.isArray(data.items)) throw new Error();
     if (data.title) $('#videoTitle').value = data.title;
+    if (data.bible) $('#bible').value = data.bible;
     if (data.script) { $('#script').value = data.script; $('#script').dispatchEvent(new Event('input')); }
-    state.items = data.items.map(it => ({ text: String(it.text || ''), prompt: String(it.prompt || ''), status: 'idle', b64: null, url: null, err: '' }));
+    state.items = data.items.map(it => ({ text: String(it.text || ''), prompt: String(it.prompt || ''), scene: it.scene && typeof it.scene === 'object' ? it.scene : null, status: 'idle', b64: null, url: null, err: '' }));
     setStatus('#s2', `Loaded ${state.items.length} sentences and prompts.`, 'ok');
     renderAll();
   } catch { setStatus('#s2', 'That file isn\'t a prompts file saved from this page.', 'err'); }
@@ -1411,6 +1436,7 @@ function renderPrompts(){
       <span class="num">${numStr(i)}</span>
       <div>
         <p class="sent">${esc(it.text)}<span class="dur">≈ ${secsFor(it.text)} s</span></p>
+        ${it.scene && typeof sceneSummary === 'function' ? sceneSummary(it.scene) : ''}
         <div class="row-actions">
           ${i < state.items.length - 1 ? '<button class="small" data-act="merge">Merge with next</button>' : ''}
           <button class="small" data-act="remove">Remove</button>
@@ -1579,7 +1605,9 @@ async function generateOne(i){
   it.status = 'loading'; it.err = ''; updateCell(i);
   try {
     const base = it.prompt || fallbackPrompt(it.text);
-    const { b64, cost } = await runware(boostPrompt(base, it.text));
+    let { b64, cost } = await runware(boostPrompt(base, it.text));
+    // Visual Director quality check: may regenerate and returns the image to keep.
+    if (typeof qcAfterGenerate === 'function') b64 = (await qcAfterGenerate(i, { b64, cost })).b64;
     if (cost !== null){
       state.cost.images += cost;
       const k = state.cost.per[costKey()] || (state.cost.per[costKey()] = { sum: 0, n: 0 });
@@ -1662,13 +1690,13 @@ $('#zipBtn2').addEventListener('click', () => downloadZip('#s4'));
 function cellHTML(it, i){
   const [w, h] = imgSize();
   const label = { idle: 'Waiting', loading: 'Generating…', done: 'Ready', error: 'Failed' }[it.status];
-  const msg = it.status === 'loading' ? 'Generating…' : it.status === 'error' ? esc(it.err) : 'Not generated yet';
+  const msg = it.status === 'loading' ? (it.err ? esc(it.err) : 'Generating…') : it.status === 'error' ? esc(it.err) : 'Not generated yet';
   return `<figure class="frame s-${it.status}" data-i="${i}">
     <div class="shot" style="aspect-ratio:${w}/${h}">${it.url
       ? `<img src="${it.url}" alt="Image ${numStr(i)}: ${esc(it.text)}" data-act="view">`
       : `<span class="shot-msg">${msg}</span>`}</div>
     <figcaption>
-      <span class="fnum">${fname(i)}</span><span class="fstate">${label}</span>
+      <span class="fnum">${fname(i)}</span><span class="fstate">${label}</span>${typeof qcBadge === 'function' ? qcBadge(it) : ''}
       <button class="regen" data-act="regen" ${it.status === 'loading' ? 'disabled' : ''}>${it.url ? 'Redo' : 'Generate'}</button>
     </figcaption>
     <p class="fsent">${esc(it.text)}</p>
@@ -2133,5 +2161,6 @@ $('#teamCode').addEventListener('change', () => { if (server.configured && !$('#
   start();
 })();
 </script>
+<script src="director.js"></script>
 </body>
 </html>
