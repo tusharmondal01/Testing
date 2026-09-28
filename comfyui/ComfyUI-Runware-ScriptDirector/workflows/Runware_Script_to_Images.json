@@ -1,0 +1,671 @@
+{
+  "id": "c3adcbfc-3c08-4468-a08a-4a9cacc3d8fb",
+  "revision": 0,
+  "last_node_id": 7,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        440,
+        330
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "How to use",
+      "properties": {},
+      "widgets_values": [
+        "RUNWARE SCRIPT DIRECTOR — whole script → 60-70 photoreal images\n\n1. Put your Runware key in 'Runware API Key' (or leave it empty and save it\n   in custom_nodes/ComfyUI-Runware-ScriptDirector/runware_api_key.txt).\n2. Paste the whole script into node 1, set the title and the image range.\n3. Review first (recommended): select node 5 and press Ctrl+B to bypass it,\n   then Run. Read the scenes, bible, plan and prompts on each node.\n4. Press Ctrl+B again on node 5 and Run: only the images are made; the\n   text steps are reused from the cache.\n5. Images: ComfyUI/output/<output_folder>/scene_001.jpg … + scenes.csv.\n\nRedo single images: type e.g. 4, 9-11 in node 5 → only_scenes.\nChange a prompt: node 4 → prompt_overrides, e.g.  12: Create a photo…\nFix a character's look: copy node 2's text into bible_override and edit.\n\nModels: Claude Opus 5.5 (text + photo check, auto-fallback to Sonnet 5)\nand FLUX.2 [max] (images, true 9:16) — all on your Runware key."
+      ],
+      "widgets_values_named": {
+        "text": "RUNWARE SCRIPT DIRECTOR — whole script → 60-70 photoreal images\n\n1. Put your Runware key in 'Runware API Key' (or leave it empty and save it\n   in custom_nodes/ComfyUI-Runware-ScriptDirector/runware_api_key.txt).\n2. Paste the whole script into node 1, set the title and the image range.\n3. Review first (recommended): select node 5 and press Ctrl+B to bypass it,\n   then Run. Read the scenes, bible, plan and prompts on each node.\n4. Press Ctrl+B again on node 5 and Run: only the images are made; the\n   text steps are reused from the cache.\n5. Images: ComfyUI/output/<output_folder>/scene_001.jpg … + scenes.csv.\n\nRedo single images: type e.g. 4, 9-11 in node 5 → only_scenes.\nChange a prompt: node 4 → prompt_overrides, e.g.  12: Create a photo…\nFix a character's look: copy node 2's text into bible_override and edit.\n\nModels: Claude Opus 5.5 (text + photo check, auto-fallback to Sonnet 5)\nand FLUX.2 [max] (images, true 9:16) — all on your Runware key."
+      },
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 2,
+      "type": "RunwareSD_APIKey",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        440,
+        90
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "api_key",
+          "name": "api_key",
+          "type": "STRING",
+          "widget": {
+            "name": "api_key"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "runware_key",
+          "name": "runware_key",
+          "type": "RUNWARE_KEY",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RunwareSD_APIKey"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "api_key": ""
+      }
+    },
+    {
+      "id": 3,
+      "type": "RunwareSD_ScriptToScenes",
+      "pos": [
+        520,
+        40
+      ],
+      "size": [
+        460,
+        800
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "runware_key",
+          "name": "runware_key",
+          "type": "RUNWARE_KEY",
+          "link": 1
+        },
+        {
+          "localized_name": "script",
+          "name": "script",
+          "type": "STRING",
+          "widget": {
+            "name": "script"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "video_title",
+          "name": "video_title",
+          "type": "STRING",
+          "widget": {
+            "name": "video_title"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "aspect_ratio",
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "widget": {
+            "name": "aspect_ratio"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "min_images",
+          "name": "min_images",
+          "type": "INT",
+          "widget": {
+            "name": "min_images"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "max_images",
+          "name": "max_images",
+          "type": "INT",
+          "widget": {
+            "name": "max_images"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "split_mode",
+          "name": "split_mode",
+          "type": "COMBO",
+          "widget": {
+            "name": "split_mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "text_model",
+          "name": "text_model",
+          "type": "COMBO",
+          "widget": {
+            "name": "text_model"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "custom_text_model",
+          "name": "custom_text_model",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "custom_text_model"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "creator_notes",
+          "name": "creator_notes",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "creator_notes"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "links": [
+            2
+          ]
+        },
+        {
+          "localized_name": "scene_count",
+          "name": "scene_count",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "localized_name": "scenes_text",
+          "name": "scenes_text",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "1 · Script → Scenes",
+      "properties": {
+        "Node name for S&R": "RunwareSD_ScriptToScenes"
+      },
+      "widgets_values": [
+        "",
+        "",
+        "9:16 vertical",
+        60,
+        70,
+        "Smart split by scene (AI)",
+        "Claude Opus 5.5 — anthropic:claude@opus-5.5",
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "script": "",
+        "video_title": "",
+        "aspect_ratio": "9:16 vertical",
+        "min_images": 60,
+        "max_images": 70,
+        "split_mode": "Smart split by scene (AI)",
+        "text_model": "Claude Opus 5.5 — anthropic:claude@opus-5.5",
+        "custom_text_model": "",
+        "creator_notes": ""
+      }
+    },
+    {
+      "id": 4,
+      "type": "RunwareSD_CharacterBible",
+      "pos": [
+        1020,
+        40
+      ],
+      "size": [
+        420,
+        800
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "link": 2
+        },
+        {
+          "localized_name": "bible_override",
+          "name": "bible_override",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "bible_override"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "links": [
+            3
+          ]
+        },
+        {
+          "localized_name": "bible_text",
+          "name": "bible_text",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "2 · Character & Style Bible",
+      "properties": {
+        "Node name for S&R": "RunwareSD_CharacterBible"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "bible_override": ""
+      }
+    },
+    {
+      "id": 5,
+      "type": "RunwareSD_VisualPlan",
+      "pos": [
+        1480,
+        40
+      ],
+      "size": [
+        420,
+        800
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "link": 3
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "links": [
+            4
+          ]
+        },
+        {
+          "localized_name": "plan_text",
+          "name": "plan_text",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "3 · Visual Director Plan",
+      "properties": {
+        "Node name for S&R": "RunwareSD_VisualPlan"
+      },
+      "widgets_values": [
+        0,
+        "fixed"
+      ],
+      "widgets_values_named": {
+        "seed": 0,
+        "control_after_generate": "fixed"
+      }
+    },
+    {
+      "id": 6,
+      "type": "RunwareSD_PromptWriter",
+      "pos": [
+        1940,
+        40
+      ],
+      "size": [
+        460,
+        800
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "link": 4
+        },
+        {
+          "localized_name": "prompt_detail",
+          "name": "prompt_detail",
+          "type": "COMBO",
+          "widget": {
+            "name": "prompt_detail"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "prompt_overrides",
+          "name": "prompt_overrides",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "prompt_overrides"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "links": [
+            5
+          ]
+        },
+        {
+          "localized_name": "prompts_text",
+          "name": "prompts_text",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "4 · Photoreal Prompt Writer",
+      "properties": {
+        "Node name for S&R": "RunwareSD_PromptWriter"
+      },
+      "widgets_values": [
+        "Maximum (160-210 words)",
+        0,
+        "fixed",
+        ""
+      ],
+      "widgets_values_named": {
+        "prompt_detail": "Maximum (160-210 words)",
+        "seed": 0,
+        "control_after_generate": "fixed",
+        "prompt_overrides": ""
+      }
+    },
+    {
+      "id": 7,
+      "type": "RunwareSD_GenerateImages",
+      "pos": [
+        2440,
+        40
+      ],
+      "size": [
+        560,
+        1000
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "project",
+          "name": "project",
+          "type": "SD_PROJECT",
+          "link": 5
+        },
+        {
+          "localized_name": "image_model",
+          "name": "image_model",
+          "type": "COMBO",
+          "widget": {
+            "name": "image_model"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "resolution",
+          "name": "resolution",
+          "type": "COMBO",
+          "widget": {
+            "name": "resolution"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "parallel_requests",
+          "name": "parallel_requests",
+          "type": "INT",
+          "widget": {
+            "name": "parallel_requests"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "quality_check",
+          "name": "quality_check",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "quality_check"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "pass_score",
+          "name": "pass_score",
+          "type": "FLOAT",
+          "widget": {
+            "name": "pass_score"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "max_retries",
+          "name": "max_retries",
+          "type": "INT",
+          "widget": {
+            "name": "max_retries"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "character_references",
+          "name": "character_references",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "character_references"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "output_folder",
+          "name": "output_folder",
+          "type": "STRING",
+          "widget": {
+            "name": "output_folder"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "skip_existing",
+          "name": "skip_existing",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "skip_existing"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "only_scenes",
+          "name": "only_scenes",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "only_scenes"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "custom_image_model",
+          "name": "custom_image_model",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "custom_image_model"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "localized_name": "report",
+          "name": "report",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "5 · Generate Images + Photo Check",
+      "properties": {
+        "Node name for S&R": "RunwareSD_GenerateImages"
+      },
+      "widgets_values": [
+        "FLUX.2 [max] — bfl:7@1",
+        "Full HD",
+        4,
+        true,
+        7,
+        1,
+        false,
+        "script_director/my_video",
+        true,
+        0,
+        "fixed",
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "image_model": "FLUX.2 [max] — bfl:7@1",
+        "resolution": "Full HD",
+        "parallel_requests": 4,
+        "quality_check": true,
+        "pass_score": 7,
+        "max_retries": 1,
+        "character_references": false,
+        "output_folder": "script_director/my_video",
+        "skip_existing": true,
+        "seed": 0,
+        "control_after_generate": "fixed",
+        "only_scenes": "",
+        "custom_image_model": ""
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      3,
+      0,
+      "RUNWARE_KEY"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      0,
+      "SD_PROJECT"
+    ],
+    [
+      3,
+      4,
+      0,
+      5,
+      0,
+      "SD_PROJECT"
+    ],
+    [
+      4,
+      5,
+      0,
+      6,
+      0,
+      "SD_PROJECT"
+    ],
+    [
+      5,
+      6,
+      0,
+      7,
+      0,
+      "SD_PROJECT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9,
+      "offset": [
+        416,
+        110
+      ]
+    }
+  },
+  "version": 0.4
+}
