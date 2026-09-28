@@ -10,6 +10,7 @@ Script-to-Premiere image tool with a private backend.
 - `netlify/edge-functions/admin.js` – admin API (password protected)
 - `netlify/edge-functions/tools.js` – dashboard settings and the ComfyUI workflow for the team
 - `netlify/edge-functions/thumbnail.js` – serves the thumbnail generator uploaded in /admin (craftush.netlify.app/thumbnail)
+- `comfyui/Script_to_Images_Runware.json` – drag-and-drop ComfyUI workflow (no folders to copy): Claude Fable 5 plans all scenes and writes the prompts once, FLUX.2 [max] makes one 9:16 image per scene. Uses Runware's official ComfyUI nodes, which ComfyUI installs itself; the key goes in Settings → Runware API key. How to use is in the workflow's READ ME note.
 - `comfyui/ComfyUI-Runware-ScriptDirector/` – ComfyUI Desktop nodes + workflow: the same Visual Director pipeline (script → 60–70 photoreal images) running inside ComfyUI with only a Runware key. See its README.
 
 ## One-time setup
