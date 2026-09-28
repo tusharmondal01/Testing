@@ -58,14 +58,14 @@ export default async (req) => {
     }
     if (t.taskType !== "textInference") return t;
     // Text tasks always use the model chosen in /admin, answer in one reply, and can't call tools.
-    const { tools: _t, toolChoice: _c, webhookURL: _w, ...rest } = t;
+    const { tools: _t, toolChoice: _c, webhookURL: _w, strictModel, ...rest } = t;
     const s = rest.settings && typeof rest.settings === "object" ? { ...rest.settings } : {};
     s.maxTokens = Math.min(Number(s.maxTokens) || 4000, 8000);
     // The team may pick any model the admin approved; anything else falls back to the default.
     // The team may pick any Runware text model ID (Claude, GPT, Gemini...); it runs on the same Runware key.
     // If Runware rejects it, the loop below falls back to the models approved in /admin.
     const model = MODEL_ID.test(String(rest.model || "")) ? rest.model : textModel(settings);
-    return { ...rest, model, deliveryMethod: "sync", settings: s };
+    return { ...rest, model, deliveryMethod: "sync", settings: s, ...(strictModel ? { _strict: true } : {}) };
   });
 
   let result, usedModel = null;
@@ -73,7 +73,10 @@ export default async (req) => {
     // Text: if the main model has an outage, retry once, then switch to the backup model.
     const started = Date.now(), tried = [];
     const chosen = clean[0].model, list = textModels(settings);
-    const order = [chosen, ...list.filter((m) => m !== chosen)];
+    // strictModel: the page asked for exactly this model, so never switch to another one.
+    const strict = clean.some((t) => t._strict);
+    clean.forEach((t) => delete t._strict);
+    const order = strict ? [chosen] : [chosen, ...list.filter((m) => m !== chosen)];
     outer: for (const [mi, model] of order.entries()) {
       for (let attempt = 0; attempt < (mi === 0 ? 2 : 1); attempt++) {
         if (tried.length && Date.now() - started > 22000) break outer;

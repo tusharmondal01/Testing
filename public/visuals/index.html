@@ -147,6 +147,7 @@
   .split-mode select{width:auto;min-width:230px;border-radius:999px;padding:11px 42px 11px 18px}
   .row .sent .dur{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:.66rem;color:var(--lime);opacity:.75;white-space:nowrap}
   .script-box{position:relative}
+  .title-field{margin-bottom:14px}
   #script{min-height:220px;font-size:1rem;padding:18px 20px 36px}
   #scriptMeta{position:absolute;right:16px;bottom:12px;font-family:var(--mono);font-size:.7rem;color:var(--faint);pointer-events:none;margin:0}
 
@@ -378,6 +379,9 @@
     <span class="step-tag">Step 01 · Script</span>
     <h2 id="h1">Paste your <span class="dim">script.</span></h2>
     <p class="lede">AI reads the whole script, understands it, and splits it into complete moments at the cut speed you choose. Each moment becomes one image.</p>
+    <label class="field title-field">Video title <small>Helps the AI understand the topic before it splits the script and writes prompts</small>
+      <input type="text" id="videoTitle" placeholder="e.g. Degree vs Skills: what really builds your career">
+    </label>
     <div class="script-box">
       <label class="sr" for="script">Script</label>
       <textarea id="script" placeholder="Paste your 3-minute voiceover script here…"></textarea>
@@ -386,22 +390,23 @@
     <div class="bar">
       <label class="split-mode"><span class="sr">How to split the script</span>
         <select id="splitMode">
-          <option value="smart" selected>Smart split by meaning (AI)</option>
+          <option value="smart" selected>Smart split by scene (Claude Sonnet 5)</option>
           <option value="stops">Split at every full stop</option>
         </select>
       </label>
-      <label class="split-mode" id="textModelWrap"><span class="sr">AI model for smart split</span>
+      <label class="split-mode" id="textModelWrap" hidden><span class="sr">AI model for smart split</span>
         <select id="textModelSel" title="AI model used to understand and split the script"><option value="">Default AI model</option></select>
       </label>
       <label class="split-mode"><span class="sr">Cut speed</span>
         <select id="pace">
-          <option value="count" selected>Always 65–75 images</option>
+          <option value="scene" selected>By scene · new image where a line ends or a new situation starts</option>
+          <option value="count">Always 65–75 images</option>
           <option value="fast">Fast cuts · about 2–3 s</option>
           <option value="vfast">Very fast · max ~20 characters</option>
           <option value="relaxed">Relaxed · about 3–6 s</option>
         </select>
       </label>
-      <span class="count-range" id="countRange">
+      <span class="count-range" id="countRange" hidden>
         <label><span class="sr">Fewest images</span><input type="number" id="minImg" value="65" min="2" max="500"></label>
         <span aria-hidden="true">to</span>
         <label><span class="sr">Most images</span><input type="number" id="maxImg" value="75" min="2" max="500"></label>
@@ -421,37 +426,12 @@
     <div class="fields">
       <label class="field">Prompt writer
         <select id="promptModel">
-          <option value="runwareLLM" selected>AI photographer on Runware (most detailed, recommended)</option>
-          <option value="runware">Runware Prompt Enhance (short, fastest)</option>
-          <option value="template">Template only (no AI)</option>
+          <option value="runwareLLM" selected>Claude Sonnet 5 on Runware</option>
         </select>
       </label>
-      <label class="field" id="writerModelField">Prompt writer model <small>All run on your Runware key. No other API key is needed.</small>
-        <select id="writerModel">
-          <optgroup label="Approved in /admin" id="wmAdmin"></optgroup>
-          <optgroup label="Claude (Anthropic) via Runware">
-            <option value="anthropic:claude@opus-4.8" selected>Claude Opus 4.8 (best writing)</option>
-          </optgroup>
-          <optgroup label="GPT (OpenAI) via Runware">
-            <option value="openai:gpt@5.5">GPT-5.5</option>
-            <option value="openai:gpt@5.4">GPT-5.4</option>
-            <option value="openai:gpt@5.4-pro">GPT-5.4 Pro</option>
-            <option value="openai:gpt@5.4-mini">GPT-5.4 Mini (fast, cheap)</option>
-            <option value="openai:gpt@5.4-nano">GPT-5.4 Nano (fastest, cheapest)</option>
-          </optgroup>
-          <optgroup label="Gemini (Google) via Runware">
-            <option value="google:gemini@3.1-pro">Gemini 3.1 Pro</option>
-            <option value="google:gemini@3.1-flash-lite">Gemini 3.1 Flash Lite (fast, cheap)</option>
-          </optgroup>
-          <optgroup label="Open models via Runware">
-            <option value="deepseek:v4@flash">DeepSeek V4 Flash (fast, cheap)</option>
-          </optgroup>
-          <option value="custom">Paste any Runware text model ID…</option>
-        </select>
-      </label>
-      <label class="field" id="writerCustomField" hidden>Text model ID <small>Copy it from runware.ai/models (text models), e.g. creator:family@version</small>
-        <input type="text" id="writerCustom" placeholder="moonshotai:kimi@k2.6">
-      </label>
+      <select id="writerModel" hidden><option value="anthropic:claude@sonnet-5" selected>Claude Sonnet 5</option></select>
+      <input type="text" id="writerCustom" hidden>
+      <span id="writerCustomField" hidden></span><span id="writerModelField" hidden></span>
       <label class="field">Visual style
         <select id="style">
           <option value="stunning" selected>Stunning photoreal (golden light, rich colour, premium stock look)</option>
@@ -467,8 +447,8 @@
         <select id="pstrength">
           <option value="standard">Standard (70 to 100 words)</option>
           <option value="rich">Rich (110 to 150 words)</option>
-          <option value="max" selected>Maximum (160 to 210 words)</option>
-          <option value="ultra">Ultra hyper-real (200 to 250 words)</option>
+          <option value="max">Maximum (160 to 210 words)</option>
+          <option value="ultra" selected>Very detailed (200 to 250 words)</option>
         </select>
       </label>
       <label class="field span2">Characters &amp; look <small>Recurring people, place, era and mood, added to every prompt. Fill in before writing prompts, in English.</small>
@@ -500,15 +480,10 @@
     <div class="fields">
       <label class="field">Image model
         <select id="imgModel">
-          <option value="openai:gpt-image@2" data-steps="" selected>GPT Image 2 (OpenAI) · top quality, about $0.07 per image</option>
-          <option value="runware:101@1" data-steps="32">FLUX.1 Dev · cheapest good option</option>
-          <option value="runware:100@1" data-steps="4">FLUX.1 Schnell (fastest)</option>
-          <option value="openai:1@1" data-steps="">GPT Image 1 (OpenAI)</option>
-          <optgroup label="All featured image models on Runware (loading…)" id="imgLive"></optgroup>
-          <option value="custom" data-steps="">Paste a model ID…</option>
+          <option value="openai:gpt-image@2" data-steps="" selected>GPT Image 2</option>
         </select>
       </label>
-      <div class="field pick-cell">
+      <div class="field pick-cell" hidden>
         <span>Runware library</span>
         <button type="button" id="browseModels">Browse all image models</button>
         <small id="pickedInfo">Search every image model on Runware.</small>
@@ -781,11 +756,12 @@ const normWord = w => w.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]
 const secsFor = t => Math.max(1, Math.round((String(t).match(WORD_RE) || []).length / 2.5));
 
 const PACES = {
+  scene: { maxW: 30, maxChars: 200, fold: 1, rule: 'Split by SCENE / SITUATION. Start a new beat wherever a line or sentence ends, and wherever a new situation begins inside a sentence: a new place, person, time, action, feeling or idea. One beat = one visual situation that one photograph can show. Most beats are one sentence or clause (about 5 to 20 words); split a long sentence where it moves to a new situation, and join very short neighbouring fragments that belong to the same situation.' },
   vfast: { maxW: 4, maxChars: 20, fold: 0, rule: 'Make every beat VERY short for rapid cuts: 2 to 4 words and at most about 20 characters (roughly 1 to 1.5 seconds). Keep words that must stay together (a name, a number with its unit, "not his family") in the same beat. Expect well over 100 beats for a 3-minute script.' },
   fast: { maxW: 9, maxChars: 55, fold: 1, rule: 'Make beats short for fast cuts: about 5 to 8 words (roughly 2 to 3 seconds), never more than 9 words. Cut often; it is good to have 60 to 80 beats for a 3-minute script.' },
   relaxed: { maxW: 18, maxChars: 120, fold: 2, rule: 'Aim for about 8 to 15 spoken words per beat (roughly 3 to 6 seconds). Meaning matters more than length: a strong beat can be 5 words, and one can reach 18 words if it is a single image.' },
 };
-const pace = () => PACES[$('#pace') ? $('#pace').value : 'fast'] || PACES.fast;
+const pace = () => PACES[$('#pace') ? $('#pace').value : 'scene'] || PACES.scene;
 const countMode = () => $('#pace') && $('#pace').value === 'count';
 function countRange(){
   let lo = Math.round(+$('#minImg').value) || 65, hi = Math.round(+$('#maxImg').value) || 75;
@@ -866,9 +842,10 @@ function lengthRule(chunk){
 }
 
 function splitPrompt(chunk, part, parts){
+  const title = ($('#videoTitle') && $('#videoTitle').value.trim()) || '';
   return `You are a video editor preparing a voiceover script for a video that shows one image on screen at a time.
-
-Read the WHOLE script first and understand its meaning, story and flow. Then split it into "visual beats". A beat is one complete, self-contained moment that makes sense on its own and can be shown as ONE image.
+${title ? `\nVIDEO TITLE: "${title}"\n` : ''}
+First read the video title and the WHOLE script and understand the topic, the story and how it flows from one situation to the next. Then split it into "visual beats". A beat is one complete, self-contained moment that makes sense on its own and can be shown as ONE image.
 
 Rules:
 - Each beat is a complete phrase or thought. Never cut in the middle of an idea, a name, a number or words that belong together.
@@ -942,13 +919,16 @@ function alignBeats(text, beats, fold = 2){
   if (fold && out.length > 1 && (out[0].match(WORD_RE) || []).length <= fold) out.splice(0, 2, out[0] + ' ' + out[1]);
   return { segments: out.map(x => x.replace(/\s+/g, ' ')), matched: bw.length > 1 ? exact / (bw.length - 1) : 1 };
 }
+/* The only text model used for splitting and prompt writing, and the only image model. */
+const TEXT_MODEL = 'anthropic:claude@sonnet-5';
+const IMAGE_MODEL = 'openai:gpt-image@2';
 const cleanMsg = m => String(m || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
 let splitModel = '';
 async function smartSplit(text){
   const chunks = scriptChunks(text), beats = []; splitModel = '';
   for (let i = 0; i < chunks.length; i++){
     setStatus('#s1', chunks.length > 1 ? `Reading the script and finding complete moments… part ${i + 1} of ${chunks.length}` : 'Reading the whole script and finding complete moments…');
-    const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: $('#textModelSel').value || 'default', includeCost: true,
+    const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: TEXT_MODEL, strictModel: true, includeCost: true,
       messages: [{ role: 'user', content: splitPrompt(chunks[i], i + 1, chunks.length) }], settings: { maxTokens: 6000, temperature: 0.2 } }]);
     if (json.errors && json.errors.length) throw new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error');
     if (json.model) splitModel = json.model;
@@ -1045,7 +1025,7 @@ const STRENGTH = {
   max: { words: '160 to 210', label: 'Maximum' },
   ultra: { words: '200 to 250', label: 'Ultra' }
 };
-const strength = () => STRENGTH[($('#pstrength') && $('#pstrength').value) || 'max'] || STRENGTH.max;
+const strength = () => STRENGTH[($('#pstrength') && $('#pstrength').value) || 'ultra'] || STRENGTH.ultra;
 
 /* Frame orientation, so the writer composes for the real frame instead of always assuming vertical. */
 function frameWords(){
@@ -1109,9 +1089,7 @@ async function loadServerStatus(){
     const tm = Array.isArray(j.textModels) ? j.textModels : [];
     const known = new Set([...$('#writerModel').options].map(o => o.value));
     const extra = tm.filter(m => !known.has(m.id));
-    $('#wmAdmin').innerHTML = extra.map(m => `<option value="${esc(m.id)}">${esc(m.name || m.id)}</option>`).join('');
-    $('#wmAdmin').hidden = !extra.length;
-    try { const wm = localStorage.getItem('craftush-writer-model'); if (wm && extra.some(m => m.id === wm)) $('#writerModel').value = wm; } catch {}
+    void extra;
     if (tm.length){
       let saved = ''; try { saved = localStorage.getItem('craftush-text-model') || ''; } catch {}
       $('#textModelSel').innerHTML = tm.map((m, i) => `<option value="${esc(m.id)}">${esc(m.name || m.id)}${i === 0 ? ' · default' : ''}</option>`).join('');
@@ -1119,7 +1097,6 @@ async function loadServerStatus(){
     }
   } catch { server.reachable = false; }
   $('#codeChip').hidden = !server.codeRequired;
-  if (server.reachable && server.configured && (!server.codeRequired || teamCode())) loadImageModels();
   if (server.reachable && !server.configured)
     setStatus('#s3', 'Image generation isn\'t set up yet. The admin needs to add the Runware key at /admin.', 'err');
 }
@@ -1214,7 +1191,8 @@ function claudeSystem(){
   return `You are ${wow ? 'an award-winning professional photographer (nature, travel and lifestyle) and photo editor' : 'a documentary photographer and photo editor'}. You turn lines of a Hinglish / Hindi / English video voiceover into prompts for a FLUX text-to-image model. Your two goals, in this order, are: (1) every image must be 100% RELEVANT to what the line says, and (2) ${wow ? 'every image must look like a BREATHTAKING, award-winning professional photograph (premium stock / National Geographic / high-end lifestyle photography): golden light, rich lush colour, crisp micro-detail, deep atmospheric layers, yet 100% believable as a real camera photo' : 'every image must look like a REAL, unedited photograph that nobody could tell was AI-made'}.
 
 GOAL 1: RELEVANCE (the image must match the line)
-1. UNDERSTAND first. The line may be Hindi, Hinglish or English. Work out the exact meaning and the emotion, then write the prompt in clear English. Use the FULL SCRIPT to know the topic, the audience and where this line sits in the story (opening hook, problem, turning point, advice, ending).
+0. READ THE VIDEO TITLE AND THE WHOLE SCRIPT FIRST. Know the topic and the story arc before you write a single prompt. Every image must clearly belong to THIS video's topic.
+1. UNDERSTAND each line in its place. Read the TWO LINES BEFORE it so the image continues the story (same people, place and situation unless the line moves to a new situation), and the next line so you do not jump ahead. The line may be Hindi, Hinglish or English. Work out the exact meaning and the emotion, then write the prompt in clear English. Use the FULL SCRIPT to know the topic, the audience and where this line sits in the story (opening hook, problem, turning point, advice, ending).
 2. Decide what a viewer should think when they see the image while hearing this line. Then show THAT, literally.
 3. Choose the scene using this order of preference:
    a. LITERAL. If the line names or clearly implies a person, place, object or action (degree, college, job, salary, phone, money, exam, family, city, road), photograph exactly that in a real situation.
@@ -1270,13 +1248,14 @@ function writerContent(batch, offset, drafts){
   const notes = $('#notes').value.trim();
   const all = state.items.map(it => it.text);
   const list = batch.map((s, k) => {
-    const i = offset + k, prev = all[i - 1], next = all[i + 1];
+    const i = offset + k, prev2 = all[i - 2], prev = all[i - 1], next = all[i + 1];
     const draft = drafts && drafts[k] ? String(drafts[k]).replace(NO_TEXT_TAIL, '').trim().slice(0, 900) : '';
-    return `${i + 1}. ${s}` + (prev || next ? `\n   (context only, do not illustrate: before = "${prev || 'start of video'}" / after = "${next || 'end of video'}")` : '')
+    return `${i + 1}. ${s}` + `\n   (story context, do not illustrate directly: two lines before = "${prev2 || 'start of video'}" / one line before = "${prev || 'start of video'}" / next line = "${next || 'end of video'}")`
       + (draft ? `\n   (existing draft prompt: keep its subject and idea, rebuild it with all ten layers at full length: "${draft}")` : '');
   }).join('\n');
   const outdoorLines = batch.map((s, k) => lightFor(s) ? `${offset + k + 1}` : '').filter(Boolean);
-  return `FULL SCRIPT (context only, for topic, audience, tone and story position):
+  const title = $('#videoTitle').value.trim();
+  return `${title ? `VIDEO TITLE: "${title}"\n\n` : ''}FULL SCRIPT (context only, for topic, audience, tone and story position):
 """${script}"""
 
 STYLE KEYWORDS TO END EVERY PROMPT WITH (before the no-text sentence): ${style}${notes ? `\nCHARACTERS & LOOK (describe exactly the same way in every prompt where they appear): ${notes}` : ''}${outdoorLines.length ? `\nOUTDOOR NATURE LINES (natural sunlight and light haze are allowed here): ${outdoorLines.join(', ')}` : ''}
@@ -1319,13 +1298,10 @@ async function claudeBatch(batch, offset, drafts){
 /* Prompt writer model: any Runware text model (Claude, GPT, Gemini, DeepSeek...), all billed to the Runware key.
    If Runware rejects the chosen ID, the relay falls back to the admin text model and the status line says so. */
 let lastWriterModel = '', writerFellBack = '';
-function writerModelId(){
-  const v = $('#writerModel').value;
-  return v === 'custom' ? $('#writerCustom').value.trim() : v;
-}
+function writerModelId(){ return TEXT_MODEL; }
 async function runwareLLMBatch(batch, offset, drafts, model){
   const wanted = model || writerModelId() || $('#textModelSel').value || 'default';
-  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: wanted, includeCost: true,
+  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: wanted, strictModel: true, includeCost: true,
     messages: [{ role: 'user', content: claudeSystem() + '\n\n---\n\n' + writerContent(batch, offset, drafts) }],
     settings: { maxTokens: Math.min(8000, 700 + batch.length * 650), temperature: 0.6 } }]);
   if (json.errors && json.errors.length) { const e = new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error'); throw e; }
@@ -1407,7 +1383,7 @@ $('#promptBtn').addEventListener('click', async () => {
 });
 
 $('#exportBtn').addEventListener('click', () => {
-  const data = { script: $('#script').value, items: state.items.map(it => ({ text: it.text, prompt: it.prompt })) };
+  const data = { title: $('#videoTitle').value, script: $('#script').value, items: state.items.map(it => ({ text: it.text, prompt: it.prompt })) };
   downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), 'prompts.json');
 });
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
@@ -1416,6 +1392,7 @@ $('#importFile').addEventListener('change', async e => {
   try {
     const data = JSON.parse(await f.text());
     if (!Array.isArray(data.items)) throw new Error();
+    if (data.title) $('#videoTitle').value = data.title;
     if (data.script) { $('#script').value = data.script; $('#script').dispatchEvent(new Event('input')); }
     state.items = data.items.map(it => ({ text: String(it.text || ''), prompt: String(it.prompt || ''), status: 'idle', b64: null, url: null, err: '' }));
     setStatus('#s2', `Loaded ${state.items.length} sentences and prompts.`, 'ok');
@@ -1544,10 +1521,7 @@ $('#pmChips').addEventListener('click', e => {
 $('#pmMore').addEventListener('click', () => searchModels(false));
 $('#pmResults').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (b) pickModel(JSON.parse(b.dataset.m)); });
 
-function imageModel(){
-  const v = $('#imgModel').value;
-  return v === 'custom' ? $('#customModel').value.trim() : v;
-}
+function imageModel(){ return IMAGE_MODEL; }
 ['#aspect', '#quality'].forEach(s => $(s).addEventListener('change', () => { renderGrid(); refreshTimeline(); }));
 
 /* FLUX and GPT Image ignore negative prompts (or reject the field); other checkpoints (SD, SDXL and similar) use it. */

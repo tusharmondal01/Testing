@@ -69,12 +69,16 @@ Every line of the script becomes its own image prompt in step 2. The goal is ima
 - *Visual style → Stunning photoreal* gives the polished premium-stock / National Geographic look: golden-hour light, god rays through mist, rich lush greens, crisp micro-detail, deep atmospheric layers, cosy warm-lamp interiors. The other styles keep the muted "unedited" look.
 - With this style the Claude brief allows golden light, volumetric rays and rich colour, the negative prompt stops blocking glow and HDR, and **Look** switches to *Vivid (3.5)*, which gives FLUX its richest colour.
 
-**Only a Runware key is needed**
-Everything (prompt writing and image generation) runs on the Runware key saved in /admin. No Anthropic, OpenAI or Google key is needed.
+**Models (fixed)**
+- Script splitting and prompt writing use only **Claude Sonnet 5** on Runware (`anthropic:claude@sonnet-5`, `TEXT_MODEL`). These requests are sent with `strictModel`, so the relay never switches to another text model; if Runware rejects it, the error is shown.
+- Images use only **GPT Image 2** (`openai:gpt-image@2`, `IMAGE_MODEL`).
+- Only the Runware key saved in /admin is needed.
 
-**Prompt writer model** (step 2): pick which Runware text model writes the prompts: Claude Opus 4.8, GPT-5.5 / 5.4 / Pro / Mini / Nano, Gemini 3.1 Pro / Flash Lite, DeepSeek V4 Flash, any model approved in /admin, or paste any Runware text model ID from runware.ai/models. If Runware rejects an ID, the prompts are written by the /admin text model instead and the status line says so. The choice is remembered in the browser.
-
-**Image model** (step 3): besides FLUX.1 Dev, FLUX.1 Schnell and GPT Image 1, the list is filled live from Runware with every featured image model (grouped by architecture), so each ID is real and current. *Browse all image models* still searches the whole library, and *Paste a model ID* takes any ID.
+**How a script becomes prompts**
+1. Enter the **Video title** and paste the script (step 1). Claude reads the title and the whole script first.
+2. **Split by scene** (default): a new image starts where a line ends or a new situation begins (new place, person, time, action, feeling or idea).
+3. Each prompt is written from the title, the full script, the two lines before and the next line, so the images follow the story.
+4. Prompts are **Very detailed** (200 to 250 words) by default.
 
 **Hyper-real prompt writing**
 - The default prompt writer is now the *Runware AI photographer*. It sends the full photographer brief (`claudeSystem()`) to the text model approved in /admin, so no Anthropic key is needed. *Runware Prompt Enhance* is still there as the fast, short option.
