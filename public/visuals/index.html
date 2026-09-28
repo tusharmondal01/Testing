@@ -421,7 +421,8 @@
     <div class="fields">
       <label class="field">Prompt writer
         <select id="promptModel">
-          <option value="runwareLLM" selected>Runware AI photographer (strongest, recommended)</option>
+          <option value="runwareClaude" selected>Claude on Runware (strongest, recommended)</option>
+          <option value="runwareLLM">Runware AI photographer (admin text model)</option>
           <option value="runware">Runware Prompt Enhance (short, fastest)</option>
           <option value="claude">Claude (most detailed, free inside Claude)</option>
           <option value="template">Template only (no AI)</option>
@@ -429,7 +430,8 @@
       </label>
       <label class="field">Visual style
         <select id="style">
-          <option value="real" selected>Real photograph (100% natural, recommended)</option>
+          <option value="stunning" selected>Stunning photoreal (golden light, rich colour, premium stock look)</option>
+          <option value="real">Real photograph (muted, unedited)</option>
           <option value="phone">Everyday phone photo (most casual and believable)</option>
           <option value="documentary">Documentary photojournalism</option>
           <option value="nature">Nature &amp; landscape (natural daylight)</option>
@@ -507,7 +509,7 @@
           <option value="2.2">Raw natural (least AI look)</option>
           <option value="2.5" selected>Natural photo (most realistic)</option>
           <option value="3">Balanced</option>
-          <option value="3.5">Vivid (FLUX default)</option>
+          <option value="3.5">Vivid (FLUX default, best for Stunning look)</option>
         </select>
       </label>
       <label class="field">Steps <small>32 for Dev, 4 for Schnell, empty for default</small>
@@ -970,10 +972,18 @@ $('#splitBtn').addEventListener('click', async () => {
    so the look is a real, slightly imperfect photograph. Light always comes from what the scene really has. */
 const MASTER_LOOK = 'an authentic unedited photograph taken by a working photographer on location, natural light that matches the real setting and time of day, true-to-life muted colour with no colour grading, natural contrast, realistic depth of field with a sharp subject and a softly out-of-focus background, fine natural texture, tiny real-world imperfections such as dust, creases, scuffs, uneven light and slight lens softness at the edges, candid and unposed';
 
+/* STUNNING look: the polished, premium stock / travel-photography look (golden light, rich colour, crisp detail).
+   Still a real camera photo: real anatomy, real materials, no text, no fantasy. */
+const MASTER_LOOK_STUNNING = 'a breathtaking award-winning professional photograph, shot on a full-frame camera with a premium lens, rich natural colour with lush saturated greens, warm golden highlights and deep clean shadows, high dynamic range with detail kept in both the bright sky and the shadows, tack-sharp subject with crisp micro-detail in every leaf, stone, fabric thread and skin pore, beautiful soft background blur, clean professional colour grading like a National Geographic or premium stock image, photorealistic, true to life';
+const isStunning = () => $('#style').value === 'stunning';
+const masterLook = () => isStunning() ? MASTER_LOOK_STUNNING : MASTER_LOOK;
+
 /* Outdoor-only extras, added only when the scene is a forest, river, mountain, sunrise and similar. */
 const NATURE_LIGHT = 'soft natural sunlight filtering through the scene with a gentle haze in the air';
+const NATURE_LIGHT_STUNNING = 'golden morning sunlight streaming through the canopy in visible volumetric god rays through soft mist, sunlit leaves glowing translucent green, sparkling light on water and wet stones, layered atmospheric depth fading into hazy distant hills';
 
 const STYLES = {
+  stunning: 'breathtaking professional photograph, Sony A7R V, 24-70mm GM lens, golden-hour natural light, rich lush colour, warm highlights, high dynamic range, tack-sharp micro-detail, soft background bokeh, premium stock photography, National Geographic quality, photorealistic',
   real: 'unedited RAW photograph, Canon EOS R5, 35mm f/2.8, natural available light, true-to-life colour, realistic skin with visible pores, fine lines and small imperfections, natural film-like grain, candid and unposed, photorealistic',
   phone: 'candid photograph taken on an iPhone 15 Pro main camera, natural available light, slightly imperfect framing, true-to-life colour, realistic skin texture, mild natural noise in shadows, everyday real-life look, photorealistic',
   documentary: 'documentary photojournalism, candid unposed moment, Leica M11 with a 35mm lens, available light, true-to-life colour, realistic skin and textures, subtle grain, unretouched, photorealistic',
@@ -983,6 +993,7 @@ const STYLES = {
 };
 
 const STYLE_TAGS = {
+  stunning: 'breathtaking professional photo, Sony A7R V, golden-hour light, rich lush colour, high dynamic range, tack-sharp detail, soft bokeh, premium stock photography, photorealistic',
   real: 'unedited RAW photo, Canon EOS R5, 35mm f/2.8, natural available light, true-to-life colour, realistic skin with pores and small imperfections, natural grain, candid, photorealistic',
   phone: 'candid iPhone 15 Pro photo, natural available light, true-to-life colour, realistic skin texture, mild natural noise, everyday real-life look, photorealistic',
   documentary: 'documentary photo, candid moment, Leica 35mm, available light, true-to-life colour, realistic textures, subtle grain, unretouched, photorealistic',
@@ -993,6 +1004,10 @@ const STYLE_TAGS = {
 
 /* Sent as negativePrompt to models that honour it. FLUX ignores it, so the same rules are also written into the positive prompt. */
 const NEGATIVE_PROMPT = 'text, letters, words, captions, subtitles, writing, handwriting, signage text, logos, watermark, signature, cartoon, illustration, painting, drawing, anime, 3D render, CGI, digital art, artstation, plastic skin, waxy skin, airbrushed skin, beauty filter, perfect symmetry, oversaturated, neon colours, HDR, glowing, over-sharpened, bokeh balls, lens flare, fantasy, surreal, dreamy, blurry, low resolution, jpeg artifacts, distorted hands, extra fingers, extra limbs, deformed face, cross-eyed, uncanny eyes, duplicate subject, cropped head, collage, split screen, frame border, stock photo pose, staring at camera';
+
+/* The stunning look wants glow, rays and rich colour, so those are not negated there. */
+const NEGATIVE_STUNNING = 'text, letters, words, captions, subtitles, writing, handwriting, signage text, logos, watermark, signature, cartoon, illustration, painting, drawing, anime, 3D render, CGI, digital art, plastic skin, waxy skin, doll face, neon colours, fantasy creatures, surreal, blurry subject, low resolution, jpeg artifacts, muddy colours, dull flat light, distorted hands, extra fingers, extra limbs, deformed face, cross-eyed, uncanny eyes, duplicate subject, cropped head, collage, split screen, frame border';
+const negativePrompt = () => isStunning() ? NEGATIVE_STUNNING : NEGATIVE_PROMPT;
 
 /* Positive-side guard, works even on models that ignore negative prompts. */
 const NO_TEXT_TAIL = 'Purely visual frame with no readable text, no lettering, no captions, no signs, no logos, no watermark; any paper, screen, book or sign is shown blurred or turned away so no words are visible.';
@@ -1022,7 +1037,14 @@ const REALISM_LAYERS = [
   'Light comes from a real source in the scene, with a clear direction, soft natural falloff, true shadows under the chin, nose and objects, a small natural catchlight in the eyes and mild bounce light from nearby walls',
   'Shot on a full-frame camera with a 35mm lens at f/2.8 from about two metres, focus locked on the eyes or the main object, gentle natural vignetting, fine ISO 400 grain in the shadows, slight lens softness toward the frame edges'
 ];
-const realismLayers = () => REALISM_LAYERS.map(l => l.replace('{frame}', frameWords())).join('. ');
+const STUNNING_LAYERS = [
+  'Composed like an award-winning photograph in a {frame}: one clear hero subject on a rule-of-thirds line, a sharp detailed foreground element (leaves, stones, a desk edge), the subject crisp in the midground, and a deep background with layered atmospheric depth and creamy bokeh',
+  'If a person is shown: a real Indian face with natural features, detailed skin with visible pores and a healthy natural glow, individual strands of hair catching the light, a genuine focused expression with eyes on the task, relaxed natural hands with five correctly shaped fingers',
+  'Every material is rendered in crisp micro-detail: fabric weave, wood grain, moss, wet stone, leaf veins, paper fibres',
+  'Beautiful motivated light from a real source with a clear direction: warm golden sunlight or a warm lamp glow, soft rim light separating the subject from the background, rich but natural shadows, glowing highlights and a small catchlight in the eyes',
+  'Shot on a full-frame camera with a sharp prime lens, perfect focus on the subject, rich lush colour with warm golden highlights and deep greens, high dynamic range, clean professional colour grade'
+];
+const realismLayers = () => (isStunning() ? STUNNING_LAYERS : REALISM_LAYERS).map(l => l.replace('{frame}', frameWords())).join('. ');
 
 /* A prompt is "weak" when it is too short, or never says anything about light, lens or texture. */
 const PHOTO_WORDS = /\b(\d{2,3}\s?mm|f\/\d|aperture|lens|light|lit|window|lamp|sun|shadow|pores|grain|texture|creased|worn)\b/gi;
@@ -1038,7 +1060,7 @@ function boostPrompt(p, sentence){
   if (!isWeakPrompt(body)) return /no readable text/i.test(body) ? body + '.' : body + '. ' + NO_TEXT_TAIL;
   const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const lt = lightFor(sentence || body);
-  return `${body}. ${notes && !body.includes(notes) ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${STYLE_TAGS[$('#style').value]}. ${MASTER_LOOK}. ${NO_TEXT_TAIL}`;
+  return `${body}. ${notes && !body.includes(notes) ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${STYLE_TAGS[$('#style').value]}. ${masterLook()}. ${NO_TEXT_TAIL}`;
 }
 
 /* ---------- Craftush server relay (the Runware key stays on the server) ---------- */
@@ -1059,6 +1081,7 @@ async function loadServerStatus(){
     const j = await r.json();
     server.reachable = true; server.configured = !!j.configured; server.codeRequired = !!j.codeRequired;
     const tm = Array.isArray(j.textModels) ? j.textModels : [];
+    const pinned = tm.find(m => /^anthropic:/i.test(m.id)); if (pinned) claudeModelId = pinned.id;
     if (tm.length){
       let saved = ''; try { saved = localStorage.getItem('craftush-text-model') || ''; } catch {}
       $('#textModelSel').innerHTML = tm.map((m, i) => `<option value="${esc(m.id)}">${esc(m.name || m.id)}${i === 0 ? ' · default' : ''}</option>`).join('');
@@ -1094,7 +1117,7 @@ async function relay(tasks){
 
 /* Scene-aware light: adds haze / sun rays ONLY when the line is clearly about the outdoors. */
 const OUTDOOR_RE = /forest|jungle|river|stream|waterfall|mountain|valley|hill|lake|sea|ocean|beach|sunrise|sunset|sunlight|nature|tree|garden|field|farm|village|jungle|path|trail|jangal|nadi|pahad|sooraj|suraj|prakriti|पहाड़|नदी|जंगल|सूरज/i;
-const lightFor = (sentence) => OUTDOOR_RE.test(sentence) ? NATURE_LIGHT : '';
+const lightFor = (sentence) => OUTDOOR_RE.test(sentence) ? (isStunning() ? NATURE_LIGHT_STUNNING : NATURE_LIGHT) : '';
 
 /* Turns a spoken line into a short English visual seed for Runware's enhancer (which has a small input limit). */
 function visualSeed(sentence){
@@ -1120,7 +1143,7 @@ async function runwareEnhanceBatch(batch){
   return tasks.map((t, k) => {
     const txt = (byId[t.taskUUID] || '').trim();
     const lt = lightFor(batch[k]);
-    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${tag}. ${MASTER_LOOK}. ${NO_TEXT_TAIL}` : '';
+    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${tag}. ${masterLook()}. ${NO_TEXT_TAIL}` : '';
   });
 }
 
@@ -1128,13 +1151,13 @@ function fallbackPrompt(sentence){
   const style = STYLES[$('#style').value];
   const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const lt = lightFor(sentence);
-  return `A candid real photograph of an ordinary real-life moment in contemporary India that a viewer instantly connects with this voiceover line: "${sentence.replace(/[.!?।…]+$/,'')}". ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${style}. ${MASTER_LOOK}. ${NO_TEXT_TAIL}`;
+  return `${isStunning() ? 'A breathtaking, premium' : 'A candid'} real photograph of an ordinary real-life moment in contemporary India that a viewer instantly connects with this voiceover line: "${sentence.replace(/[.!?।…]+$/,'')}". ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${style}. ${masterLook()}. ${NO_TEXT_TAIL}`;
 }
 
 /* ---------- System prompt for the Claude prompt writer ---------- */
 function claudeSystem(){
-  const st = strength(), frame = frameWords();
-  return `You are a documentary photographer and photo editor. You turn lines of a Hinglish / Hindi / English video voiceover into prompts for a FLUX text-to-image model. Your two goals, in this order, are: (1) every image must be 100% RELEVANT to what the line says, and (2) every image must look like a REAL, unedited photograph that nobody could tell was AI-made.
+  const st = strength(), frame = frameWords(), wow = isStunning();
+  return `You are ${wow ? 'an award-winning professional photographer (nature, travel and lifestyle) and photo editor' : 'a documentary photographer and photo editor'}. You turn lines of a Hinglish / Hindi / English video voiceover into prompts for a FLUX text-to-image model. Your two goals, in this order, are: (1) every image must be 100% RELEVANT to what the line says, and (2) ${wow ? 'every image must look like a BREATHTAKING, award-winning professional photograph (premium stock / National Geographic / high-end lifestyle photography): golden light, rich lush colour, crisp micro-detail, deep atmospheric layers, yet 100% believable as a real camera photo' : 'every image must look like a REAL, unedited photograph that nobody could tell was AI-made'}.
 
 GOAL 1: RELEVANCE (the image must match the line)
 1. UNDERSTAND first. The line may be Hindi, Hinglish or English. Work out the exact meaning and the emotion, then write the prompt in clear English. Use the FULL SCRIPT to know the topic, the audience and where this line sits in the story (opening hook, problem, turning point, advice, ending).
@@ -1156,16 +1179,16 @@ Before writing, silently plan the shot like a photographer on location: what exa
 4. ACTION AND EXPRESSION: the exact mid-action moment (a verb in progress), body posture and tension, and a precise micro-expression (brows slightly pulled together, lips pressed, a tired half-smile). Eyes look at the task or out of frame, not into the lens.
 5. HANDS AND PROPS: what the hands are doing in a simple, anatomically easy pose, and the props with material and wear (a chipped steel tumbler, a dog-eared notebook, a phone with a cracked corner, screen facing away).
 6. SETTING IN THREE DEPTH LAYERS: a FOREGROUND element close to the lens and softly blurred (a door frame, a teacup, a railing, leaves); the MIDGROUND with the subject; a BACKGROUND with 3 to 5 ordinary, lived-in, location-specific details (a steel almirah, peeling blue wall paint, a ceiling fan, a calendar turned to the wall, stacked plastic chairs, a parked scooter, electric wires overhead).
-7. TIME, WEATHER AND AIR: time of day, season, weather, and what the air contains only if real (steam from chai, dust in a sunbeam, monsoon humidity, winter breath, road haze).
-8. LIGHT PHYSICS: the real source (window on the left, overcast sky, harsh noon sun, an overhead tube light, a single desk lamp, a street light), its direction, whether it is hard or soft, its colour temperature (cool 6500K daylight, warm 3200K tungsten, greenish tube light), where the shadows fall, a small catchlight in the eyes, and bounce from nearby surfaces. Mixed sources are realistic (cool window light plus a warm bulb).
+${wow ? '7. TIME, WEATHER AND AIR: choose the most beautiful real time of day for the scene (golden sunrise, soft morning, late-afternoon golden hour, warm evening lamp light), the season, and atmosphere that makes the frame rich: mist, haze, dust or steam catching the light, dew on leaves, spray over water.' : '7. TIME, WEATHER AND AIR: time of day, season, weather, and what the air contains only if real (steam from chai, dust in a sunbeam, monsoon humidity, winter breath, road haze).'}
+${wow ? '8. LIGHT: beautiful, motivated light with a real source and direction: golden sun rays streaming through trees or a window as visible volumetric god rays, backlight glowing through leaves and hair, warm 3000K lamp glow pooling on a desk, soft rim light separating the subject, sparkling highlights on water, rich deep shadows with detail. Say where it comes from and what it lights.' : '8. LIGHT PHYSICS: the real source (window on the left, overcast sky, harsh noon sun, an overhead tube light, a single desk lamp, a street light), its direction, whether it is hard or soft, its colour temperature (cool 6500K daylight, warm 3200K tungsten, greenish tube light), where the shadows fall, a small catchlight in the eyes, and bounce from nearby surfaces. Mixed sources are realistic (cool window light plus a warm bulb).'}
 9. CAMERA AND OPTICS: a real lens and setting, e.g. "35mm at f/2.8 from about two metres", "50mm at f/1.8, focus on the eyes", "85mm at f/2 across the room", "24mm at f/5.6 for a wide street scene"; what is in sharp focus; how quickly the background falls off; a slight natural motion blur on a moving background element when it fits.
-10. REAL-PHOTO TEXTURE: choose 4 from: visible skin pores and fine lines, natural oil sheen on the forehead or nose, individual flyaway hairs, fabric weave and creases, dust and fingerprints on surfaces, scuffed edges and chipped paint, uneven light with natural falloff, fine ISO grain in the shadows, gentle vignetting, slight softness at the frame edges, a mildly cluttered imperfect background.
+${wow ? '10. CRISP DETAIL AND COLOUR: choose 4 from: tack-sharp micro-detail in leaves, moss, bark and wet stone; visible leaf veins lit from behind; detailed skin pores with a healthy natural glow; individual hair strands catching light; fabric weave; wood grain; water droplets; creamy background bokeh; rich lush greens with warm golden highlights; high dynamic range keeping detail in the bright sky and the shadows.' : '10. REAL-PHOTO TEXTURE: choose 4 from: visible skin pores and fine lines, natural oil sheen on the forehead or nose, individual flyaway hairs, fabric weave and creases, dust and fingerprints on surfaces, scuffed edges and chipped paint, uneven light with natural falloff, fine ISO grain in the shadows, gentle vignetting, slight softness at the frame edges, a mildly cluttered imperfect background.'}
 Finally END with the style keywords supplied below, then exactly this sentence: "${NO_TEXT_TAIL}"
 
 REALISM RULES
-- Colours are true-to-life and slightly muted, like an unedited camera file. Never write vivid, vibrant, saturated, dramatic, epic, stunning, cinematic glow, HDR, volumetric, ethereal, magical, dreamy or masterpiece. Never write hyper-realistic, 8k, 4k, ultra-detailed, render, CGI, digital art, illustration, artstation or trending. These words make images look fake.
+${wow ? '- Colours are rich, lush and glowing like a premium professional photo (deep greens, warm golds, clear blue skies), but natural, never neon. You MAY use words like golden hour, god rays, volumetric light, mist, glowing, lush, breathtaking, award-winning, National Geographic, high dynamic range, tack-sharp. Never write cartoon, illustration, CGI, render, digital art, fantasy, anime or surreal, and never invent impossible things. Wildlife must be real species native to the place (spotted deer, hornbill, kingfisher, langur), correctly shaped and naturally posed.' : '- Colours are true-to-life and slightly muted, like an unedited camera file. Never write vivid, vibrant, saturated, dramatic, epic, stunning, cinematic glow, HDR, volumetric, ethereal, magical, dreamy or masterpiece. Never write hyper-realistic, 8k, 4k, ultra-detailed, render, CGI, digital art, illustration, artstation or trending. These words make images look fake.'}
 - People: real ordinary faces, not models. Natural asymmetry, real skin, real hair. Correct hands and anatomy: keep hands simple (holding a pen, resting on a desk, in pockets) or out of frame. At most two people unless the line is about a crowd; in a crowd, keep the faces in the background soft and small.
-- Faces: candid expression matching the emotion, eyes usually not looking into the camera. No posed smiles, no stock-photo grins.
+${wow ? '- Indoor scenes look like premium lifestyle photography: a cosy, tidy, aspirational space (bookshelf, trailing money plant, potted plants, warm desk lamp, soft window light, ceramic mug, laptop), warm and inviting, but every book spine, sticky note, poster and mug is blank or blurred.\n' : ''}- Faces: candid expression matching the emotion, eyes usually not looking into the camera. No posed smiles, no stock-photo grins.
 - Text: the image must contain NO readable text. Certificates, degrees, marksheets, newspapers, book covers, posters, shop signs, phone and laptop screens are the usual cause of garbled letters. If the line is about a degree or certificate, show a person holding a rolled or folded document, seen from the side or behind, or a stack of books and a graduation cap on a desk, never a readable page. Show screens turned away or lit but blurred, with no visible interface.
 - Hyper-real means MORE physical detail, not louder words: every noun gets a material, colour or condition; every light gets a source and direction; every person gets texture. Adjectives like realistic or detailed add nothing; facts do.
 - Specific beats generic: "a 22-year-old Indian woman in a faded green cotton kurta typing on a dented silver laptop at a wooden kitchen table, a steel glass of water beside her" is good; "a person working" is bad. Never write "beautiful", "stunning", "amazing", "perfect" or "a scene of".
@@ -1239,17 +1262,27 @@ async function claudeBatch(batch, offset, drafts){
 }
 
 /* Same photographer brief, run on the Runware text model the admin approved (no Anthropic key needed). */
-async function runwareLLMBatch(batch, offset, drafts){
-  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: $('#textModelSel').value || 'default', includeCost: true,
+/* Claude on Runware. Runware addresses it as anthropic:claude@<version>; an admin can pin another version
+   by adding an anthropic:claude@... model to the text model list in /admin. */
+const DEFAULT_CLAUDE_MODEL = 'anthropic:claude@opus-4.8';
+let claudeModelId = DEFAULT_CLAUDE_MODEL, lastWriterModel = '';
+async function runwareLLMBatch(batch, offset, drafts, model){
+  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: model || $('#textModelSel').value || 'default', includeCost: true,
     messages: [{ role: 'user', content: claudeSystem() + '\n\n---\n\n' + writerContent(batch, offset, drafts) }],
     settings: { maxTokens: Math.min(8000, 700 + batch.length * 650), temperature: 0.6 } }]);
   if (json.errors && json.errors.length) { const e = new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error'); throw e; }
   const t = (json.data || []).find(d => d.taskType === 'textInference');
   if (t && typeof t.cost === 'number') state.cost.prompts += t.cost;
+  if (json.model) lastWriterModel = json.model;
   if (!t || !t.text) throw new Error('The AI returned no prompts');
   return parsePromptArray(t.text);
 }
-const writerFn = w => w === 'claude' ? claudeBatch : runwareLLMBatch;
+const runwareClaudeBatch = (batch, offset, drafts) => runwareLLMBatch(batch, offset, drafts, claudeModelId);
+const writerFn = w => w === 'claude' ? claudeBatch : w === 'runwareClaude' ? runwareClaudeBatch : runwareLLMBatch;
+
+/* The stunning look needs FLUX's normal guidance to get rich colour and glowing light; the muted looks want low guidance. */
+$('#style').addEventListener('change', () => { $('#look').value = isStunning() ? '3.5' : '2.5'; });
+if (isStunning()) $('#look').value = '3.5';
 
 $('#promptModel').addEventListener('change', () => {
   $('#anthField').hidden = $('#promptModel').value !== 'claude';
@@ -1265,9 +1298,10 @@ $('#promptBtn').addEventListener('click', async () => {
     updateButtons(); return;
   }
   if (writer === 'runware' && needCode('#s2')) return;
-  if (writer === 'runwareLLM' && needCode('#s2')) return;
-  const name = writer === 'runware' ? 'Runware' : writer === 'claude' ? 'Claude' : 'the AI photographer';
-  const BATCH = writer === 'runware' ? 10 : 3;
+  if ((writer === 'runwareLLM' || writer === 'runwareClaude') && needCode('#s2')) return;
+  const name = writer === 'runware' ? 'Runware' : writer === 'claude' ? 'Claude' : writer === 'runwareClaude' ? 'Claude on Runware' : 'the AI photographer';
+  const BATCH = writer === 'runware' ? 10 : writer === 'runwareClaude' ? 2 : 3;
+  lastWriterModel = '';
   const batches = [];
   for (let i = 0; i < items.length; i += BATCH) batches.push(i);
   let done = 0, fellBack = 0, lastErr = '', authFail = false; const c0 = state.cost.prompts;
@@ -1296,7 +1330,7 @@ $('#promptBtn').addEventListener('click', async () => {
   else if (fellBack)
     setStatus('#s2', `${items.length - fellBack} prompts written by ${name}, ${fellBack} filled from a template. Review those before generating.`, 'err');
   else
-    setStatus('#s2', `All ${items.length} prompts written by ${name}${state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : ''}. Edit any of them before generating.`, 'ok');
+    setStatus('#s2', `All ${items.length} prompts written by ${name}${lastWriterModel ? ' (' + lastWriterModel + ')' : ''}${state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : ''}. Edit any of them before generating.`, 'ok');
   updateCost();
   updateButtons();
 });
@@ -1456,7 +1490,7 @@ async function runware(prompt){
     positivePrompt: prompt.slice(0, 2900), model: imageModel(),
     width: w, height: h, numberResults: 1, outputType: 'base64Data', outputFormat: 'JPG', includeCost: true
   };
-  if (supportsNegative() && !runware.noNeg) task.negativePrompt = NEGATIVE_PROMPT;
+  if (supportsNegative() && !runware.noNeg) task.negativePrompt = negativePrompt();
   const steps = parseInt($('#steps').value, 10); if (steps > 0) task.steps = steps;
   if (task.model === 'runware:101@1' && !runware.noCFG) task.CFGScale = parseFloat($('#look').value) || 2.5;
   const json = await relay([task]);
@@ -1516,8 +1550,9 @@ async function generateOne(i){
 async function strengthenBeforeGenerate(todo){
   const weak = todo.filter(i => isWeakPrompt(state.items[i].prompt));
   if (!weak.length) return;
-  const writer = $('#promptModel').value === 'claude' ? 'claude' : 'runwareLLM';
-  const groups = []; for (let k = 0; k < weak.length; k += 3) groups.push(weak.slice(k, k + 3));
+  const sel = $('#promptModel').value, writer = sel === 'claude' || sel === 'runwareLLM' ? sel : 'runwareClaude';
+  const size = writer === 'runwareClaude' ? 2 : 3;
+  const groups = []; for (let k = 0; k < weak.length; k += size) groups.push(weak.slice(k, k + size));
   let done = 0, failed = 0;
   setStatus('#s3', `Strengthening ${weak.length} weak prompt${weak.length > 1 ? 's' : ''} into hyper-real shot descriptions… 0 of ${weak.length}`);
   await pool(groups, 3, async idx => {

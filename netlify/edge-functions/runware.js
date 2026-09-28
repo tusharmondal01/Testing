@@ -23,6 +23,7 @@ async function forward(apiKey, tasks) {
   }
 }
 
+const CLAUDE_ID = /^anthropic:claude@[A-Za-z0-9._-]+$/;
 const ALLOWED = new Set(["imageInference", "promptEnhance", "textInference", "modelSearch"]);
 const SEARCH_KEYS = ["search", "tags", "category", "type", "architecture", "conditioning", "featured", "limit", "offset", "taskUUID"];
 const MAX_TASKS = 12;
@@ -62,7 +63,8 @@ export default async (req) => {
     const s = rest.settings && typeof rest.settings === "object" ? { ...rest.settings } : {};
     s.maxTokens = Math.min(Number(s.maxTokens) || 4000, 8000);
     // The team may pick any model the admin approved; anything else falls back to the default.
-    const model = textModels(settings).includes(rest.model) ? rest.model : textModel(settings);
+    // Claude on Runware (anthropic:claude@<version>) is always allowed for the prompt writer.
+    const model = textModels(settings).includes(rest.model) || CLAUDE_ID.test(String(rest.model || "")) ? rest.model : textModel(settings);
     return { ...rest, model, deliveryMethod: "sync", settings: s };
   });
 

@@ -65,6 +65,14 @@ Every line of the script becomes its own image prompt in step 2. The goal is ima
 **No garbled text**
 - Certificates, documents, signs and screens are shown small, from behind, or blurred. Every prompt ends with a no-text sentence (`NO_TEXT_TAIL`), added automatically to edited or older prompts at generation time.
 
+**Stunning photoreal look (default)**
+- *Visual style → Stunning photoreal* gives the polished premium-stock / National Geographic look: golden-hour light, god rays through mist, rich lush greens, crisp micro-detail, deep atmospheric layers, cosy warm-lamp interiors. The other styles keep the muted "unedited" look.
+- With this style the Claude brief allows golden light, volumetric rays and rich colour, the negative prompt stops blocking glow and HDR, and **Look** switches to *Vivid (3.5)*, which gives FLUX its richest colour.
+
+**Claude on Runware (default prompt writer)**
+- Prompts are written by Claude through Runware (`anthropic:claude@opus-4.8`, set in `DEFAULT_CLAUDE_MODEL`), billed to the Runware key, with no Anthropic key needed. Two lines are sent per request.
+- To use another Claude version, add its `anthropic:claude@...` ID to the text model list in /admin; the page picks it up automatically. If Runware rejects the ID, the relay falls back to the admin text model and the status line shows which model wrote the prompts.
+
 **Hyper-real prompt writing**
 - The default prompt writer is now the *Runware AI photographer*. It sends the full photographer brief (`claudeSystem()`) to the text model approved in /admin, so no Anthropic key is needed. *Runware Prompt Enhance* is still there as the fast, short option.
 - Every prompt is built as a ten-layer shot description: shot and framing, subject, wardrobe, action and micro-expression, hands and props, setting in three depth layers (foreground, midground, background), time, weather and air, light physics (source, direction, hard or soft, colour temperature, shadows, catchlight, bounce), camera and optics (lens, aperture, distance, focus), and real-photo texture.
