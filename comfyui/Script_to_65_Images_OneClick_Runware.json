@@ -1,0 +1,1614 @@
+{
+  "id": "f0e671cc-accc-453c-b439-99f1945348fe",
+  "revision": 0,
+  "last_node_id": 17,
+  "last_link_id": 16,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [
+        30,
+        30
+      ],
+      "size": [
+        520,
+        430
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "READ ME: how to use",
+      "properties": {},
+      "widgets_values": [
+        "SCRIPT → 65 PHOTOREAL IMAGES IN ONE CLICK (Runware only)\n\nFIRST TIME ONLY\n1. If a 'missing nodes' box appears: Search → Install (Runware),\n   restart ComfyUI, drag this file in again.\n2. Settings (gear, bottom left) → search 'Runware' →\n   paste your key in 'Runware API key'.\n\nEVERY VIDEO\n1. Paste your script in the green 'PASTE SCRIPT HERE' box.\n2. Change FOLDER NAME to a new name for each video (e.g. video_02).\n3. Leave the Run count at 1 and press Run ONCE.\n   Claude plans all 65 scenes, then all 65 images are made.\n   This takes a while; the 'Loop' box shows 'Iteration x / 65'.\n\nALL IMAGES AT ONCE: ComfyUI's output folder → your FOLDER NAME\n(scene_00001_.png ... scene_00065_.png). Select all → copy.\n\nTest first: set NUMBER OF IMAGES to 5, Run, check the images,\nthen set it back to 65. If a run stops with an error, images are\nnot saved and a new Run makes all of them again.\nOnly change the green boxes. Grey boxes are automatic."
+      ],
+      "widgets_values_named": {
+        "text": "SCRIPT → 65 PHOTOREAL IMAGES IN ONE CLICK (Runware only)\n\nFIRST TIME ONLY\n1. If a 'missing nodes' box appears: Search → Install (Runware),\n   restart ComfyUI, drag this file in again.\n2. Settings (gear, bottom left) → search 'Runware' →\n   paste your key in 'Runware API key'.\n\nEVERY VIDEO\n1. Paste your script in the green 'PASTE SCRIPT HERE' box.\n2. Change FOLDER NAME to a new name for each video (e.g. video_02).\n3. Leave the Run count at 1 and press Run ONCE.\n   Claude plans all 65 scenes, then all 65 images are made.\n   This takes a while; the 'Loop' box shows 'Iteration x / 65'.\n\nALL IMAGES AT ONCE: ComfyUI's output folder → your FOLDER NAME\n(scene_00001_.png ... scene_00065_.png). Select all → copy.\n\nTest first: set NUMBER OF IMAGES to 5, Run, check the images,\nthen set it back to 65. If a run stops with an error, images are\nnot saved and a new Run makes all of them again.\nOnly change the green boxes. Grey boxes are automatic."
+      },
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 2,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        30,
+        500
+      ],
+      "size": [
+        520,
+        420
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "value",
+          "name": "value",
+          "type": "STRING",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "title": "PASTE SCRIPT HERE",
+      "properties": {
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "value": ""
+      },
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 3,
+      "type": "PrimitiveInt",
+      "pos": [
+        30,
+        960
+      ],
+      "size": [
+        520,
+        82
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "value",
+          "name": "value",
+          "type": "INT",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "INT",
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            1,
+            7
+          ]
+        }
+      ],
+      "title": "NUMBER OF IMAGES",
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        65,
+        "fixed"
+      ],
+      "widgets_values_named": {
+        "value": 65,
+        "fixed": "fixed"
+      },
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 4,
+      "type": "PrimitiveString",
+      "pos": [
+        30,
+        1080
+      ],
+      "size": [
+        520,
+        82
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "value",
+          "name": "value",
+          "type": "STRING",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "title": "FOLDER NAME",
+      "properties": {
+        "Node name for S&R": "PrimitiveString"
+      },
+      "widgets_values": [
+        "video_01"
+      ],
+      "widgets_values_named": {
+        "value": "video_01"
+      },
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 5,
+      "type": "StringFormat",
+      "pos": [
+        620,
+        420
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "a",
+          "name": "values.a",
+          "shape": 7,
+          "type": "*",
+          "link": 1
+        },
+        {
+          "localized_name": "b",
+          "name": "values.b",
+          "shape": 7,
+          "type": "*",
+          "link": 2
+        },
+        {
+          "localized_name": "c",
+          "name": "values.c",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "f_string",
+          "name": "f_string",
+          "type": "STRING",
+          "widget": {
+            "name": "f_string"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "title": "Build request (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "StringFormat"
+      },
+      "widgets_values": [
+        "NUMBER OF IMAGES: {a}\nFRAME: vertical 9:16 portrait frame\n\nSCRIPT:\n{b}"
+      ],
+      "widgets_values_named": {
+        "f_string": "NUMBER OF IMAGES: {a}\nFRAME: vertical 9:16 portrait frame\n\nSCRIPT:\n{b}"
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 6,
+      "type": "RunwareBuild_messages",
+      "pos": [
+        620,
+        490
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "messages",
+          "name": "messages",
+          "shape": 7,
+          "type": "RUNWARE_MESSAGES",
+          "link": null
+        },
+        {
+          "localized_name": "role",
+          "name": "role",
+          "type": "COMBO",
+          "widget": {
+            "name": "role"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "content",
+          "name": "content",
+          "type": "STRING",
+          "widget": {
+            "name": "content"
+          },
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "messages",
+          "name": "messages",
+          "type": "RUNWARE_MESSAGES",
+          "links": [
+            4
+          ]
+        }
+      ],
+      "title": "Message to Claude (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "RunwareBuild_messages",
+        "cnr_id": "comfyui-runware",
+        "ver": "2.1.0"
+      },
+      "widgets_values": [
+        "user",
+        ""
+      ],
+      "widgets_values_named": {
+        "role": "user",
+        "content": ""
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 7,
+      "type": "Runware_anthropic_claude_fable_5",
+      "pos": [
+        620,
+        560
+      ],
+      "size": [
+        520,
+        700
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "messages",
+          "name": "messages",
+          "type": "RUNWARE_MESSAGES",
+          "link": 4
+        },
+        {
+          "localized_name": "images",
+          "name": "images",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "localized_name": "numberResults",
+          "name": "numberResults",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "numberResults"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "includeUsage",
+          "name": "includeUsage",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "includeUsage"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.maxTokens",
+          "name": "settings.maxTokens",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "settings.maxTokens"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.maxTokens_value",
+          "name": "settings.maxTokens_value",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "settings.maxTokens_value"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.cache.scope",
+          "name": "settings.cache.scope",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "settings.cache.scope"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.splitThinking",
+          "name": "settings.splitThinking",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "settings.splitThinking"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.systemPrompt",
+          "name": "settings.systemPrompt",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "settings.systemPrompt"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.thinkingLevel",
+          "name": "settings.thinkingLevel",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "settings.thinkingLevel"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "toolChoice",
+          "name": "toolChoice",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "toolChoice"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "toolChoice.name",
+          "name": "toolChoice.name",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "toolChoice.name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "toolChoice.type",
+          "name": "toolChoice.type",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "toolChoice.type"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "outputFormat",
+          "name": "outputFormat",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "outputFormat"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "settings.cache.ttl",
+          "name": "settings.cache.ttl",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "settings.cache.ttl"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advanced_json",
+          "name": "advanced_json",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "advanced_json"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "title": "Claude Fable 5 plans all scenes (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "Runware_anthropic_claude_fable_5",
+        "cnr_id": "comfyui-runware",
+        "ver": "2.1.0"
+      },
+      "widgets_values": [
+        1,
+        false,
+        true,
+        64000,
+        "system+history",
+        true,
+        "You are the Script Analyst, Visual Director and Prompt Engineer for a video that shows one photorealistic image on screen at a time while the narration plays.\n\nThe user message gives you NUMBER OF IMAGES (N), FRAME, an optional VIDEO TITLE and EXTRA DIRECTION, and the whole SCRIPT (Hindi, Hinglish or English). Work through these steps silently, then output only the JSON described at the end.\n\nSTEP 1 - CASTING. Read the title and the WHOLE script. Decide the topic, the setting (contemporary India, real Indian people and places, unless the script clearly says otherwise) and 1 to 5 recurring characters the story really needs. Give each one an id (e.g. priya_01) and ONE fixed description: ethnicity, gender, age, build, face, skin tone, hair, and specific clothing with colours and fabric. Ordinary believable people, never celebrities, real named people or brands.\n\nSTEP 2 - SCENES. Split the script into exactly N consecutive scenes, in order. One meaningful visual idea = one scene: start a new scene where a new situation, place, person, time, action, feeling or idea begins. Never cut an idea, a name or a number in half. Every word of the script appears in exactly one scene's \"narration\", copied exactly as written (do not translate, fix or shorten it).\n\nSTEP 3 - VISUAL PLAN for each scene, read in its place in the story:\n- Literal lines: show exactly that person, place, object or action.\n- Analytical or conceptual lines (numbers, problems, reasons, advice): show a relatable REAL moment that demonstrates the idea. Example: \"50% users drop at step two\" -> a young professional at an office desk pausing, mildly frustrated, at an unfinished signup form. Never symbols: no lightbulbs, gears, brains, arrows, floating icons or charts in the air.\n- Continuity: when a line continues the previous situation keep the same characters, place and time, but change the shot or angle.\n- Shot variety driven by the narration, chosen from: wide shot, medium shot, close-up, over-the-shoulder, top-down, side angle, low angle, environment shot, object close-up, screen + person, group shot, action shot. Emotional beats suit close-ups, context suits wide shots, actions suit action or over-the-shoulder shots, details suit object close-ups. Never the same shot type twice in a row. Do not make every scene a person at a laptop: vary places (office, home, street, cafe, meeting room, metro, campus, shop), props and activities.\n\nSTEP 4 - PROMPT for each scene: ONE paragraph of 110 to 160 words that\n- starts with \"Create a photorealistic cinematic image of\";\n- describes the main subject concretely (copy the character's fixed description word for word whenever that character appears), what they are doing right now, and a subtle, believable expression;\n- describes the real environment with 3 to 5 believable details and the time of day;\n- names the real light source and its direction, with realistic shadows;\n- names the shot type, a real lens (e.g. 35mm or 50mm) and a shallow but realistic depth of field;\n- states the composition for the FRAME (where the subject sits, where the clean space is);\n- keeps any screen, paper or sign angled away or softly blurred so no words are visible;\n- ends with \"The image must look like a real photograph captured with a professional camera.\"\nDo not add style lists or \"no cartoon\" lists (they are added automatically). Never use the words hyper-realistic, 8k, render or masterpiece.\n\nOUTPUT: only this JSON object. No code fences, no text before or after it. \"scenes\" is a list with exactly N items in script order:\n{\"characters\": {\"priya_01\": \"fixed description\"}, \"scenes\": [{\"n\": 1, \"narration\": \"exact script words\", \"shot\": \"shot type\", \"prompt\": \"Create a photorealistic cinematic image of ...\"}, {\"n\": 2, ...}]}",
+        "high",
+        false,
+        "",
+        "(default)",
+        "TEXT",
+        "5m",
+        ""
+      ],
+      "widgets_values_named": {
+        "numberResults": 1,
+        "includeUsage": false,
+        "settings.maxTokens": true,
+        "settings.maxTokens_value": 64000,
+        "settings.cache.scope": "system+history",
+        "settings.splitThinking": true,
+        "settings.systemPrompt": "You are the Script Analyst, Visual Director and Prompt Engineer for a video that shows one photorealistic image on screen at a time while the narration plays.\n\nThe user message gives you NUMBER OF IMAGES (N), FRAME, an optional VIDEO TITLE and EXTRA DIRECTION, and the whole SCRIPT (Hindi, Hinglish or English). Work through these steps silently, then output only the JSON described at the end.\n\nSTEP 1 - CASTING. Read the title and the WHOLE script. Decide the topic, the setting (contemporary India, real Indian people and places, unless the script clearly says otherwise) and 1 to 5 recurring characters the story really needs. Give each one an id (e.g. priya_01) and ONE fixed description: ethnicity, gender, age, build, face, skin tone, hair, and specific clothing with colours and fabric. Ordinary believable people, never celebrities, real named people or brands.\n\nSTEP 2 - SCENES. Split the script into exactly N consecutive scenes, in order. One meaningful visual idea = one scene: start a new scene where a new situation, place, person, time, action, feeling or idea begins. Never cut an idea, a name or a number in half. Every word of the script appears in exactly one scene's \"narration\", copied exactly as written (do not translate, fix or shorten it).\n\nSTEP 3 - VISUAL PLAN for each scene, read in its place in the story:\n- Literal lines: show exactly that person, place, object or action.\n- Analytical or conceptual lines (numbers, problems, reasons, advice): show a relatable REAL moment that demonstrates the idea. Example: \"50% users drop at step two\" -> a young professional at an office desk pausing, mildly frustrated, at an unfinished signup form. Never symbols: no lightbulbs, gears, brains, arrows, floating icons or charts in the air.\n- Continuity: when a line continues the previous situation keep the same characters, place and time, but change the shot or angle.\n- Shot variety driven by the narration, chosen from: wide shot, medium shot, close-up, over-the-shoulder, top-down, side angle, low angle, environment shot, object close-up, screen + person, group shot, action shot. Emotional beats suit close-ups, context suits wide shots, actions suit action or over-the-shoulder shots, details suit object close-ups. Never the same shot type twice in a row. Do not make every scene a person at a laptop: vary places (office, home, street, cafe, meeting room, metro, campus, shop), props and activities.\n\nSTEP 4 - PROMPT for each scene: ONE paragraph of 110 to 160 words that\n- starts with \"Create a photorealistic cinematic image of\";\n- describes the main subject concretely (copy the character's fixed description word for word whenever that character appears), what they are doing right now, and a subtle, believable expression;\n- describes the real environment with 3 to 5 believable details and the time of day;\n- names the real light source and its direction, with realistic shadows;\n- names the shot type, a real lens (e.g. 35mm or 50mm) and a shallow but realistic depth of field;\n- states the composition for the FRAME (where the subject sits, where the clean space is);\n- keeps any screen, paper or sign angled away or softly blurred so no words are visible;\n- ends with \"The image must look like a real photograph captured with a professional camera.\"\nDo not add style lists or \"no cartoon\" lists (they are added automatically). Never use the words hyper-realistic, 8k, render or masterpiece.\n\nOUTPUT: only this JSON object. No code fences, no text before or after it. \"scenes\" is a list with exactly N items in script order:\n{\"characters\": {\"priya_01\": \"fixed description\"}, \"scenes\": [{\"n\": 1, \"narration\": \"exact script words\", \"shot\": \"shot type\", \"prompt\": \"Create a photorealistic cinematic image of ...\"}, {\"n\": 2, ...}]}",
+        "settings.thinkingLevel": "high",
+        "toolChoice": false,
+        "toolChoice.name": "",
+        "toolChoice.type": "(default)",
+        "outputFormat": "TEXT",
+        "settings.cache.ttl": "5m",
+        "advanced_json": ""
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 8,
+      "type": "RegexExtract",
+      "pos": [
+        620,
+        630
+      ],
+      "size": [
+        400,
+        262
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "string",
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 5
+        },
+        {
+          "localized_name": "regex_pattern",
+          "name": "regex_pattern",
+          "type": "STRING",
+          "widget": {
+            "name": "regex_pattern"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "mode",
+          "name": "mode",
+          "type": "COMBO",
+          "widget": {
+            "name": "mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "case_insensitive",
+          "name": "case_insensitive",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "case_insensitive"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "multiline",
+          "name": "multiline",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "multiline"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "dotall",
+          "name": "dotall",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "dotall"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "group_index",
+          "name": "group_index",
+          "type": "INT",
+          "widget": {
+            "name": "group_index"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            6,
+            9
+          ]
+        }
+      ],
+      "title": "Clean JSON (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "RegexExtract"
+      },
+      "widgets_values": [
+        "",
+        "\\{.*\\}",
+        "First Match",
+        true,
+        false,
+        true,
+        1
+      ],
+      "widgets_values_named": {
+        "string": "",
+        "regex_pattern": "\\{.*\\}",
+        "mode": "First Match",
+        "case_insensitive": true,
+        "multiline": false,
+        "dotall": true,
+        "group_index": 1
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 9,
+      "type": "PreviewAny",
+      "pos": [
+        1120,
+        40
+      ],
+      "size": [
+        560,
+        900
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "source",
+          "name": "source",
+          "type": "*",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "ALL SCENES (narration + prompts)",
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
+    },
+    {
+      "id": 10,
+      "type": "StartLoop",
+      "pos": [
+        620,
+        40
+      ],
+      "size": [
+        440,
+        186
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "parent_iteration",
+          "name": "parent_iteration",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "localized_name": "initial_iteration_value",
+          "name": "initial_iteration_value",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "mode",
+          "name": "mode",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "num_iterations",
+          "name": "mode.num_iterations",
+          "type": "INT",
+          "widget": {
+            "name": "mode.num_iterations"
+          },
+          "link": 7
+        },
+        {
+          "localized_name": "cache_iterations",
+          "name": "cache_iterations",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "cache_iterations"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "iteration_index",
+          "name": "iteration_index",
+          "type": "INT",
+          "links": [
+            8
+          ]
+        },
+        {
+          "localized_name": "is_first",
+          "name": "is_first",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "localized_name": "is_last",
+          "name": "is_last",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "localized_name": "list_item",
+          "name": "list_item",
+          "type": "*",
+          "links": null
+        },
+        {
+          "localized_name": "current_iteration_value",
+          "name": "current_iteration_value",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Loop over scenes",
+      "properties": {
+        "Node name for S&R": "StartLoop"
+      },
+      "widgets_values": [
+        "simple",
+        4,
+        false
+      ],
+      "widgets_values_named": {
+        "mode": "simple",
+        "mode.num_iterations": 4,
+        "cache_iterations": false
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 11,
+      "type": "StringFormat",
+      "pos": [
+        620,
+        700
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "a",
+          "name": "values.a",
+          "shape": 7,
+          "type": "*",
+          "link": 8
+        },
+        {
+          "localized_name": "b",
+          "name": "values.b",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "f_string",
+          "name": "f_string",
+          "type": "STRING",
+          "widget": {
+            "name": "f_string"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "title": "Which scene (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "StringFormat"
+      },
+      "widgets_values": [
+        "scenes.{a}.prompt"
+      ],
+      "widgets_values_named": {
+        "f_string": "scenes.{a}.prompt"
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 12,
+      "type": "RunwareGet",
+      "pos": [
+        620,
+        770
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "result_json",
+          "name": "result_json",
+          "type": "STRING",
+          "link": 9
+        },
+        {
+          "localized_name": "path",
+          "name": "path",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "path"
+          },
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "value",
+          "name": "value",
+          "type": "STRING",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "title": "Get this scene's prompt (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "RunwareGet",
+        "cnr_id": "comfyui-runware",
+        "ver": "2.1.0"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "path": ""
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 13,
+      "type": "StringFormat",
+      "pos": [
+        620,
+        840
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "a",
+          "name": "values.a",
+          "shape": 7,
+          "type": "*",
+          "link": 11
+        },
+        {
+          "localized_name": "b",
+          "name": "values.b",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "f_string",
+          "name": "f_string",
+          "type": "STRING",
+          "widget": {
+            "name": "f_string"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "title": "Add photoreal style (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "StringFormat"
+      },
+      "widgets_values": [
+        "{a} Photorealistic commercial photography of real human beings: natural skin texture, realistic facial anatomy, natural body proportions, authentic clothing, real-world environment, physically accurate lighting with natural shadows, cinematic but realistic, subtle depth of field, high-quality professional camera capture, modern Indian environment when appropriate. The image must look like a real photograph. No illustration, no cartoon, no anime, no comic style, no 3D render, no CGI, no plastic skin, no doll-like faces, no exaggerated expressions, no fantasy lighting, no surreal elements, no oversaturated colours, no fake-looking background, no readable text, no captions, no watermark, no logo."
+      ],
+      "widgets_values_named": {
+        "f_string": "{a} Photorealistic commercial photography of real human beings: natural skin texture, realistic facial anatomy, natural body proportions, authentic clothing, real-world environment, physically accurate lighting with natural shadows, cinematic but realistic, subtle depth of field, high-quality professional camera capture, modern Indian environment when appropriate. The image must look like a real photograph. No illustration, no cartoon, no anime, no comic style, no 3D render, no CGI, no plastic skin, no doll-like faces, no exaggerated expressions, no fantasy lighting, no surreal elements, no oversaturated colours, no fake-looking background, no readable text, no captions, no watermark, no logo."
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 14,
+      "type": "Runware_bfl_flux_2_max",
+      "pos": [
+        620,
+        910
+      ],
+      "size": [
+        460,
+        620
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "referenceImages",
+          "name": "referenceImages",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.image",
+          "name": "advancedFeatures.watermark.image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "localized_name": "positivePrompt",
+          "name": "positivePrompt",
+          "type": "STRING",
+          "widget": {
+            "name": "positivePrompt"
+          },
+          "link": 12
+        },
+        {
+          "localized_name": "width",
+          "name": "width",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "numberResults",
+          "name": "numberResults",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "numberResults"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures",
+          "name": "advancedFeatures",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "advancedFeatures"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.bgColor",
+          "name": "advancedFeatures.watermark.bgColor",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "advancedFeatures.watermark.bgColor"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.displayPosition",
+          "name": "advancedFeatures.watermark.displayPosition",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "advancedFeatures.watermark.displayPosition"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.fontColor",
+          "name": "advancedFeatures.watermark.fontColor",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "advancedFeatures.watermark.fontColor"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.opacity",
+          "name": "advancedFeatures.watermark.opacity",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "advancedFeatures.watermark.opacity"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.opacity_value",
+          "name": "advancedFeatures.watermark.opacity_value",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "advancedFeatures.watermark.opacity_value"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "advancedFeatures.watermark.text",
+          "name": "advancedFeatures.watermark.text",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "advancedFeatures.watermark.text"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "providerSettings.bfl.promptUpsampling",
+          "name": "providerSettings.bfl.promptUpsampling",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "providerSettings.bfl.promptUpsampling"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "safety",
+          "name": "safety",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "safety"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "safety.checkContent",
+          "name": "safety.checkContent",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "safety.checkContent"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "providerSettings.bfl.safetyTolerance",
+          "name": "providerSettings.bfl.safetyTolerance",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "providerSettings.bfl.safetyTolerance"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ttl",
+          "name": "ttl",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "ttl"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ttl_value",
+          "name": "ttl_value",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "ttl_value"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "outputFormat",
+          "name": "outputFormat",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "outputFormat"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "outputQuality",
+          "name": "outputQuality",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "outputQuality"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "title": "FLUX.2 [max] makes the image (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "Runware_bfl_flux_2_max",
+        "cnr_id": "comfyui-runware",
+        "ver": "2.1.0"
+      },
+      "widgets_values": [
+        "",
+        1088,
+        1920,
+        0,
+        "fixed",
+        1,
+        false,
+        "",
+        "(default)",
+        "",
+        false,
+        0.1,
+        "",
+        false,
+        false,
+        false,
+        2,
+        false,
+        60,
+        "JPG",
+        95
+      ],
+      "widgets_values_named": {
+        "positivePrompt": "",
+        "width": 1088,
+        "height": 1920,
+        "seed": 0,
+        "control_after_generate": "fixed",
+        "numberResults": 1,
+        "advancedFeatures": false,
+        "advancedFeatures.watermark.bgColor": "",
+        "advancedFeatures.watermark.displayPosition": "(default)",
+        "advancedFeatures.watermark.fontColor": "",
+        "advancedFeatures.watermark.opacity": false,
+        "advancedFeatures.watermark.opacity_value": 0.1,
+        "advancedFeatures.watermark.text": "",
+        "providerSettings.bfl.promptUpsampling": false,
+        "safety": false,
+        "safety.checkContent": false,
+        "providerSettings.bfl.safetyTolerance": 2,
+        "ttl": false,
+        "ttl_value": 60,
+        "outputFormat": "JPG",
+        "outputQuality": 95
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 15,
+      "type": "EndLoop",
+      "pos": [
+        620,
+        240
+      ],
+      "size": [
+        440,
+        120
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "output_value",
+          "name": "output_value",
+          "shape": 7,
+          "type": "*",
+          "link": 13
+        },
+        {
+          "localized_name": "next_iteration_value",
+          "name": "next_iteration_value",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "termination0",
+          "name": "terminations.termination0",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "accumulate",
+          "name": "accumulate",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "accumulate"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "outputs",
+          "name": "outputs",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "title": "End loop (collects all images)",
+      "properties": {
+        "Node name for S&R": "EndLoop"
+      },
+      "widgets_values": [
+        true
+      ],
+      "widgets_values_named": {
+        "accumulate": true
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 16,
+      "type": "StringFormat",
+      "pos": [
+        620,
+        980
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "a",
+          "name": "values.a",
+          "shape": 7,
+          "type": "*",
+          "link": 14
+        },
+        {
+          "localized_name": "b",
+          "name": "values.b",
+          "shape": 7,
+          "type": "*",
+          "link": null
+        },
+        {
+          "localized_name": "f_string",
+          "name": "f_string",
+          "type": "STRING",
+          "widget": {
+            "name": "f_string"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "title": "File name (auto - don't edit)",
+      "properties": {
+        "Node name for S&R": "StringFormat"
+      },
+      "widgets_values": [
+        "{a}/scene"
+      ],
+      "widgets_values_named": {
+        "f_string": "{a}/scene"
+      },
+      "color": "#333",
+      "bgcolor": "#444"
+    },
+    {
+      "id": 17,
+      "type": "SaveImage",
+      "pos": [
+        1720,
+        40
+      ],
+      "size": [
+        560,
+        900
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 15
+        },
+        {
+          "localized_name": "filename_prefix",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "title": "ALL IMAGES",
+      "properties": {},
+      "widgets_values": [
+        "ComfyUI"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "ComfyUI"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      3,
+      0,
+      5,
+      0,
+      "INT"
+    ],
+    [
+      2,
+      2,
+      0,
+      5,
+      1,
+      "STRING"
+    ],
+    [
+      3,
+      5,
+      0,
+      6,
+      2,
+      "STRING"
+    ],
+    [
+      4,
+      6,
+      0,
+      7,
+      0,
+      "RUNWARE_MESSAGES"
+    ],
+    [
+      5,
+      7,
+      0,
+      8,
+      0,
+      "STRING"
+    ],
+    [
+      6,
+      8,
+      0,
+      9,
+      0,
+      "STRING"
+    ],
+    [
+      7,
+      3,
+      0,
+      10,
+      3,
+      "INT"
+    ],
+    [
+      8,
+      10,
+      0,
+      11,
+      0,
+      "INT"
+    ],
+    [
+      9,
+      8,
+      0,
+      12,
+      0,
+      "STRING"
+    ],
+    [
+      10,
+      11,
+      0,
+      12,
+      1,
+      "STRING"
+    ],
+    [
+      11,
+      12,
+      0,
+      13,
+      0,
+      "STRING"
+    ],
+    [
+      12,
+      13,
+      0,
+      14,
+      2,
+      "STRING"
+    ],
+    [
+      13,
+      14,
+      0,
+      15,
+      0,
+      "IMAGE"
+    ],
+    [
+      14,
+      4,
+      0,
+      16,
+      0,
+      "STRING"
+    ],
+    [
+      15,
+      15,
+      0,
+      17,
+      0,
+      "IMAGE"
+    ],
+    [
+      16,
+      16,
+      0,
+      17,
+      1,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8,
+      "offset": [
+        20,
+        20
+      ]
+    }
+  },
+  "version": 0.4
+}
