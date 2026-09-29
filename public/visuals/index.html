@@ -429,7 +429,7 @@
     <h2 id="h2">Write a prompt for <span class="dim">every moment.</span></h2>
     <p class="lede">Each moment becomes one detailed, hyper-realistic prompt. Every prompt stays editable.</p>
     <div class="fields">
-      <label class="field">Prompt writer <small>Claude Sonnet 5 on Runware. The Visual Director casts characters, plans every scene and shot, then writes the prompts.</small>
+      <label class="field">Prompt writer <small>Claude Sonnet 5 on Runware. The The Visual Director reads the whole script, plans every scene in story order, then writes each prompt with the previous ones in view.</small>
         <select id="promptModel">
           <option value="director" selected>Visual Director (recommended)</option>
           <option value="runwareLLM">Direct: one prompt per line</option>
@@ -457,10 +457,10 @@
           <option value="ultra" selected>Very detailed (200 to 250 words)</option>
         </select>
       </label>
-      <label class="field span2">Characters &amp; look <small>Recurring people, place, era and mood, added to every prompt. Fill in before writing prompts, in English.</small>
+      <label class="field span2">Direction for the prompt writer <small>Optional, in English: place, era, mood, or a recurring person. People described here appear only in the lines that are about them, not in every image.</small>
         <textarea id="notes" rows="2" placeholder="e.g. Ravi, a 28-year-old Indian man with short black hair and a white kurta; small-town Rajasthan in the 1990s; warm golden-hour light"></textarea>
       </label>
-      <label class="field span2" id="bibleField">Character &amp; style bible <small>Filled by the Visual Director from the whole script: one line per recurring person, used word for word in every prompt so people stay the same. Edit it and press Write prompts again to apply. Empty it to recast.</small>
+      <label class="field span2" id="bibleField">Video concept &amp; people <small>Filled from the whole script before any prompt is written: topic, concept, setting and any recurring people (often none). Every prompt is checked against it. A person listed here appears only in lines about them. Edit it and press Write prompts again, or empty it to re-read the script.</small>
         <textarea id="bible" rows="4" placeholder="topic: ...&#10;setting: modern Indian city offices and homes, present day&#10;employee_01: Indian man, about 28 years old, short black hair, wearing a light-blue cotton oxford shirt and navy chinos (young professional)"></textarea>
       </label>
       <label class="field" id="anthField" hidden>Anthropic API key <small>Only needed when you open this file outside Claude</small>
@@ -1086,8 +1086,8 @@ const realismLayers = (text) => {
 
 /* A prompt is "weak" when it is too short, or never says anything about light, lens or texture. */
 const PHOTO_WORDS = /\b(\d{2,3}\s?mm|f\/\d|aperture|lens|light|lit|window|lamp|sun|shadow|pores|grain|texture|creased|worn)\b/gi;
-/* Prompts in the strict template (director.js) are sent exactly as written. */
-const isStrictPrompt = p => /^Photorealistic cinematic scene of /.test(String(p || '').trim()) && /no 3D render\.?\s*$/.test(String(p || '').trim());
+/* Prompts written by the Visual Director (director.js) end with its short tail and are sent exactly as written. */
+const isStrictPrompt = p => /no cartoon, no illustration, no (CGI|CGI, no 3D render)\.?\s*$/.test(String(p || '').trim());
 function isWeakPrompt(p){
   if (isStrictPrompt(p) && String(p).split(/\s+/).length >= 45) return false;
   const body = String(p || '').replace(NO_TEXT_TAIL, '').trim();
@@ -1100,9 +1100,8 @@ function boostPrompt(p, sentence){
   if (isStrictPrompt(p) && !isWeakPrompt(p)) return String(p).trim();
   const body = String(p || '').replace(NO_TEXT_TAIL, '').trim().replace(/[.\s]+$/,'');
   if (!isWeakPrompt(body)) return /no readable text/i.test(body) ? body + '.' : body + '. ' + NO_TEXT_TAIL;
-  const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const lt = lightFor(sentence || body);
-  return `${body}. ${notes && !body.includes(notes) ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers(body + ' ' + notes)}. ${lt ? lt + '. ' : ''}${STYLE_TAGS[$('#style').value]}. ${masterLook()}. ${NO_TEXT_TAIL}`;
+  return `${body}. ${realismLayers(body)}. ${lt ? lt + '. ' : ''}${STYLE_TAGS[$('#style').value]}. ${masterLook()}. ${NO_TEXT_TAIL}`;
 }
 
 /* ---------- Craftush server relay (the Runware key stays on the server) ---------- */
@@ -1193,7 +1192,6 @@ function visualSeed(sentence){
 }
 
 async function runwareEnhanceBatch(batch){
-  const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const tag = STYLE_TAGS[$('#style').value];
   const tasks = batch.map(s => ({
     taskType: 'promptEnhance', taskUUID: uuid(),
@@ -1210,15 +1208,14 @@ async function runwareEnhanceBatch(batch){
   return tasks.map((t, k) => {
     const txt = (byId[t.taskUUID] || '').trim();
     const lt = lightFor(batch[k]);
-    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers(txt + ' ' + notes)}. ${lt ? lt + '. ' : ''}${tag}. ${masterLook()}. ${NO_TEXT_TAIL}` : '';
+    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${realismLayers(txt)}. ${lt ? lt + '. ' : ''}${tag}. ${masterLook()}. ${NO_TEXT_TAIL}` : '';
   });
 }
 
 function fallbackPrompt(sentence){
   const style = STYLES[$('#style').value];
-  const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const lt = lightFor(sentence);
-  return `${isStunning() ? 'A breathtaking, premium' : 'A candid'} real photograph of an ordinary real-life moment in contemporary India that a viewer instantly connects with this voiceover line: "${sentence.replace(/[.!?।…]+$/,'')}". ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers(notes)}. ${lt ? lt + '. ' : ''}${style}. ${masterLook()}. ${NO_TEXT_TAIL}`;
+  return `${isStunning() ? 'A breathtaking, premium' : 'A candid'} real photograph of an ordinary real-life moment in contemporary India that a viewer instantly connects with this voiceover line: "${sentence.replace(/[.!?।…]+$/,'')}". ${realismLayers('')}. ${lt ? lt + '. ' : ''}${style}. ${masterLook()}. ${NO_TEXT_TAIL}`;
 }
 
 /* ---------- System prompt for the Claude prompt writer ---------- */
