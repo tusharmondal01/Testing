@@ -2,7 +2,7 @@
 import { getStore } from "@netlify/blobs";
 
 // Shown on the admin page so you can confirm which backend version is live.
-export const VERSION = "11";
+export const VERSION = "12";
 
 // Text model used for smart script splitting (confirmed in Runware's official SDK examples).
 export const DEFAULT_TEXT_MODEL = "deepseek:v4@flash";
@@ -19,6 +19,8 @@ export function textList(settings) {
   return list.filter((m) => m && MODEL_ID.test(m.id) && !seen.has(m.id) && seen.add(m.id)).map((m) => ({ id: m.id, name: String(m.name || "").slice(0, 60) }));
 }
 export const textModels = (settings) => textList(settings).map((m) => m.id);
+// Tried after the admin's list when Runware rejects every model in it (IDs from Runware's docs).
+export const BUILTIN_TEXT_MODELS = ["anthropic:claude@sonnet-4.6", "anthropic:claude@opus-4.8", "deepseek:v4@flash"];
 // Error text from Runware can contain a raw HTML error page; keep only readable words.
 export const cleanMessage = (m) => String(m || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220);
 

@@ -395,7 +395,7 @@
     <div class="bar">
       <label class="split-mode"><span class="sr">How to split the script</span>
         <select id="splitMode">
-          <option value="smart" selected>Smart split by scene (Claude Sonnet 5)</option>
+          <option value="smart" selected>Smart split by scene (AI model from /admin)</option>
           <option value="stops">Split at every full stop</option>
         </select>
       </label>
@@ -429,13 +429,13 @@
     <h2 id="h2">Write a prompt for <span class="dim">every moment.</span></h2>
     <p class="lede">Each moment becomes one detailed, hyper-realistic prompt. Every prompt stays editable.</p>
     <div class="fields">
-      <label class="field">Prompt writer <small>Claude Sonnet 5 on Runware. The The Visual Director reads the whole script, plans every scene in story order, then writes each prompt with the previous ones in view.</small>
+      <label class="field">Prompt writer <small>Uses the text model set in /admin (on Runware). The Visual Director reads the whole script, plans every scene in story order, then writes each prompt with the previous ones in view.</small>
         <select id="promptModel">
           <option value="director" selected>Visual Director (recommended)</option>
           <option value="runwareLLM">Direct: one prompt per line</option>
         </select>
       </label>
-      <select id="writerModel" hidden><option value="anthropic:claude@sonnet-5" selected>Claude Sonnet 5</option></select>
+      <select id="writerModel" hidden><option value="default" selected>Admin text model</option></select>
       <input type="text" id="writerCustom" hidden>
       <span id="writerCustomField" hidden></span><span id="writerModelField" hidden></span>
       <label class="field">Visual style
@@ -789,7 +789,7 @@ function countRange(){
 }
 $('#pace').addEventListener('change', () => { $('#countRange').hidden = !countMode() && $('#pace').value !== 'scene'; });
 
-$('#textModelSel').addEventListener('change', () => { try { localStorage.setItem('craftush-text-model', $('#textModelSel').value); } catch {} });
+$('#textModelSel').addEventListener('change', () => { TEXT_MODEL = $('#textModelSel').value || 'default'; try { localStorage.setItem('craftush-text-model', $('#textModelSel').value); } catch {} });
 ['#minImg', '#maxImg'].forEach(s => $(s).addEventListener('input', () => { const { lo, hi } = countRange(); $('#pace').querySelector('option[value="count"]').textContent = `Exactly ${lo}–${hi} images`; }));
 const JOINERS = new Set(('and but or so then while which who whose where when because as after before until though although if that with without into through across over under ' +
   'aur lekin par magar jab tab kyunki isliye toh ki jo jahan phir ya ' + 'और लेकिन पर मगर जब तब क्योंकि इसलिए तो कि जो जहाँ फिर या').split(' '));
@@ -942,8 +942,10 @@ function alignBeats(text, beats, fold = 2){
   if (fold && out.length > 1 && (out[0].match(WORD_RE) || []).length <= fold) out.splice(0, 2, out[0] + ' ' + out[1]);
   return { segments: out.map(x => x.replace(/\s+/g, ' ')), matched: bw.length > 1 ? exact / (bw.length - 1) : 1 };
 }
-/* The only text model used for splitting and prompt writing, and the only image model. */
-const TEXT_MODEL = 'anthropic:claude@sonnet-5';
+/* Text model for splitting and prompt writing: the admin's default (from /admin), or the one picked in step 1.
+   The relay falls back through the admin's list and known-good Runware models if Runware rejects it,
+   and TEXT_MODEL then sticks to the model that answered. */
+let TEXT_MODEL = 'default';
 const IMAGE_MODEL = 'openai:gpt-image@2';
 const cleanMsg = m => String(m || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
 let splitModel = '';
@@ -951,7 +953,7 @@ async function smartSplit(text){
   const chunks = scriptChunks(text), beats = []; splitModel = '';
   for (let i = 0; i < chunks.length; i++){
     setStatus('#s1', chunks.length > 1 ? `Reading the script and finding complete moments… part ${i + 1} of ${chunks.length}` : 'Reading the whole script and finding complete moments…');
-    const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: TEXT_MODEL, strictModel: true, includeCost: true,
+    const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: TEXT_MODEL, includeCost: true,
       messages: [{ role: 'user', content: splitPrompt(chunks[i], i + 1, chunks.length) }], settings: { maxTokens: 6000, temperature: 0.2 } }]);
     if (json.errors && json.errors.length) throw new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error');
     if (json.model) splitModel = json.model;
@@ -1129,6 +1131,7 @@ async function loadServerStatus(){
       let saved = ''; try { saved = localStorage.getItem('craftush-text-model') || ''; } catch {}
       $('#textModelSel').innerHTML = tm.map((m, i) => `<option value="${esc(m.id)}">${esc(m.name || m.id)}${i === 0 ? ' · default' : ''}</option>`).join('');
       if (tm.some(m => m.id === saved)) $('#textModelSel').value = saved;
+      TEXT_MODEL = $('#textModelSel').value || tm[0].id;
     }
   } catch { server.reachable = false; }
   $('#codeChip').hidden = !server.codeRequired;
@@ -1174,6 +1177,7 @@ async function relay(tasks){
       : res.status >= 500 ? `The server took too long or failed (HTTP ${res.status}). Try again, or lower "At the same time".`
       : 'Server answered with HTTP ' + res.status);
   }
+  if (json && json.model && !(json.errors && json.errors.length)) TEXT_MODEL = json.model;
   if (res.status === 401){
     server.codeRequired = true; $('#codeChip').hidden = false; $('#teamCode').focus();
     const e = new Error((json.errors && json.errors[0] && json.errors[0].message) || 'Wrong team access code.'); e.auth = true; throw e;
@@ -1334,7 +1338,7 @@ let lastWriterModel = '', writerFellBack = '';
 function writerModelId(){ return TEXT_MODEL; }
 async function runwareLLMBatch(batch, offset, drafts, model){
   const wanted = model || writerModelId() || $('#textModelSel').value || 'default';
-  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: wanted, strictModel: true, includeCost: true,
+  const json = await relay([{ taskType: 'textInference', taskUUID: uuid(), model: wanted, includeCost: true,
     messages: [{ role: 'user', content: claudeSystem() + '\n\n---\n\n' + writerContent(batch, offset, drafts) }],
     settings: { maxTokens: Math.min(8000, 700 + batch.length * 650), temperature: 0.6 } }]);
   if (json.errors && json.errors.length) { const e = new Error(cleanMsg(json.errors[0].message) || 'Runware returned an error'); throw e; }
@@ -2178,6 +2182,6 @@ $('#teamCode').addEventListener('change', () => { if (server.configured && !$('#
   start();
 })();
 </script>
-<script src="director.js?v=11"></script>
+<script src="director.js?v=12"></script>
 </body>
 </html>

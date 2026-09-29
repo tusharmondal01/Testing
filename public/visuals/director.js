@@ -10,10 +10,10 @@
    → 4. Quality control after each image: Claude looks at the image; failures are regenerated
         with a corrected prompt.
 
-   All steps use TEXT_MODEL (Claude Sonnet 5 on Runware); images use IMAGE_MODEL (GPT Image 2). */
+   All steps use TEXT_MODEL (the admin's text model on Runware, with fallback); images use IMAGE_MODEL (GPT Image 2). */
 
 const SHOTS = ['wide shot', 'medium shot', 'close-up', 'over-the-shoulder', 'top-down', 'side angle', 'low angle', 'environment shot', 'object close-up', 'screen + person', 'group shot', 'action shot'];
-const DIRECTOR_VERSION = 11; // shown in the status line so you can tell the new code is running
+const DIRECTOR_VERSION = 12; // shown in the status line so you can tell the new code is running
 const PLAN_CHUNK = 6;    // lines per visual-plan request (sequential, so continuity carries over; small enough for Vercel's 60 s limit)
 const MAX_FAILS = 2;     // this many failed requests in a row with no success stops the run and shows the error
 
@@ -28,7 +28,7 @@ function failTracker(){
 
 /* ---------- small helpers ---------- */
 async function askClaude(content, { maxTokens = 4000, temperature = 0.4, images } = {}){
-  const task = { taskType: 'textInference', taskUUID: uuid(), model: TEXT_MODEL, strictModel: true, includeCost: true,
+  const task = { taskType: 'textInference', taskUUID: uuid(), model: TEXT_MODEL, includeCost: true,
     messages: [{ role: 'user', content }], settings: { maxTokens, temperature } };
   if (images && images.length) task.inputs = { images };
   const json = await relay([task]);
@@ -289,7 +289,7 @@ async function runDirect(){
     const res = await writeStrictPrompts(items.map((_, i) => i), (d, n) => setStatus('#s2', `Writing prompts in story order… ${d} of ${n}`));
     renderPrompts();
     const cost = state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : '';
-    setStatus('#s2', res.failed ? `${items.length - res.failed} prompts written${cost}; ${res.failed} line(s) got no answer (${res.error}) and are empty. Press Write prompts again to retry them.` : `All ${items.length} prompts written by Claude Sonnet 5${cost}${res.rewritten ? `, ${res.rewritten} rewritten to be more different` : ''}.`, res.failed ? 'err' : 'ok');
+    setStatus('#s2', res.failed ? `${items.length - res.failed} prompts written${cost}; ${res.failed} line(s) got no answer (${res.error}) and are empty. Press Write prompts again to retry them.` : `All ${items.length} prompts written by ${TEXT_MODEL}${cost}${res.rewritten ? `, ${res.rewritten} rewritten to be more different` : ''}.`, res.failed ? 'err' : 'ok');
   } catch (e){
     setStatus('#s2', e.auth ? e.message + ' Then press Write prompts again.' : (e.stop ? 'Claude didn’t answer, so no prompts were written. Runware / server said: ' : 'Prompt writing stopped: ') + cleanMsg(e.message), 'err');
   } finally { $('#promptBtn').disabled = false; updateCost(); updateButtons(); }
@@ -322,7 +322,7 @@ async function runDirector(){
     const cost = state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : '';
     if (res.failed || plan.failed)
       setStatus('#s2', `Prompts ready${cost}. ${plan.failed ? `${plan.failed} line(s) couldn’t be planned (${plan.error}) and were written from the script directly. ` : ''}${res.failed ? `${res.failed} line(s) got no answer (${res.error}) and are empty; press Write prompts again to retry them.` : ''}`, 'err');
-    else setStatus('#s2', `All ${items.length} scenes planned and prompts written by Claude Sonnet 5${cost}${res.rewritten ? ` (${res.rewritten} rewritten to be more different)` : ''}. Check the character bible and edit any prompt before generating.`, 'ok');
+    else setStatus('#s2', `All ${items.length} scenes planned and prompts written by ${TEXT_MODEL}${cost}${res.rewritten ? ` (${res.rewritten} rewritten to be more different)` : ''}. Check the character bible and edit any prompt before generating.`, 'ok');
   } catch (e){
     setStatus('#s2', (e.auth ? e.message + ' Then press Write prompts again.' : (e.stop ? 'Claude didn’t answer, so no prompts were written. Runware / server said: ' : 'The Visual Director stopped: ') + cleanMsg(e.message)), 'err');
   } finally {

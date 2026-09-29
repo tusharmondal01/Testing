@@ -1,6 +1,6 @@
 // Relay: the browser sends image/prompt tasks here, the server adds the secret
 // Runware key and forwards them. The key never reaches anyone's browser.
-import { openStore, json, fail, safeEqual, readSettings, readUsage, activeKey, RUNWARE_URL, VERSION, textModel, textBackup, textModels, textList, cleanMessage, MODEL_ID } from "../lib/shared.js";
+import { openStore, json, fail, safeEqual, readSettings, readUsage, activeKey, RUNWARE_URL, VERSION, textModel, textBackup, textModels, textList, cleanMessage, MODEL_ID, BUILTIN_TEXT_MODELS } from "../lib/shared.js";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Errors that mean "try the next text model": outages, and a model ID Runware doesn't accept.
@@ -82,7 +82,7 @@ export default async (req) => {
     // strictModel: the page asked for exactly this model, so never switch to another one.
     const strict = clean.some((t) => t._strict);
     clean.forEach((t) => delete t._strict);
-    const order = strict ? [chosen] : [chosen, ...list.filter((m) => m !== chosen)];
+    const order = strict ? [chosen] : [...new Set([chosen, ...list, ...BUILTIN_TEXT_MODELS])];
     outer: for (const [mi, model] of order.entries()) {
       for (let attempt = 0; attempt < (mi === 0 ? 2 : 1); attempt++) {
         if (tried.length && Date.now() - started > 22000) break outer;

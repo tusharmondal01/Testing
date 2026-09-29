@@ -131,7 +131,7 @@ export default async (req) => {
       const key = activeKey(settings);
       if (!key) return fail("Save a Runware key first.", 400);
       const wanted = String(body.model || "").trim() || textModel(settings);
-      if (!MODEL_ID.test(wanted)) return fail(`"${wanted}" isn't a Runware model ID. Text model IDs look like provider:model@version, for example anthropic:claude@sonnet-5.`, 400);
+      if (!MODEL_ID.test(wanted)) return fail(`"${wanted}" isn't a Runware model ID. Text model IDs look like provider:model@version, for example anthropic:claude@sonnet-4.6.`, 400);
       // Runware spells versions either way (sonnet-5.5 / sonnet-5-5), so a rejected ID is retried with the other spelling.
       const at = wanted.indexOf("@"), ver = wanted.slice(at + 1);
       const alts = [wanted, wanted.slice(0, at + 1) + ver.replace(/(\d)\.(\d)/g, "$1-$2"), wanted.slice(0, at + 1) + ver.replace(/(\d)-(\d)/g, "$1.$2")];
@@ -157,7 +157,7 @@ export default async (req) => {
           return json({ ok: true, model, reply: String(t.text || "").slice(0, 80), cost: t.cost ?? null });
         }
       } catch { return fail("Couldn't reach Runware from the server.", 502); }
-      return fail(`Runware doesn't offer "${wanted}" as a text model (${lastMsg}). Image models and LoRAs (civitai:…, runware:… image IDs) can't write text. Copy the exact text model ID from its page on runware.ai/models, for example anthropic:claude@sonnet-5.`, 400);
+      return fail(`Runware doesn't offer "${wanted}" as a text model (${lastMsg}). Image models and LoRAs (civitai:…, runware:… image IDs) can't write text. Copy the exact text model ID from its page on runware.ai/models, for example anthropic:claude@sonnet-4.6.`, 400);
     }
 
     case "resetUsage":

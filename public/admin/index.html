@@ -192,7 +192,8 @@
       <div class="row"><button class="primary" id="addText">Test &amp; add</button></div>
       <p class="help" style="margin-top:14px">Quick add (text models listed on runware.ai/models):</p>
       <div class="row" id="textQuick">
-        <button data-air="anthropic:claude@sonnet-5" data-name="Claude Sonnet 5">Claude Sonnet 5</button>
+        <button data-air="anthropic:claude@sonnet-4.6" data-name="Claude Sonnet 4.6">Claude Sonnet 4.6</button>
+        <button data-air="anthropic:claude@opus-4.8" data-name="Claude Opus 4.8">Claude Opus 4.8</button>
         <button data-air="anthropic:claude@fable-5" data-name="Claude Fable 5">Claude Fable 5</button>
         <button data-air="deepseek:v4@flash" data-name="DeepSeek V4 Flash">DeepSeek V4 Flash</button>
       </div>
@@ -404,7 +405,7 @@ $('#textSearchBtn').addEventListener('click', () => guarded('#textStatus', async
   const r = await call('searchModels', { search: q, limit: 50, textOnly: true });
   $('#textResults').innerHTML = r.results.map(m => `<div class="res"><span><b>${esc(m.name)}${m.version ? ' · ' + esc(m.version) : ''}</b><small>${esc(m.air)} · ${esc([m.category, m.architecture].filter(Boolean).join(' · '))}</small></span><button data-air="${esc(m.air)}" data-name="${esc(m.name)}">Test &amp; add</button></div>`).join('');
   const hid = r.hidden ? ` ${r.hidden} image model${r.hidden === 1 ? '' : 's'} (LoRAs, checkpoints) hidden, they can't write text.` : '';
-  setStatus('#textStatus', r.results.length ? `${r.results.length} possible text models.${hid} Test & add checks each one.` : `No text models found.${hid} Runware's catalogue search mostly lists image models: use a Quick add button, or paste the ID from the model's page on runware.ai/models (e.g. anthropic:claude@sonnet-5).`, r.results.length ? 'ok' : 'err');
+  setStatus('#textStatus', r.results.length ? `${r.results.length} possible text models.${hid} Test & add checks each one.` : `No text models found.${hid} Runware's catalogue search mostly lists image models: use a Quick add button, or paste the ID from the model's page on runware.ai/models (e.g. anthropic:claude@sonnet-4.6).`, r.results.length ? 'ok' : 'err');
 }));
 $('#textSearch').addEventListener('keydown', e => { if (e.key === 'Enter') $('#textSearchBtn').click(); });
 $('#textQuick').addEventListener('click', e => { const b = e.target.closest('button[data-air]'); if (b) guarded('#textStatus', () => addTextModel(b.dataset.air, b.dataset.name)); });
