@@ -25,7 +25,52 @@ export const cleanMessage = (m) => String(m || "").replace(/<[^>]*>/g, " ").repl
 export const RUNWARE_URL = "https://api.runware.ai/v1";
 
 // One private store holds the settings (Runware key, team code) and usage totals.
-export const openStore = () => getStore({ name: "craftush", consistency: "strong" });
+// On Netlify it is Netlify Blobs. On Vercel (or anywhere else) it is Upstash Redis over its REST API,
+// used when UPSTASH_REDIS_REST_URL/TOKEN (or Vercel's KV_REST_API_URL/TOKEN) are set.
+export const openStore = () => {
+  const url = env("UPSTASH_REDIS_REST_URL") || env("KV_REST_API_URL");
+  const token = env("UPSTASH_REDIS_REST_TOKEN") || env("KV_REST_API_TOKEN");
+  if (url && token) return redisStore(url.replace(/\/+$/, ""), token);
+  return getStore({ name: "craftush", consistency: "strong" });
+};
+
+// Minimal Netlify-Blobs-compatible store on Upstash Redis. Large values (the thumbnail HTML,
+// ComfyUI workflows) are split into chunks so they stay under Redis request limits.
+const CHUNK = 700 * 1024;
+function redisStore(url, token) {
+  const call = async (cmd) => {
+    const res = await fetch(url, { method: "POST", headers: { authorization: "Bearer " + token, "content-type": "application/json" }, body: JSON.stringify(cmd) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error("Storage error: " + (data.error || res.status));
+    return data.result;
+  };
+  const key = (k) => "craftush:" + k;
+  async function getText(k) {
+    const v = await call(["GET", key(k)]);
+    if (v === null || v === undefined) return null;
+    const m = /^__chunks__:(\d+)$/.exec(v);
+    if (!m) return v;
+    const parts = await call(["MGET", ...Array.from({ length: +m[1] }, (_, i) => key(k) + ":" + i)]);
+    return parts.join("");
+  }
+  async function setText(k, text) {
+    text = String(text ?? "");
+    if (text.length <= CHUNK) return call(["SET", key(k), text]);
+    const n = Math.ceil(text.length / CHUNK);
+    for (let i = 0; i < n; i++) await call(["SET", key(k) + ":" + i, text.slice(i * CHUNK, (i + 1) * CHUNK)]);
+    return call(["SET", key(k), "__chunks__:" + n]);
+  }
+  return {
+    async get(k, opts = {}) {
+      const t = await getText(k);
+      if (t === null) return null;
+      if (opts.type === "json") { try { return JSON.parse(t); } catch { return null; } }
+      return t;
+    },
+    set: (k, v) => setText(k, v),
+    setJSON: (k, v) => setText(k, JSON.stringify(v)),
+  };
+}
 
 export const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
@@ -45,7 +90,8 @@ export function safeEqual(a, b) {
 }
 
 export const env = (name) => {
-  try { return Netlify.env.get(name) || ""; } catch { return ""; }
+  try { if (typeof Netlify !== "undefined") return Netlify.env.get(name) || ""; } catch { /* not on Netlify */ }
+  try { return (typeof process !== "undefined" && process.env && process.env[name]) || ""; } catch { return ""; }
 };
 
 export async function readSettings(store) {

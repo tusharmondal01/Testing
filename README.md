@@ -10,6 +10,7 @@ Script-to-Premiere image tool with a private backend.
 - `netlify/edge-functions/admin.js` – admin API (password protected)
 - `netlify/edge-functions/tools.js` – dashboard settings and the ComfyUI workflow for the team
 - `netlify/edge-functions/thumbnail.js` – serves the thumbnail generator uploaded in /admin (craftush.netlify.app/thumbnail)
+- `api/*.js` + `vercel.json` – the same backend on Vercel (see *Hosting on Vercel*)
 
 ## One-time setup
 
@@ -28,6 +29,19 @@ Script-to-Premiere image tool with a private backend.
    `ADMIN_PASSWORD`, paste the Runware key and press **Save key**.
 5. **(Recommended) Set a team access code** on the same page and share it with
    your creators. Without a code, anyone who finds the link can use your credits.
+
+## Hosting on Vercel (instead of Netlify)
+
+The same code runs on Vercel. `api/*.js` are Vercel functions that reuse the handlers in `netlify/edge-functions/`, and `vercel.json` serves `public/`, maps `/thumbnail` and sets the admin headers. On Vercel, settings are stored in **Upstash Redis** (free) instead of Netlify Blobs.
+
+1. Go to **vercel.com → Add New → Project**, import the GitHub repository and press **Deploy** (leave build settings empty; `vercel.json` sets them).
+2. In the project, open **Storage → Marketplace → Upstash (Redis) → Create**, and connect it to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically. (Or create a database at upstash.com and add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` yourself.)
+3. **Settings → Environment Variables**: add `ADMIN_PASSWORD` (a long password only you know).
+4. **Deployments → Redeploy** so the new variables are used.
+5. Open `your-project.vercel.app/admin`, sign in, paste the Runware key, and set a team code.
+6. Your own domain: **Settings → Domains → Add**, then add the DNS record Vercel shows at your domain provider.
+
+Notes: Vercel functions accept uploads up to about 4.5 MB, so a thumbnail HTML or ComfyUI workflow bigger than that must be uploaded on Netlify or made smaller. Requests can run up to 60 seconds (`maxDuration` in `vercel.json`).
 
 ## Updating later
 
