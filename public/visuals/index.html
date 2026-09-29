@@ -1077,7 +1077,10 @@ const realismLayers = () => (isStunning() ? STUNNING_LAYERS : REALISM_LAYERS).ma
 
 /* A prompt is "weak" when it is too short, or never says anything about light, lens or texture. */
 const PHOTO_WORDS = /\b(\d{2,3}\s?mm|f\/\d|aperture|lens|light|lit|window|lamp|sun|shadow|pores|grain|texture|creased|worn)\b/gi;
+/* Prompts in the strict template (director.js) are sent exactly as written. */
+const isStrictPrompt = p => /^Photorealistic cinematic scene of /.test(String(p || '').trim()) && /no 3D render\.?\s*$/.test(String(p || '').trim());
 function isWeakPrompt(p){
+  if (isStrictPrompt(p) && String(p).split(/\s+/).length >= 45) return false;
   const body = String(p || '').replace(NO_TEXT_TAIL, '').trim();
   const words = (body.match(/\S+/g) || []).length;
   const photoHits = new Set((body.match(PHOTO_WORDS) || []).map(w => w.toLowerCase())).size;
@@ -1085,6 +1088,7 @@ function isWeakPrompt(p){
 }
 /* Deterministic booster: keeps the user's words first (they carry the subject), then adds the missing layers. */
 function boostPrompt(p, sentence){
+  if (isStrictPrompt(p) && !isWeakPrompt(p)) return String(p).trim();
   const body = String(p || '').replace(NO_TEXT_TAIL, '').trim().replace(/[.\s]+$/,'');
   if (!isWeakPrompt(body)) return /no readable text/i.test(body) ? body + '.' : body + '. ' + NO_TEXT_TAIL;
   const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
@@ -1361,6 +1365,7 @@ $('#promptBtn').addEventListener('click', async () => {
   const items = state.items; if (!items.length) return;
   const writer = $('#promptModel').value;
   if (writer === 'director') return runDirector();
+  if (writer === 'runwareLLM' && typeof runDirect === 'function') return runDirect();
   if (writer === 'template'){
     items.forEach(it => it.prompt = fallbackPrompt(it.text));
     renderPrompts();
@@ -1627,6 +1632,12 @@ async function generateOne(i){
 async function strengthenBeforeGenerate(todo){
   const weak = todo.filter(i => isWeakPrompt(state.items[i].prompt));
   if (!weak.length) return;
+  if (typeof writeStrictPrompts === 'function'){
+    setStatus('#s3', `Rewriting ${weak.length} short prompt${weak.length > 1 ? 's' : ''} in the detailed format…`);
+    try { await writeStrictPrompts(weak, (d, n) => setStatus('#s3', `Rewriting short prompts in the detailed format… ${d} of ${n}`)); }
+    catch (e){ console.warn('Strengthen failed', e); }
+    renderPrompts(); updateCost(); return;
+  }
   const writer = $('#promptModel').value === 'claude' ? 'claude' : 'runwareLLM';
   if (writer === 'runwareLLM' && !writerModelId()) return; // boostPrompt() still adds the realism layers
   const size = 2;

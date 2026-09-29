@@ -5,16 +5,12 @@
    → 1. Casting: topic, setting and a character bible (one profile per recurring person)
    → 2. Visual plan: one structured scene per line (concept, subject, action, environment, emotion,
         shot, camera, composition), with shot variation and continuity driven by the narration
-   → 3. Prompt engineering: each structured scene becomes a detailed photorealistic prompt,
-        then the permanent GLOBAL_STYLE and AVOID layers are appended
+   → 3. Prompt engineering: Claude fills the line-specific parts of one fixed prompt template
+        (assemblePrompt) and near-duplicate prompts are rewritten
    → 4. Quality control after each image: Claude looks at the image; failures are regenerated
         with a corrected prompt.
 
    All steps use TEXT_MODEL (Claude Sonnet 5 on Runware); images use IMAGE_MODEL (GPT Image 2). */
-
-/* Permanent style layer, so the text model never reinvents the look per image. */
-const GLOBAL_STYLE = 'Photorealistic commercial photography of real human beings: natural skin texture, realistic facial anatomy, natural body proportions, authentic clothing, real-world environment, physically accurate lighting with natural shadows, cinematic but realistic, subtle depth of field, high-quality professional camera capture, modern Indian environment when appropriate. The image must look like a real photograph.';
-const AVOID = 'No illustration, no cartoon, no anime, no comic style, no 3D render, no CGI, no plastic skin, no doll-like faces, no exaggerated expressions, no fantasy lighting, no surreal elements, no oversaturated colours, no fake-looking background, no readable text, no captions, no watermark, no logo.';
 
 const SHOTS = ['wide shot', 'medium shot', 'close-up', 'over-the-shoulder', 'top-down', 'side angle', 'low angle', 'environment shot', 'object close-up', 'screen + person', 'group shot', 'action shot'];
 const PLAN_CHUNK = 12;   // lines per visual-plan request (sequential, so continuity carries over)
@@ -141,67 +137,147 @@ async function planScenes(onProgress){
   return { planned, failed };
 }
 
-/* ---------- 3. Prompt engineering: structured scene -> detailed photorealistic prompt ---------- */
-function promptEngineerPrompt(batch){
-  const b = parseBible(), st = strength();
-  const all = state.items.map(it => it.text);
-  const usedChars = new Set(batch.flatMap(({ it }) => (it.scene && it.scene.character_ids) || []));
-  return `You are a prompt engineer for a photorealistic image model. Convert each structured scene below into ONE detailed image prompt.
-${videoTitle() ? `\nVIDEO TITLE: "${videoTitle()}"` : ''}
-TOPIC: ${b.topic || ''}
-CHARACTER PROFILES (copy these descriptions word for word whenever the character appears):
-${[...usedChars].map(id => `- ${id}: ${b.chars[id] || 'not in the bible, describe from the scene'}`).join('\n') || '- none'}
+/* ---------- 3. Prompt engineering: STRICT FORMAT ----------
+   Claude only fills the line-specific parts; the page assembles every prompt in one fixed order:
+   "Photorealistic cinematic scene of <subject> <action>, <emotion>, <environment>, <details>, subtle expression,
+    natural skin texture, <authentic Indian ... setting>, <shot>, shallow depth of field, professional commercial
+    photography, <lens>, <lighting>, realistic shadows, <orientation> composition, <position> with negative space
+    for video editing, no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render." */
+const STRICT_START = 'Photorealistic cinematic scene of';
+const STRICT_END = 'no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render.';
+const orientation = () => { const [w, h] = imgSize(); return w > h * 1.1 ? 'horizontal' : h > w * 1.1 ? 'vertical' : 'square'; };
+const clean = v => String(v || '').replace(/\s+/g, ' ').replace(/^[\s,.;]+|[\s,.;]+$/g, '').replace(/^(photorealistic cinematic scene of|a photo of|an image of)\s+/i, '');
 
-WRITE EACH PROMPT AS ONE PARAGRAPH OF ${st.words} WORDS that:
-- starts with "Create a photorealistic cinematic image of";
-- describes the main subject concretely (use the character profile words exactly), what they are doing right now, and a subtle, believable facial expression for the emotion;
-- describes the real environment with 3 to 5 believable details and the time of day;
-- names the real light source and its direction, realistic shadows and physically accurate lighting;
-- names the camera: the shot type, a real lens (e.g. 35mm or 50mm) and shallow but realistic depth of field;
-- states the composition for a ${frameWords()} (where the subject sits, where the clean space is);
-- adds realism cues: natural human proportions, authentic skin texture, realistic clothing, a real modern Indian place when appropriate;
-- keeps any screen, paper or sign angled away or softly blurred so no words are visible;
-- ends with "The image must look like a real photograph captured with a professional camera."
-Do NOT add style lists or "no cartoon" lists; they are appended automatically. Never use the words hyper-realistic, 8k, render or masterpiece.
+function assemblePrompt(f){
+  const person = f.has_person !== false;
+  const parts = [
+    `${STRICT_START} ${clean(f.subject)}${f.action ? ' ' + clean(f.action) : ''}`,
+    clean(f.emotion), clean(f.environment), clean(f.details),
+    person ? 'subtle expression, natural skin texture' : 'natural material textures',
+    clean(f.setting) || 'authentic Indian setting',
+    clean(f.shot), 'shallow depth of field', 'professional commercial photography',
+    clean(f.lens) || '35mm lens', clean(f.lighting) || 'natural window lighting', 'realistic shadows',
+    `${orientation()} composition`,
+    `${clean(f.position) || 'subject positioned slightly to the side'} with negative space for video editing`,
+    STRICT_END
+  ];
+  return parts.filter(Boolean).join(', ');
+}
+
+function strictWriterPrompt(batch, avoidLike){
+  const b = parseBible(), all = state.items.map(it => it.text);
+  const usedChars = new Set(batch.flatMap(({ it }) => (it.scene && it.scene.character_ids) || []));
+  return `You write image prompts for a photorealistic image model, one per narration line of a video. You fill in the line-specific parts of a FIXED prompt template; the page assembles the final prompt.
+${videoTitle() ? `\nVIDEO TITLE: "${videoTitle()}"` : ''}
+TOPIC: ${b.topic || 'work it out from the script'}
+SETTING: ${b.setting || 'contemporary India'}
+${usedChars.size ? `CHARACTER PROFILES (copy these words exactly into "subject" whenever the character appears):\n${[...usedChars].map(id => `- ${id}: ${b.chars[id] || 'describe from the scene'}`).join('\n')}\n` : ''}${creatorNotes()}
+FULL SCRIPT (context only):
+"""${scriptText()}"""
+
+THE TEMPLATE (fixed; you fill the <fields>):
+Photorealistic cinematic scene of <subject> <action>, <emotion>, <environment>, <details>, subtle expression, natural skin texture, <setting>, <shot>, shallow depth of field, professional commercial photography, <lens>, <lighting>, realistic shadows, ${orientation()} composition, <position> with negative space for video editing, no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render.
 
 EXAMPLE
-Narration: "Agar signup ke baad pachaas percent log dusre step pe hi ruk jate hain, toh problem sirf conversion ki nahi hai."
-Prompt: "Create a photorealistic cinematic image of a young Indian professional sitting at a modern office desk and attempting to complete a digital signup process on a computer. The person has reached an intermediate signup step and appears mildly confused and frustrated because the process is not progressing. Show a realistic modern Indian workplace environment with believable office furniture, natural human proportions, authentic skin texture, realistic clothing and subtle facial expression. Use professional commercial photography aesthetics, natural window light, realistic shadows, physically accurate lighting, 35mm camera lens, shallow but realistic depth of field. Medium close-up composition. Keep the subject on the right side of the frame and leave clean visual space on the left. The image must look like a real photograph captured with a professional camera."
+Narration: "Agar signup ke baad pachaas percent log dusre step pe hi ruk jate hain."
+{"subject": "a young Indian professional", "action": "using a modern smartphone signup interface", "emotion": "looking slightly frustrated after getting stuck on a registration step", "environment": "realistic coworking environment", "details": "", "setting": "authentic Indian office setting", "shot": "medium close-up", "lens": "35mm lens", "lighting": "natural window lighting", "position": "subject positioned slightly to the side", "has_person": true}
+-> Photorealistic cinematic scene of a young Indian professional using a modern smartphone signup interface, looking slightly frustrated after getting stuck on a registration step, realistic coworking environment, subtle expression, natural skin texture, authentic Indian office setting, medium close-up, shallow depth of field, professional commercial photography, 35mm lens, natural window lighting, realistic shadows, ${orientation()} composition, subject positioned slightly to the side with negative space for video editing, no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render.
 
-SCENES
+FIELD RULES (make every field MORE detailed than the example, and specific to its own line):
+- subject: who exactly (age, gender, look, hair, clothing with colour and fabric) or, for object shots, the exact object and its condition. Recurring characters use the profile words exactly.
+- action: what is happening right now that SHOWS this line's meaning (a concrete, visible action, never a symbol).
+- emotion: a precise, believable expression or body language that matches the line.
+- environment: a specific real place with 2 to 4 believable details.
+- details: 1 to 3 concrete props or background details unique to this scene (may be "" only if truly nothing fits).
+- setting: always "authentic Indian <kind> setting" (office, home, street, café, campus, clinic, shop, metro, factory...), unless the script is clearly set elsewhere.
+- shot: shot type and angle (wide shot, medium shot, medium close-up, close-up, over-the-shoulder, top-down, side angle, low angle, object close-up, screen and person, group shot, action shot).
+- lens: a real lens that suits the shot (24mm, 35mm, 50mm or 85mm lens).
+- lighting: the real light source and direction (natural window lighting from the left, soft overcast daylight, warm desk lamp light, harsh midday sun, fluorescent office lighting...).
+- position: where the subject sits ("subject positioned on the left third", "subject positioned slightly to the right"...).
+- has_person: false only when no person is visible.
+- Screens and papers never show readable words: say "screen facing away" or "softly blurred screen" when needed.
+
+EVERY PROMPT MUST BE CLEARLY DIFFERENT
+- Neighbouring lines never repeat the same combination of environment, action, shot and lens. Change at least three of: place, action, props, shot, lens, lighting, position.
+- Do not let every scene be a person at a laptop or phone: vary places (office, home, street, café, meeting room, metro, campus, shop, outdoors) and activities, driven by what the line says.
+- Continuing scenes keep the same people and place but change the shot, angle, lens and moment.
+${avoidLike ? `\nTHESE PROMPTS ALREADY EXIST; YOURS MUST LOOK CLEARLY DIFFERENT FROM THEM:\n${avoidLike.map(x => '- ' + x.slice(34, 260)).join('\n')}\n` : ''}
+LINES
 ${batch.map(({ it, i }) => `${i + 1}. Narration: "${it.text}"
-   Story so far: "${all[i - 2] || ''}" / "${all[i - 1] || 'start of video'}"
-   Scene: ${JSON.stringify(it.scene)}`).join('\n')}
+   Two lines before: "${all[i - 2] || 'start of video'}" / "${all[i - 1] || 'start of video'}"${it.scene ? `\n   Planned scene: ${JSON.stringify({ visual_concept: it.scene.visual_concept, character_ids: it.scene.character_ids, main_subject: it.scene.main_subject, action: it.scene.action, environment: it.scene.environment, emotion: it.scene.emotion, shot: it.scene.shot, camera: it.scene.camera, composition: it.scene.composition, key_props: it.scene.key_props, lighting: it.scene.lighting })}` : ''}`).join('\n')}
 
-Return ONLY a JSON array of ${batch.length} strings, one prompt per scene, in the same order.`;
+Return ONLY a JSON array of ${batch.length} objects with exactly these keys, in the same order:
+[{"subject": "", "action": "", "emotion": "", "environment": "", "details": "", "setting": "", "shot": "", "lens": "", "lighting": "", "position": "", "has_person": true}]`;
 }
-const finishPrompt = p => `${String(p).trim().replace(/[.\s]+$/, '')}. ${GLOBAL_STYLE} ${AVOID}`;
 
-async function writeScenePrompts(onProgress){
+async function strictBatch(batch, avoidLike){
+  const arr = parseJSONLoose(await askClaude(strictWriterPrompt(batch, avoidLike), { maxTokens: 500 + batch.length * 450, temperature: 0.7 }));
+  if (!Array.isArray(arr)) throw new Error('Unexpected format');
+  return batch.map((_, k) => arr[k] && arr[k].subject ? assemblePrompt(arr[k]) : '');
+}
+
+/* Word-overlap similarity of the line-specific part of two prompts (0..1). */
+function similarity(a, b){
+  const words = p => new Set(String(p).slice(STRICT_START.length, String(p).indexOf('subtle expression') > 0 ? String(p).indexOf('subtle expression') : 300).toLowerCase().match(/[a-z]{4,}/g) || []);
+  const A = words(a), B = words(b); if (!A.size || !B.size) return 0;
+  let same = 0; A.forEach(w => { if (B.has(w)) same++; });
+  return same / Math.min(A.size, B.size);
+}
+
+/* Writes strict-format prompts for the given item indexes, then rewrites any that look like another prompt. */
+async function writeStrictPrompts(indexes, onProgress){
   const items = state.items;
-  const withScene = items.map((it, i) => ({ it, i })).filter(x => x.it.scene);
-  const batches = []; for (let k = 0; k < withScene.length; k += PROMPT_BATCH) batches.push(withScene.slice(k, k + PROMPT_BATCH));
+  const list = indexes.map(i => ({ it: items[i], i }));
+  const batches = []; for (let k = 0; k < list.length; k += PROMPT_BATCH) batches.push(list.slice(k, k + PROMPT_BATCH));
   let done = 0, failed = 0;
   await pool(batches, 3, async batch => {
     if (state.cancel) return;
-    let arr = null;
-    for (let attempt = 0; attempt < 2 && !arr; attempt++){
-      try { const a = parseJSONLoose(await askClaude(promptEngineerPrompt(batch), { maxTokens: 700 + batch.length * 700, temperature: 0.6 })); if (Array.isArray(a)) arr = a; }
-      catch (e){ if (e.auth) throw e; console.warn('Prompt batch failed', e); }
+    let out = null;
+    for (let attempt = 0; attempt < 2 && !out; attempt++){
+      try { out = await strictBatch(batch); } catch (e){ if (e.auth) throw e; console.warn('Prompt batch failed', e); }
     }
-    batch.forEach(({ it }, k) => { const p = arr && arr[k] && String(arr[k]).trim(); if (p) it.prompt = finishPrompt(p); else failed++; });
-    done += batch.length; onProgress(done, withScene.length); renderPrompts();
+    batch.forEach(({ it }, k) => { if (out && out[k]) it.prompt = out[k]; else failed++; });
+    done += batch.length; onProgress(done, list.length); renderPrompts();
   });
-  // Lines the planner could not plan fall back to the direct Claude writer.
-  const loose = items.map((it, i) => ({ it, i })).filter(x => !x.it.scene || !x.it.prompt);
-  for (let k = 0; k < loose.length && !state.cancel; k += 2){
-    const run = loose.slice(k, k + 2);
+  // Uniqueness pass: any prompt too close to one of the 6 before it is rewritten once.
+  const dupes = [];
+  items.forEach((it, i) => {
+    if (!it.prompt || !indexes.includes(i)) return;
+    const near = items.slice(Math.max(0, i - 6), i).map(x => x.prompt).filter(Boolean);
+    if (near.some(p => similarity(p, it.prompt) > 0.6)) dupes.push(i);
+  });
+  for (let k = 0; k < dupes.length && !state.cancel; k += PROMPT_BATCH){
+    const batch = dupes.slice(k, k + PROMPT_BATCH).map(i => ({ it: items[i], i }));
+    const avoidLike = [...new Set(batch.flatMap(({ i }) => items.slice(Math.max(0, i - 6), i).map(x => x.prompt).filter(Boolean)))].slice(0, 12);
     try {
-      const out = await runwareLLMBatch(run.map(x => x.it.text), run[0].i);
-      run.forEach((x, j) => { if (out[j]) x.it.prompt = out[j]; else failed++; });
-    } catch (e){ if (e.auth) throw e; failed += run.length; }
+      const out = await strictBatch(batch, avoidLike);
+      batch.forEach(({ it }, j) => { if (out[j]) it.prompt = out[j]; });
+    } catch (e){ if (e.auth) throw e; console.warn('Uniqueness rewrite failed', e); }
   }
-  return { failed };
+  renderPrompts();
+  return { failed, rewritten: dupes.length };
+}
+
+async function writeScenePrompts(onProgress){
+  return writeStrictPrompts(state.items.map((_, i) => i), onProgress);
+}
+
+/* "Direct" writer: same strict format, without the scene-planning step. */
+async function runDirect(){
+  const items = state.items; if (!items.length) return;
+  if (needCode('#s2')) return;
+  const c0 = state.cost.prompts;
+  $('#promptBtn').disabled = true; state.cancel = false;
+  try {
+    items.forEach(it => { it.scene = null; });
+    const res = await writeStrictPrompts(items.map((_, i) => i), (d, n) => setStatus('#s2', `Writing detailed prompts… ${d} of ${n}`));
+    items.forEach(it => { if (!it.prompt) it.prompt = fallbackPrompt(it.text); });
+    renderPrompts();
+    const cost = state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : '';
+    setStatus('#s2', res.failed ? `${items.length - res.failed} prompts written${cost}; ${res.failed} came from a template, review them.` : `All ${items.length} prompts written by Claude Sonnet 5${cost}${res.rewritten ? `, ${res.rewritten} rewritten to be more different` : ''}.`, res.failed ? 'err' : 'ok');
+  } catch (e){
+    setStatus('#s2', e.auth ? e.message + ' Then press Write prompts again.' : 'Prompt writing stopped: ' + cleanMsg(e.message), 'err');
+  } finally { $('#promptBtn').disabled = false; updateCost(); updateButtons(); }
 }
 
 /* ---------- The whole pipeline, run by "Write prompts" when the writer is the Visual Director ---------- */
@@ -224,7 +300,7 @@ async function runDirector(){
     const cost = state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : '';
     if (res.failed || plan.failed)
       setStatus('#s2', `Prompts ready${cost}. ${plan.failed ? plan.failed + ' line(s) couldn’t be planned and were written directly. ' : ''}${res.failed ? res.failed + ' prompt(s) came from a template; review them. ' : ''}`, 'err');
-    else setStatus('#s2', `All ${items.length} scenes planned and prompts written by Claude Sonnet 5${cost}. Check the character bible and edit any prompt before generating.`, 'ok');
+    else setStatus('#s2', `All ${items.length} scenes planned and prompts written by Claude Sonnet 5${cost}${res.rewritten ? ` (${res.rewritten} rewritten to be more different)` : ''}. Check the character bible and edit any prompt before generating.`, 'ok');
   } catch (e){
     setStatus('#s2', (e.auth ? e.message + ' Then press Write prompts again.' : 'The Visual Director stopped: ' + cleanMsg(e.message)), 'err');
   } finally {
