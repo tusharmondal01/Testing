@@ -474,6 +474,7 @@
       </button>
       <button id="exportBtn" disabled>Save prompts (.json)</button>
       <button id="importBtn">Load prompts</button>
+      <button id="copyAllBtn" disabled title="Copy every line with its prompt">Copy all lines + prompts</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
     </div>
     <p class="status" id="s2" aria-live="polite"></p>
@@ -1455,6 +1456,7 @@ function renderPrompts(){
         <div class="row-actions">
           ${i < state.items.length - 1 ? '<button class="small" data-act="merge">Merge with next</button>' : ''}
           <button class="small" data-act="remove">Remove</button>
+          <button class="small" data-act="copy" title="Copy this line and its prompt">Copy</button>
         </div>
       </div>
       <div class="row-right">
@@ -1469,7 +1471,29 @@ $('#rows').addEventListener('input', e => {
   state.items[+e.target.closest('.row').dataset.i].prompt = e.target.value;
   updateButtons();
 });
-$('#rows').addEventListener('click', e => {
+/* Copy a line together with its prompt (one row, or all rows). Read-only: changes nothing on the page. */
+const copyText = (it, i) => `${numStr(i)} · LINE: ${it.text}\nPROMPT: ${(it.prompt || '').trim() || '(no prompt yet)'}`;
+async function copyToClipboard(text){
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch {
+    const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch {}
+    t.remove(); return ok;
+  }
+}
+function flashCopied(btn, ok){
+  const old = btn.dataset.label || btn.textContent; btn.dataset.label = old;
+  btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+  clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = old; }, 1500);
+}
+$('#copyAllBtn').addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  flashCopied(btn, await copyToClipboard(state.items.map(copyText).join('\n\n')));
+});
+$('#rows').addEventListener('click', async e => {
+  const cp = e.target.closest('button[data-act="copy"]');
+  if (cp){ const i = +cp.closest('.row').dataset.i; flashCopied(cp, await copyToClipboard(copyText(state.items[i], i))); return; }
   const btn = e.target.closest('button'); if (!btn || state.running) return;
   const i = +btn.closest('.row').dataset.i; const it = state.items[i];
   if (btn.dataset.act === 'merge'){
@@ -2041,6 +2065,7 @@ function updateButtons(){
   const hasImg = state.items.some(it => it.b64);
   $('#promptBtn').disabled = !n || state.running;
   $('#exportBtn').disabled = !n;
+  $('#copyAllBtn').disabled = !n;
   $('#genBtn').disabled = !n || !missing || state.running;
   $('#genBtn .lbl').textContent = !n ? 'Generate images' : missing === n ? `Generate ${n} images` : missing ? `Generate ${missing} remaining` : 'All images ready';
   $('#stopBtn').disabled = !state.running || state.cancel;
