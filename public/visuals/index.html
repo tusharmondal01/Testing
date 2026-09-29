@@ -573,7 +573,7 @@
   <section class="step" id="st4" aria-labelledby="h4">
     <span class="step-tag">Step 04 · Export</span>
     <h2 id="h4">Export to <span class="dim">Premiere Pro.</span></h2>
-    <p class="lede">Upload the SRT and download the XML. The subtitle timings decide when each image starts. Images butt up against each other, so the timeline has no gaps.</p>
+    <p class="lede">Upload the SRT and/or the voiceover video, then download the XML. The timings decide when each image starts. Images butt up against each other, so the timeline has no gaps.</p>
 
     <label class="drop" id="drop">
       <input type="file" id="srtFile" accept=".srt,text/plain">
@@ -584,11 +584,21 @@
       </div>
     </label>
 
+    <label class="drop" id="voDrop">
+      <input type="file" id="voFile" accept="video/*,audio/*,.mp4,.mov,.m4a,.mp3,.wav">
+      <svg width="34" height="40" viewBox="0 0 34 40" aria-hidden="true"><path d="M3 4a3 3 0 0 1 3-3h15l10 10v25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" fill="#FFF6D6" stroke="#F5B400" stroke-width="1.8"/><path d="M21 1v10h10" fill="none" stroke="#F5B400" stroke-width="1.8"/><path d="M9 30v-6M13 32v-10M17 29v-4M21 33v-12M25 30v-6" stroke="#A67800" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <div>
+        <strong id="voTitle">Recommended: add the HeyGen video (or its audio)</strong>
+        <span id="voSub">Stays on your computer. The site listens for the real pauses in the voice, fixes SRT timings that drift, and can time the images without any SRT.</span>
+      </div>
+    </label>
+
     <div class="fields">
       <label class="field">Match images to
         <select id="mode">
           <option value="words">Script sentences</option>
           <option value="cues">One image per subtitle line</option>
+          <option value="audio">Voiceover audio only (no SRT needed)</option>
         </select>
       </label>
       <label class="field">Frame rate
@@ -632,6 +642,7 @@
         <input type="text" id="folder" placeholder="C:\Users\you\Videos\project\images">
       </label>
       <label class="check"><input type="checkbox" id="zero" checked> Start the first image at 0:00</label>
+      <label class="check"><input type="checkbox" id="snap" checked> Snap cuts to pauses in the voiceover</label>
       <label class="check"><input type="checkbox" id="fill" checked> Scale images to fill the frame</label>
     </div>
 
@@ -1776,22 +1787,27 @@ $('#viewerClose').addEventListener('click', () => $('#viewer').close());
 $('#viewer').addEventListener('click', e => { if (e.target === $('#viewer')) $('#viewer').close(); });
 
 /* ---------- STEP 4: SRT + XML ---------- */
+/* Accepts the usual 00:01:05,300 and the variants AI tools write: 00:01:05.300, 01:05.300, 00:01:05:300, 1:05 (no milliseconds). */
 function toSec(t){
-  const m = String(t).match(/(?:(\d+):)?(\d+):(\d+)[,.](\d+)/);
+  const s = String(t).trim().replace(/[^\d:.,]/g, '');
+  const m = s.match(/^(?:(\d+):)?(\d{1,2}):(\d{1,2})(?:[,.:](\d{1,3}))?$/);
   if (!m) return NaN;
-  return (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4]) / Math.pow(10, m[4].length);
+  return (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) + (m[4] ? (+m[4]) / Math.pow(10, m[4].length) : 0);
 }
+/* Words that are actually spoken: HeyGen voice tags like [curious] or [pause] are not. */
+const spoken = s => String(s || '').replace(/\[[^\]]*\]/g, ' ');
 function parseSRT(txt){
   const blocks = txt.replace(/^\uFEFF/, '').replace(/\r/g, '').split(/\n\s*\n/);
   const cues = [];
   for (const b of blocks){
     const lines = b.split('\n').filter(l => l.trim() !== '');
-    const ti = lines.findIndex(l => l.includes('-->'));
+    const ARROW = /\s*(?:-->|->|–>|—>|→)\s*/;
+    const ti = lines.findIndex(l => ARROW.test(l) && /\d:\d/.test(l));
     if (ti < 0) continue;
-    const [a, z] = lines[ti].split('-->').map(s => s.trim().split(/\s+/)[0]);
+    const [a, z] = lines[ti].split(ARROW).map(s => s.trim().split(/\s+/)[0]);
     const start = toSec(a), end = toSec(z);
     if (isNaN(start) || isNaN(end)) continue;
-    const text = lines.slice(ti + 1).join(' ').replace(/<[^>]+>/g, '').replace(/\{[^}]*\}/g, '').trim();
+    const text = spoken(lines.slice(ti + 1).join(' ').replace(/<[^>]+>/g, '').replace(/\{[^}]*\}/g, '')).trim();
     cues.push({ start, end: Math.max(end, start), text });
   }
   return cues.sort((x, y) => x.start - y.start);
@@ -1810,7 +1826,112 @@ const drop = $('#drop');
 ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', e => loadSRT(e.dataTransfer.files[0]));
-['#mode', '#fps', '#zero'].forEach(s => $(s).addEventListener('change', refreshTimeline));
+['#mode', '#fps', '#zero', '#snap'].forEach(s => $(s).addEventListener('change', refreshTimeline));
+
+/* ---------- Voiceover analysis (runs in the browser; the file is never uploaded) ----------
+   Decodes the HeyGen video's audio at 16 kHz, measures loudness every 20 ms and finds the speech segments
+   and the pauses between them. Used to fix SRT timings that drift and to time images without an SRT. */
+state.vo = null;
+function mediaDuration(file){
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file), el = document.createElement(/^audio\//.test(file.type) ? 'audio' : 'video');
+    el.preload = 'metadata';
+    el.onloadedmetadata = () => { const d = el.duration; URL.revokeObjectURL(url); resolve(isFinite(d) ? d : 0); };
+    el.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+    el.src = url;
+  });
+}
+async function analyseVoice(file){
+  const SR = 16000, HOP = 0.02;
+  let audio;
+  try {
+    const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    audio = await new Ctx(1, SR, SR).decodeAudioData(await file.arrayBuffer());
+  } catch { return { name: file.name, duration: await mediaDuration(file), segs: null }; }
+  const n = audio.length, chans = audio.numberOfChannels, data = new Float32Array(n);
+  for (let c = 0; c < chans; c++){ const d = audio.getChannelData(c); for (let i = 0; i < n; i++) data[i] += d[i] / chans; }
+  const hop = Math.round(audio.sampleRate * HOP), frames = Math.floor(n / hop), db = new Float32Array(frames);
+  for (let f = 0; f < frames; f++){
+    let sum = 0; for (let i = f * hop, e = i + hop; i < e; i++) sum += data[i] * data[i];
+    db[f] = 10 * Math.log10(sum / hop + 1e-10);
+  }
+  const sorted = Array.from(db).sort((a, b) => a - b), pct = q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+  const floor = pct(0.1), loud = pct(0.95), thr = Math.max(floor + 6, floor + (loud - floor) * 0.3);
+  const on = Array.from(db, v => v > thr);
+  // Close tiny gaps inside words (< 100 ms) and drop clicks (< 60 ms).
+  for (let f = 0; f < frames;){ if (on[f]) { f++; continue; } let e = f; while (e < frames && !on[e]) e++; if (f > 0 && e < frames && e - f < 5) for (let k = f; k < e; k++) on[k] = true; f = e; }
+  const segs = [];
+  for (let f = 0; f < frames;){ if (!on[f]) { f++; continue; } let e = f; while (e < frames && on[e]) e++; if (e - f >= 3) segs.push([f * HOP, e * HOP]); f = e; }
+  // Pauses shorter than 150 ms are part of the flow of speech, not a break.
+  const merged = [];
+  segs.forEach(sg => { const last = merged[merged.length - 1]; if (last && sg[0] - last[1] < 0.15) last[1] = sg[1]; else merged.push(sg.slice()); });
+  return { name: file.name, duration: audio.duration, segs: merged.length ? merged : null };
+}
+async function loadVoice(file){
+  if (!file) return;
+  $('#voTitle').textContent = file.name; $('#voSub').textContent = 'Listening to the voiceover…';
+  const vo = await analyseVoice(file);
+  if (!vo.duration){ state.vo = null; $('#voSub').textContent = 'Couldn’t read that file. Try the MP4 from HeyGen, or an MP3/WAV of its audio.'; return; }
+  state.vo = vo;
+  $('#voSub').textContent = vo.segs
+    ? `${fmtClock(vo.duration)} long, speech from ${fmtTime(vo.segs[0][0])} to ${fmtTime(vo.segs[vo.segs.length - 1][1])}, ${vo.segs.length - 1} pauses found. Choose another file to replace it.`
+    : `${fmtClock(vo.duration)} long. The browser couldn’t decode its audio, so only its length is used (try an MP3/WAV for pause detection).`;
+  if (!state.cues.length) $('#mode').value = 'audio';
+  refreshTimeline();
+}
+$('#voFile').addEventListener('change', e => loadVoice(e.target.files[0]));
+const voDrop = $('#voDrop');
+['dragenter', 'dragover'].forEach(ev => voDrop.addEventListener(ev, e => { e.preventDefault(); voDrop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => voDrop.addEventListener(ev, e => { e.preventDefault(); voDrop.classList.remove('over'); }));
+voDrop.addEventListener('drop', e => loadVoice(e.dataTransfer.files[0]));
+
+/* Real time for a point measured in "speech time" (pauses removed). A point on a pause boundary lands on the next onset. */
+function speechToReal(segs, sp){
+  let acc = 0;
+  for (const [a, b] of segs){ if (sp < acc + (b - a)) return a + (sp - acc); acc += b - a; }
+  return segs[segs.length - 1][1];
+}
+/* Timing from the voiceover alone: each line gets a share of the speech time in proportion to its spoken length. */
+function audioStarts(){
+  const vo = state.vo, items = state.items;
+  const weight = it => tokens(spoken(it.text)).reduce((a, w) => a + w.length + 2, 0);
+  const ws = items.map(weight), total = ws.reduce((a, b) => a + b, 0) || 1;
+  const speech = vo.segs.reduce((a, [x, y]) => a + y - x, 0);
+  let acc = 0;
+  const starts = ws.map(w => { const t = speechToReal(vo.segs, acc / total * speech); acc += w; return t; });
+  return { starts, end: vo.duration, count: items.length, note: `Timed from the voiceover (${vo.segs.length - 1} pauses), no SRT used.` };
+}
+/* Fixes SRT-based starts with the real voiceover: stretch/shift the whole SRT onto the real speech, then snap cuts to pauses. */
+function voiceFix(r){
+  const vo = state.vo; if (!vo) return r;
+  const notes = [];
+  let starts = r.starts.slice();
+  if (r.fromSRT){
+    const c0 = state.cues[0].start, c1 = state.cues[state.cues.length - 1].end;
+    const s0 = vo.segs ? vo.segs[0][0] : c0, s1 = vo.segs ? vo.segs[vo.segs.length - 1][1] : Math.min(c1, vo.duration);
+    const diff = (c1 - c0) - (s1 - s0);
+    if (c1 > c0 && (Math.abs(diff) > Math.max(0.4, 0.015 * (s1 - s0)) || Math.abs(c0 - s0) > 0.4)){
+      starts = starts.map(t => s0 + (t - c0) * (s1 - s0) / (c1 - c0));
+      notes.push(`The SRT was ${Math.abs(diff).toFixed(1)} s ${diff > 0 ? 'longer' : 'shorter'} than the real speech, so its timings were stretched to fit the voiceover`);
+    }
+  }
+  if (vo.segs && $('#snap').checked){
+    // Without an SRT the estimate is rougher, so a cut may move a little further to reach a real pause.
+    const onsets = vo.segs.map(s => s[0]), win = r.fromSRT ? 0.6 : 1.0; let snapped = 0;
+    let prev = -Infinity;
+    starts = starts.map((t, k) => {
+      let out = t;
+      if (k){
+        // Nearest pause within the window; never onto (or before) the previous image's start.
+        let best = null; for (const o of onsets) if (Math.abs(o - t) <= win && o > prev + 0.3 && (best === null || Math.abs(o - t) < Math.abs(best - t))) best = o;
+        if (best !== null && best !== t){ snapped++; out = best; }
+      }
+      prev = out; return out;
+    });
+    if (snapped) notes.push(`${snapped} cuts snapped to pauses in the voice`);
+  }
+  return { ...r, starts, end: vo.duration, note: [String(r.note || '').replace(/\.\s*$/, ''), ...notes].filter(Boolean).join('. ') + '.' };
+}
 $('#motion').addEventListener('change', () => { $('#zoomAmt').disabled = $('#motion').value === 'none'; });
 
 function rateInfo(){
@@ -1822,10 +1943,16 @@ function rateInfo(){
 
 function computeStarts(){
   const items = state.items, cues = state.cues;
-  const mode = $('#mode').value;
+  let mode = $('#mode').value;
+  if (!cues.length && state.vo && state.vo.segs) mode = 'audio';
+  if (mode === 'audio'){
+    if (state.vo && state.vo.segs) return audioStarts();
+    if (!cues.length) return null;
+    mode = 'words';
+  }
   if (mode === 'cues'){
     const n = Math.min(items.length, cues.length);
-    return { starts: cues.slice(0, n).map(c => c.start), end: cues[n - 1].end, count: n,
+    return { fromSRT: true, starts: cues.slice(0, n).map(c => c.start), end: cues[n - 1].end, count: n,
       note: items.length !== cues.length ? `${items.length} images but ${cues.length} subtitle lines, so only the first ${n} are placed.` : '' };
   }
   const sw = [], st = [];
@@ -1834,10 +1961,10 @@ function computeStarts(){
     w.forEach((x, j) => { sw.push(x); st.push(c.start + span * j / w.length); });
   });
   if (!sw.length) return null;
-  const scriptTotal = items.reduce((a, it) => a + tokens(it.text).length, 0) || 1;
+  const scriptTotal = items.reduce((a, it) => a + tokens(spoken(it.text)).length, 0) || 1;
   let p = 0, k = 0, misses = 0, matched = 0;
   const starts = items.map(it => {
-    const toks = tokens(it.text); let first = null;
+    const toks = tokens(spoken(it.text)); let first = null;
     if (!toks.length) first = Math.min(p, sw.length - 1);
     for (const w of toks){
       let hit = -1;
@@ -1855,17 +1982,23 @@ function computeStarts(){
     return st[first];
   });
   const pct = Math.round(matched / scriptTotal * 100);
-  return { starts, end: cues[cues.length - 1].end, count: items.length,
-    note: pct < 70 ? `Only ${pct}% of script words matched the subtitles, so some timings are estimated. Check that the SRT is from this script.` : `${pct}% of script words matched the subtitles.` };
+  // The SRT's words don't match the script (e.g. Gemini wrote it in Devanagari or paraphrased): the voiceover is more reliable.
+  if (pct < 50 && state.vo && state.vo.segs){
+    const a = audioStarts();
+    return { ...a, note: `Only ${pct}% of script words matched the SRT (it may be in another script or reworded), so the images were timed from the voiceover instead.` };
+  }
+  return { fromSRT: true, starts, end: cues[cues.length - 1].end, count: items.length,
+    note: pct < 70 ? `Only ${pct}% of script words matched the subtitles, so some timings are estimated. ${state.vo ? '' : 'Add the voiceover video above for accurate timing, or '}Check that the SRT is from this script.` : `${pct}% of script words matched the subtitles.` };
 }
 
 function refreshTimeline(){
-  const ok = state.items.length && state.cues.length;
+  const ok = state.items.length && (state.cues.length || (state.vo && state.vo.segs));
   $('#timeline').hidden = !ok;
   state.timeline = [];
   if (!ok){ $('#tlMeta').textContent = ''; updateButtons(); return; }
-  const r = computeStarts();
-  if (!r){ setStatus('#s4', 'The subtitles have no readable words to match against.', 'err'); updateButtons(); return; }
+  const r0 = computeStarts();
+  if (!r0){ setStatus('#s4', 'The subtitles have no readable words to match against.', 'err'); updateButtons(); return; }
+  const r = voiceFix(r0);
   const { fps } = rateInfo();
   const n = r.count;
   const sf = r.starts.map(s => Math.round(s * fps));
@@ -1877,7 +2010,7 @@ function refreshTimeline(){
   const total = endF;
   const lens = state.timeline.map(c => (c.end - c.start) / fps);
   $('#tlMeta').textContent = `${n} images, ${fmtClock(total / fps)} total, ${Math.min(...lens).toFixed(1)}s to ${Math.max(...lens).toFixed(1)}s each`;
-  setStatus('#s4', r.note, r.note.startsWith('Only') || r.note.includes('only the first') ? 'err' : 'ok');
+  setStatus('#s4', r.note, /^Only \d+% of script words matched the subtitles|only the first/.test(r.note) ? 'err' : 'ok');
 
   $('#track').innerHTML = state.timeline.map(c => {
     const it = state.items[c.i];
@@ -1965,8 +2098,16 @@ function buildXML(){
     const d = Math.min(tFrames, Math.floor((tl[k + 1].end - tl[k + 1].start) / 3));
     return d >= 4 ? d : 0;
   });
+  // A transition starts at the cut, so the next image would only be fully visible after it. Moving each cut
+  // earlier by half the transition puts the middle of the transition exactly on the first word of the line.
+  const cuts = tl.map(c => ({ ...c }));
+  for (let k = 0; k < cuts.length - 1; k++){
+    const shift = Math.floor(post[k] / 2);
+    const at = Math.max(cuts[k].start + 2, cuts[k].end - shift);
+    cuts[k].end = at; cuts[k + 1].start = at;
+  }
   const pick = transitionPicker();
-  const clips = state.timeline.map((c, k) => {
+  const clips = cuts.map((c, k) => {
     const name = fname(c.i); const len = c.end - c.start; const id = k + 1; const media = len + post[k];
     const motion = $('#motion').value, zoom = parseFloat($('#zoomAmt').value) || 0;
     const dir = motion === 'in' ? 1 : motion === 'out' ? -1 : motion === 'alt' ? (k % 2 ? -1 : 1) : 0;
