@@ -2,7 +2,7 @@
 import { getStore } from "@netlify/blobs";
 
 // Shown on the admin page so you can confirm which backend version is live.
-export const VERSION = "10";
+export const VERSION = "11";
 
 // Text model used for smart script splitting (confirmed in Runware's official SDK examples).
 export const DEFAULT_TEXT_MODEL = "deepseek:v4@flash";

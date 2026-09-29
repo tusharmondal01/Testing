@@ -13,6 +13,7 @@
    All steps use TEXT_MODEL (Claude Sonnet 5 on Runware); images use IMAGE_MODEL (GPT Image 2). */
 
 const SHOTS = ['wide shot', 'medium shot', 'close-up', 'over-the-shoulder', 'top-down', 'side angle', 'low angle', 'environment shot', 'object close-up', 'screen + person', 'group shot', 'action shot'];
+const DIRECTOR_VERSION = 11; // shown in the status line so you can tell the new code is running
 const PLAN_CHUNK = 6;    // lines per visual-plan request (sequential, so continuity carries over; small enough for Vercel's 60 s limit)
 const MAX_FAILS = 2;     // this many failed requests in a row with no success stops the run and shows the error
 
@@ -303,10 +304,10 @@ async function runDirector(){
   try {
     items.forEach(it => { if (isTemplatePrompt(it.prompt)) it.prompt = ''; });
     if (!$('#bible').value.trim()){
-      setStatus('#s2', 'Step 1 of 3 · Reading the whole script and casting the characters…');
+      setStatus('#s2', `Visual Director v${DIRECTOR_VERSION} · Step 1 of 3 · Reading the whole script to understand the video…`);
       try { await buildBible(); } catch (e){ if (e.auth) throw e; console.warn('Bible failed', e); }
     }
-    setStatus('#s2', `Step 2 of 3 · Planning scenes, shots and continuity… 0 of ${items.length}`);
+    setStatus('#s2', `Visual Director v${DIRECTOR_VERSION} · Step 2 of 3 · Planning scenes, shots and continuity… 0 of ${items.length}`);
     let plan;
     try { plan = await planScenes(n => setStatus('#s2', `Step 2 of 3 · Planning scenes, shots and continuity… ${n} of ${items.length}`)); }
     catch (e){
