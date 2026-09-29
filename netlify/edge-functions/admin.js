@@ -29,6 +29,10 @@ const view = (settings, usage, comfyMeta) => {
   };
 };
 
+const INVALID_MODEL = /invalid value for 'model'|valid text model|model not found|unknown model/i;
+const IMAGE_CATEGORY = /^(lora|lycoris|checkpoint|controlnet|vae|embeddings?|upscaler|ipadapter|image|video|audio)$/i;
+const IMAGE_ARCH = /sd|sdxl|flux|pony|illustrious|hidream|wan|hunyuan|ltx|kolors|auraflow|qwen.?image|seedream|imagen|gpt.?image/i;
+
 export default async (req) => {
   if (req.method !== "POST") return fail("Method not allowed", 405);
   const password = env("ADMIN_PASSWORD");
@@ -116,28 +120,44 @@ export default async (req) => {
         const data = await res.json().catch(() => ({}));
         if (data.errors && data.errors.length) return fail(cleanMessage(data.errors[0].message) || "Runware couldn't search models.", 400);
         const hit = (data.data || []).find((d) => d.taskType === "modelSearch") || {};
-        return json({ results: hit.results || [], total: hit.totalResults ?? (hit.results || []).length });
+        const all = hit.results || [];
+        // Text models only: LoRAs, checkpoints, ControlNets and other image models can't write text.
+        const results = body.textOnly ? all.filter((m) => !IMAGE_CATEGORY.test(String(m.category || "")) && !IMAGE_ARCH.test(String(m.architecture || ""))) : all;
+        return json({ results, total: body.textOnly ? results.length : hit.totalResults ?? all.length, hidden: all.length - results.length });
       } catch { return fail("Couldn't reach Runware from the server.", 502); }
     }
 
     case "testTextModel": {
       const key = activeKey(settings);
       if (!key) return fail("Save a Runware key first.", 400);
-      const model = String(body.model || "").trim() || textModel(settings);
+      const wanted = String(body.model || "").trim() || textModel(settings);
+      if (!MODEL_ID.test(wanted)) return fail(`"${wanted}" isn't a Runware model ID. Text model IDs look like provider:model@version, for example anthropic:claude@sonnet-5.`, 400);
+      // Runware spells versions either way (sonnet-5.5 / sonnet-5-5), so a rejected ID is retried with the other spelling.
+      const at = wanted.indexOf("@"), ver = wanted.slice(at + 1);
+      const alts = [wanted, wanted.slice(0, at + 1) + ver.replace(/(\d)\.(\d)/g, "$1-$2"), wanted.slice(0, at + 1) + ver.replace(/(\d)-(\d)/g, "$1.$2")];
+      const tries = [...new Set(alts)];
+      let lastMsg = "", model = wanted;
       try {
-        const res = await fetch(RUNWARE_URL, {
-          method: "POST", headers: { "content-type": "application/json" },
-          body: JSON.stringify([{ taskType: "authentication", apiKey: key }, {
-            taskType: "textInference", taskUUID: crypto.randomUUID(), model, deliveryMethod: "sync", includeCost: true,
-            messages: [{ role: "user", content: "Reply with the single word OK." }], settings: { maxTokens: 20 },
-          }]),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (data.errors && data.errors.length) return fail(model + ": " + cleanMessage(data.errors[0].message || "error"), 400);
-        const t = (data.data || []).find((d) => d.taskType === "textInference");
-        if (!t) return fail(model + ": Runware returned HTTP " + res.status + " without a text reply.", 400);
-        return json({ ok: true, model, reply: String(t.text || "").slice(0, 80), cost: t.cost ?? null });
+        for (model of tries) {
+          const res = await fetch(RUNWARE_URL, {
+            method: "POST", headers: { "content-type": "application/json" },
+            body: JSON.stringify([{ taskType: "authentication", apiKey: key }, {
+              taskType: "textInference", taskUUID: crypto.randomUUID(), model, deliveryMethod: "sync", includeCost: true,
+              messages: [{ role: "user", content: "Reply with the single word OK." }], settings: { maxTokens: 20 },
+            }]),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (data.errors && data.errors.length) {
+            lastMsg = cleanMessage(data.errors[0].message || "error");
+            if (INVALID_MODEL.test(lastMsg)) continue;
+            return fail(model + ": " + lastMsg, 400);
+          }
+          const t = (data.data || []).find((d) => d.taskType === "textInference");
+          if (!t) return fail(model + ": Runware returned HTTP " + res.status + " without a text reply.", 400);
+          return json({ ok: true, model, reply: String(t.text || "").slice(0, 80), cost: t.cost ?? null });
+        }
       } catch { return fail("Couldn't reach Runware from the server.", 502); }
+      return fail(`Runware doesn't offer "${wanted}" as a text model (${lastMsg}). Image models and LoRAs (civitai:…, runware:… image IDs) can't write text. Copy the exact text model ID from its page on runware.ai/models, for example anthropic:claude@sonnet-5.`, 400);
     }
 
     case "resetUsage":

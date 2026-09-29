@@ -190,6 +190,12 @@
         <label class="field">Friendly name (optional)<input type="text" id="addTextName" maxlength="60" placeholder="e.g. DeepSeek V4 Flash"></label>
       </div>
       <div class="row"><button class="primary" id="addText">Test &amp; add</button></div>
+      <p class="help" style="margin-top:14px">Quick add (text models listed on runware.ai/models):</p>
+      <div class="row" id="textQuick">
+        <button data-air="anthropic:claude@sonnet-5" data-name="Claude Sonnet 5">Claude Sonnet 5</button>
+        <button data-air="anthropic:claude@fable-5" data-name="Claude Fable 5">Claude Fable 5</button>
+        <button data-air="deepseek:v4@flash" data-name="DeepSeek V4 Flash">DeepSeek V4 Flash</button>
+      </div>
       <p class="section-title" style="margin:22px 0 10px">Or search Runware's catalogue</p>
       <div class="searchrow"><input type="text" id="textSearch" placeholder="e.g. claude, deepseek, gemini, gpt, llama"><button id="textSearchBtn">Search</button></div>
       <div class="results" id="textResults"></div>
@@ -387,18 +393,21 @@ async function addTextModel(id, name){
   id = String(id || '').trim(); if (!id){ setStatus('#textStatus', 'Enter a model ID first.', 'err'); return; }
   if (textListCache.some(m => m.id === id)){ setStatus('#textStatus', 'That model is already in the list.', 'err'); return; }
   setStatus('#textStatus', `Testing ${id}…`);
-  await call('testTextModel', { model: id });
-  await saveList([...textListCache, { id, name: String(name || '').trim() }], `✓ ${id} works and was added.`);
+  const r = await call('testTextModel', { model: id });
+  if (textListCache.some(m => m.id === r.model)){ setStatus('#textStatus', `${r.model} is already in the list.`, 'err'); return; }
+  await saveList([...textListCache, { id: r.model, name: String(name || '').trim() }], r.model === id ? `✓ ${id} works and was added.` : `✓ Runware spells it ${r.model}; that works and was added.`);
 }
 $('#addText').addEventListener('click', () => guarded('#textStatus', async () => { await addTextModel($('#addTextId').value, $('#addTextName').value); $('#addTextId').value = ''; $('#addTextName').value = ''; }));
 $('#textSearchBtn').addEventListener('click', () => guarded('#textStatus', async () => {
   const q = $('#textSearch').value.trim(); if (!q){ setStatus('#textStatus', 'Type something to search for.', 'err'); return; }
   setStatus('#textStatus', 'Searching Runware…'); $('#textResults').innerHTML = '';
-  const r = await call('searchModels', { search: q, limit: 30 });
+  const r = await call('searchModels', { search: q, limit: 50, textOnly: true });
   $('#textResults').innerHTML = r.results.map(m => `<div class="res"><span><b>${esc(m.name)}${m.version ? ' · ' + esc(m.version) : ''}</b><small>${esc(m.air)} · ${esc([m.category, m.architecture].filter(Boolean).join(' · '))}</small></span><button data-air="${esc(m.air)}" data-name="${esc(m.name)}">Test &amp; add</button></div>`).join('');
-  setStatus('#textStatus', r.results.length ? `${r.total} results. Text models work only if Runware lists them as text models; Test & add checks that.` : 'No results. Runware’s catalogue search may not include text models; paste the ID from runware.ai instead.', r.results.length ? 'ok' : 'err');
+  const hid = r.hidden ? ` ${r.hidden} image model${r.hidden === 1 ? '' : 's'} (LoRAs, checkpoints) hidden, they can't write text.` : '';
+  setStatus('#textStatus', r.results.length ? `${r.results.length} possible text models.${hid} Test & add checks each one.` : `No text models found.${hid} Runware's catalogue search mostly lists image models: use a Quick add button, or paste the ID from the model's page on runware.ai/models (e.g. anthropic:claude@sonnet-5).`, r.results.length ? 'ok' : 'err');
 }));
 $('#textSearch').addEventListener('keydown', e => { if (e.key === 'Enter') $('#textSearchBtn').click(); });
+$('#textQuick').addEventListener('click', e => { const b = e.target.closest('button[data-air]'); if (b) guarded('#textStatus', () => addTextModel(b.dataset.air, b.dataset.name)); });
 $('#textResults').addEventListener('click', e => { const b = e.target.closest('button[data-air]'); if (b) guarded('#textStatus', () => addTextModel(b.dataset.air, b.dataset.name)); });
 
 // ---------- dashboard ----------

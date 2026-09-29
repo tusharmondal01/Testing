@@ -1073,7 +1073,16 @@ const STUNNING_LAYERS = [
   'Beautiful motivated light from a real source with a clear direction: warm golden sunlight or a warm lamp glow, soft rim light separating the subject from the background, rich but natural shadows, glowing highlights and a small catchlight in the eyes',
   'Shot on a full-frame camera with a sharp prime lens, perfect focus on the subject, rich lush colour with warm golden highlights and deep greens, high dynamic range, clean professional colour grade'
 ];
-const realismLayers = () => (isStunning() ? STUNNING_LAYERS : REALISM_LAYERS).map(l => l.replace('{frame}', frameWords())).join('. ');
+/* Image models don't read "if a person is shown" as a condition; they add a person. So the face layer and the
+   eye/chin light details are only added when the prompt already contains a person. */
+const PERSON_WORDS = /\b(man|men|woman|women|boy|girl|child|children|kid|person|people|student|teacher|worker|employee|farmer|family|mother|father|he|she|his|her|customer|user|professional|couple|friend|crowd|someone|face|hands?)\b/i;
+const realismLayers = (text) => {
+  const person = text === undefined || PERSON_WORDS.test(String(text));
+  return (isStunning() ? STUNNING_LAYERS : REALISM_LAYERS)
+    .filter(l => person || !/^If a person is shown/.test(l))
+    .map(l => (person ? l : l.replace(/, true shadows under the chin, nose and objects/, ', true shadows under objects').replace(/,? and a small (natural )?catchlight in the eyes/, '').replace(/ on the eyes or the main object/, ' on the main object')).replace('{frame}', frameWords()))
+    .join('. ');
+};
 
 /* A prompt is "weak" when it is too short, or never says anything about light, lens or texture. */
 const PHOTO_WORDS = /\b(\d{2,3}\s?mm|f\/\d|aperture|lens|light|lit|window|lamp|sun|shadow|pores|grain|texture|creased|worn)\b/gi;
@@ -1093,7 +1102,7 @@ function boostPrompt(p, sentence){
   if (!isWeakPrompt(body)) return /no readable text/i.test(body) ? body + '.' : body + '. ' + NO_TEXT_TAIL;
   const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const lt = lightFor(sentence || body);
-  return `${body}. ${notes && !body.includes(notes) ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${STYLE_TAGS[$('#style').value]}. ${masterLook()}. ${NO_TEXT_TAIL}`;
+  return `${body}. ${notes && !body.includes(notes) ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers(body + ' ' + notes)}. ${lt ? lt + '. ' : ''}${STYLE_TAGS[$('#style').value]}. ${masterLook()}. ${NO_TEXT_TAIL}`;
 }
 
 /* ---------- Craftush server relay (the Runware key stays on the server) ---------- */
@@ -1201,7 +1210,7 @@ async function runwareEnhanceBatch(batch){
   return tasks.map((t, k) => {
     const txt = (byId[t.taskUUID] || '').trim();
     const lt = lightFor(batch[k]);
-    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${tag}. ${masterLook()}. ${NO_TEXT_TAIL}` : '';
+    return txt ? `${txt.replace(/[.\s]+$/,'')}. ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers(txt + ' ' + notes)}. ${lt ? lt + '. ' : ''}${tag}. ${masterLook()}. ${NO_TEXT_TAIL}` : '';
   });
 }
 
@@ -1209,7 +1218,7 @@ function fallbackPrompt(sentence){
   const style = STYLES[$('#style').value];
   const notes = $('#notes').value.trim().replace(/[.\s]+$/,'');
   const lt = lightFor(sentence);
-  return `${isStunning() ? 'A breathtaking, premium' : 'A candid'} real photograph of an ordinary real-life moment in contemporary India that a viewer instantly connects with this voiceover line: "${sentence.replace(/[.!?।…]+$/,'')}". ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers()}. ${lt ? lt + '. ' : ''}${style}. ${masterLook()}. ${NO_TEXT_TAIL}`;
+  return `${isStunning() ? 'A breathtaking, premium' : 'A candid'} real photograph of an ordinary real-life moment in contemporary India that a viewer instantly connects with this voiceover line: "${sentence.replace(/[.!?।…]+$/,'')}". ${notes ? 'Consistent details: ' + notes + '. ' : ''}${realismLayers(notes)}. ${lt ? lt + '. ' : ''}${style}. ${masterLook()}. ${NO_TEXT_TAIL}`;
 }
 
 /* ---------- System prompt for the Claude prompt writer ---------- */

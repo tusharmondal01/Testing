@@ -69,7 +69,8 @@ Return ONLY JSON:
  "characters": [{"character_id": "short_snake_case_id", "gender": "", "age": "", "appearance": "ethnicity, build, face, skin tone", "hair": "", "clothing": "specific garments with colours and fabric", "role": "their role in the story"}]}
 
 Rules:
-- 1 to 5 recurring characters the story really needs (the viewer, a user, an employee, a manager, a customer, a student...). Only people who appear in several scenes.
+- 0 to 3 recurring characters. Cast someone ONLY if the script follows a specific person or clearly talks about the same person across several lines (a named person, "a student who...", a story). Scripts about facts, products, money, places, history, science, tips or processes usually need NO characters: return "characters": [] for them.
+- Do not invent a "viewer", "user" or presenter character just to have a person in the video.
 - Contemporary India, real Indian people and places, unless the title or script clearly says otherwise.
 - Ordinary believable people, not models or celebrities. No real, named public figures.
 - Clothing must be specific and stay the same across the video.`, { maxTokens: 1500, temperature: 0.3 });
@@ -90,8 +91,8 @@ function planPrompt(lines, offset, prev){
 ${videoTitle() ? `\nVIDEO TITLE: "${videoTitle()}"` : ''}
 TOPIC: ${b.topic || 'work it out from the script'}
 SETTING: ${b.setting || 'contemporary India'}
-CHARACTER BIBLE (use these ids whenever these people appear; do not invent new looks for them):
-${Object.entries(b.chars).map(([k, v]) => `- ${k}: ${v}`).join('\n') || '- none yet: describe people inside main_subject'}
+CHARACTER BIBLE (use these ids ONLY in lines where that person really appears; do not invent new looks for them):
+${Object.entries(b.chars).map(([k, v]) => `- ${k}: ${v}`).join('\n') || '- none: this video has no recurring people'}
 
 FULL SCRIPT (context only):
 """${scriptText()}"""
@@ -102,14 +103,15 @@ ${lines.map((l, k) => `${offset + k + 1}. ${l}`).join('\n')}
 HOW TO PLAN EACH LINE
 1. Understand the line in its place in the story (read the lines before it). Ask: is it directly visual? Does it add a new visual idea? Does it continue the previous scene?
 2. One meaningful visual idea = one image. Show the idea as a REAL moment a photographer could capture:
-   - literal lines: show exactly that (a person, place, object or action);
-   - analytical or conceptual lines (numbers, problems, reasons, advice): show a relatable real situation that demonstrates it, e.g. "50% users drop at step two" -> a young professional at an office desk pausing, mildly frustrated, at an unfinished signup form. Never symbols (lightbulbs, gears, brains, arrows, floating icons, charts in the air).
-3. Continuity: if the line continues the previous situation, keep the same characters, place and time, set "same_scene_as_previous": true, and change the shot or angle. Use character ids from the bible for recurring people; describe one-off extras inside main_subject.
-4. Shot variation driven by the narration, chosen from: ${SHOTS.join(', ')}. Emotional beats suit close-ups, context and transitions suit wide or environment shots, actions suit action or over-the-shoulder shots, details suit object close-ups. Never the same shot type twice in a row, and do not let every scene be a person at a laptop: vary environments (office, home, street, café, meeting room, metro, campus, shop...), props and activities.
-5. Screens, documents and signs are angled away or softly blurred. text_in_image is always false.
+   - literal lines: show exactly what the line names: the object, place, product, food, animal, vehicle, document or action. If the line is about a thing or a place, the thing or place is the subject, with NO person;
+   - analytical or conceptual lines (numbers, problems, reasons, advice): show the most direct real thing that demonstrates it: an object, a place, a detail, or, only when the line is about what someone does or feels, a person. Never symbols (lightbulbs, gears, brains, arrows, floating icons, charts in the air).
+3. PEOPLE ARE OPTIONAL. Set "people" to "none" unless the line is about a person: what someone does, says, feels or decides, or an interaction between people. Money, prices, products, places, buildings, nature, food, tools, documents, processes and statistics are usually shown WITHOUT people (close-ups of the object, the place, the result). Never add a person just to fill the frame or to "make it relatable". When people is "none", character_ids is [] and main_subject is the object or place.
+4. Continuity: if the line continues the previous situation, keep the same place and time (and the same characters if they were in it), set "same_scene_as_previous": true, and change the shot or angle. Use character ids from the bible only in lines where that person appears; describe one-off extras inside main_subject.
+5. Shot variation driven by the narration, chosen from: ${SHOTS.join(', ')}. Emotional beats suit close-ups, context and transitions suit wide or environment shots, actions suit action or over-the-shoulder shots, details suit object close-ups. Never the same shot type twice in a row, and do not let every scene show a person: alternate people shots with object close-ups, places and details, and vary environments (office, home, street, café, meeting room, metro, campus, shop...), props and activities.
+6. Screens, documents and signs are angled away or softly blurred. text_in_image is always false.
 
 Return ONLY a JSON array with exactly ${lines.length} objects, in order, each shaped like:
-{"line": ${offset + 1}, "scene_type": "user_experience | workplace | education | business | product | lifestyle | nature | ...", "visual_concept": "one sentence", "character_ids": ["employee_01"], "main_subject": "who or what, concrete", "action": "what is happening right now", "environment": "specific real place with 3 to 5 real details", "time_of_day": "", "lighting": "real light source and direction", "emotion": "", "shot": "one of the shot types", "camera": "lens, distance and angle, e.g. 35mm medium close-up at eye level", "composition": "where the subject sits in the ${frameWords()}", "key_props": ["..."], "same_scene_as_previous": false, "text_in_image": false}`;
+{"line": ${offset + 1}, "scene_type": "user_experience | workplace | education | business | product | lifestyle | nature | ...", "visual_concept": "one sentence", "people": "none | one | two | group", "character_ids": [], "main_subject": "who or what, concrete", "action": "what is happening right now", "environment": "specific real place with 3 to 5 real details", "time_of_day": "", "lighting": "real light source and direction", "emotion": "", "shot": "one of the shot types", "camera": "lens, distance and angle, e.g. 35mm medium close-up at eye level", "composition": "where the subject sits in the ${frameWords()}", "key_props": ["..."], "same_scene_as_previous": false, "text_in_image": false}`;
 }
 
 async function planScenes(onProgress){
@@ -126,7 +128,12 @@ async function planScenes(onProgress){
     }
     lines.forEach((_, k) => {
       const sc = scenes && (scenes.find(s => +s.line === start + k + 1) || scenes[k]);
-      if (sc && typeof sc === 'object'){ sc.text_in_image = false; items[start + k].scene = sc; planned++; }
+      if (sc && typeof sc === 'object'){
+        sc.text_in_image = false;
+        sc.people = /^(one|two|group)$/i.test(String(sc.people || '')) ? String(sc.people).toLowerCase() : 'none';
+        if (sc.people === 'none') sc.character_ids = [];
+        items[start + k].scene = sc; planned++;
+      }
       else { items[start + k].scene = null; failed++; }
     });
     prev = items.slice(Math.max(0, start + lines.length - 3), start + lines.length)
@@ -144,12 +151,14 @@ async function planScenes(onProgress){
     photography, <lens>, <lighting>, realistic shadows, <orientation> composition, <position> with negative space
     for video editing, no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render." */
 const STRICT_START = 'Photorealistic cinematic scene of';
+const NO_PEOPLE = 'no people, no person, no human figures, no hands';
 const STRICT_END = 'no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render.';
 const orientation = () => { const [w, h] = imgSize(); return w > h * 1.1 ? 'horizontal' : h > w * 1.1 ? 'vertical' : 'square'; };
 const clean = v => String(v || '').replace(/\s+/g, ' ').replace(/^[\s,.;]+|[\s,.;]+$/g, '').replace(/^(photorealistic cinematic scene of|a photo of|an image of)\s+/i, '');
 
-function assemblePrompt(f){
-  const person = f.has_person !== false;
+function assemblePrompt(f, scene){
+  // A person appears only when the writer says so, and never when the planned scene has no people.
+  const person = f.has_person === true && !(scene && scene.people === 'none');
   const parts = [
     `${STRICT_START} ${clean(f.subject)}${f.action ? ' ' + clean(f.action) : ''}`,
     clean(f.emotion), clean(f.environment), clean(f.details),
@@ -159,6 +168,7 @@ function assemblePrompt(f){
     clean(f.lens) || '35mm lens', clean(f.lighting) || 'natural window lighting', 'realistic shadows',
     `${orientation()} composition`,
     `${clean(f.position) || 'subject positioned slightly to the side'} with negative space for video editing`,
+    person ? '' : NO_PEOPLE,
     STRICT_END
   ];
   return parts.filter(Boolean).join(', ');
@@ -166,7 +176,7 @@ function assemblePrompt(f){
 
 function strictWriterPrompt(batch, avoidLike){
   const b = parseBible(), all = state.items.map(it => it.text);
-  const usedChars = new Set(batch.flatMap(({ it }) => (it.scene && it.scene.character_ids) || []));
+  const usedChars = new Set(batch.flatMap(({ it }) => (it.scene && it.scene.people !== 'none' && it.scene.character_ids) || []));
   return `You write image prompts for a photorealistic image model, one per narration line of a video. You fill in the line-specific parts of a FIXED prompt template; the page assembles the final prompt.
 ${videoTitle() ? `\nVIDEO TITLE: "${videoTitle()}"` : ''}
 TOPIC: ${b.topic || 'work it out from the script'}
@@ -183,10 +193,19 @@ Narration: "Agar signup ke baad pachaas percent log dusre step pe hi ruk jate ha
 {"subject": "a young Indian professional", "action": "using a modern smartphone signup interface", "emotion": "looking slightly frustrated after getting stuck on a registration step", "environment": "realistic coworking environment", "details": "", "setting": "authentic Indian office setting", "shot": "medium close-up", "lens": "35mm lens", "lighting": "natural window lighting", "position": "subject positioned slightly to the side", "has_person": true}
 -> Photorealistic cinematic scene of a young Indian professional using a modern smartphone signup interface, looking slightly frustrated after getting stuck on a registration step, realistic coworking environment, subtle expression, natural skin texture, authentic Indian office setting, medium close-up, shallow depth of field, professional commercial photography, 35mm lens, natural window lighting, realistic shadows, ${orientation()} composition, subject positioned slightly to the side with negative space for video editing, no visible text, no logos, no cartoon, no illustration, no CGI, no 3D render.
 
-FIELD RULES (make every field MORE detailed than the example, and specific to its own line):
-- subject: who exactly (age, gender, look, hair, clothing with colour and fabric) or, for object shots, the exact object and its condition. Recurring characters use the profile words exactly.
+EXAMPLE WITHOUT PEOPLE
+Narration: "Sona pichhle saal se 30 percent mehenga ho gaya hai."
+{"subject": "a neat stack of gleaming 24-karat gold bars and a few gold coins", "action": "resting on a dark velvet jeweller's tray", "emotion": "rich, valuable, quietly dramatic mood", "environment": "polished glass counter of a traditional jewellery shop", "details": "a small brass weighing scale and soft reflections in the glass", "setting": "authentic Indian jewellery shop setting", "shot": "object close-up", "lens": "85mm lens", "lighting": "warm spotlight from above", "position": "subject positioned on the right third", "has_person": false}
+
+PEOPLE ARE OPTIONAL (most important rule)
+- has_person is true ONLY when the line is about what a person does, says, feels or decides, or the planned scene has people. Otherwise has_person is false and the subject is the object, place, food, vehicle, animal, product or detail the line is about.
+- Never add a person just to fill the frame, to hold an object, or to "make it relatable". A line about money shows money, a line about a city shows the city, a line about a phone feature shows the phone.
+- When the planned scene says "people": "none", has_person MUST be false and no field may mention a person, face, hand or body.
+
+FIELD RULES (make every field MORE detailed than the examples, and specific to its own line):
+- subject: for object or place shots, the exact object or place and its condition (material, colour, size, wear). For people shots, who exactly (age, gender, look, hair, clothing with colour and fabric); recurring characters use the profile words exactly.
 - action: what is happening right now that SHOWS this line's meaning (a concrete, visible action, never a symbol).
-- emotion: a precise, believable expression or body language that matches the line.
+- emotion: with a person, a precise believable expression or body language; without a person, the mood of the scene.
 - environment: a specific real place with 2 to 4 believable details.
 - details: 1 to 3 concrete props or background details unique to this scene (may be "" only if truly nothing fits).
 - setting: always "authentic Indian <kind> setting" (office, home, street, café, campus, clinic, shop, metro, factory...), unless the script is clearly set elsewhere.
@@ -194,31 +213,32 @@ FIELD RULES (make every field MORE detailed than the example, and specific to it
 - lens: a real lens that suits the shot (24mm, 35mm, 50mm or 85mm lens).
 - lighting: the real light source and direction (natural window lighting from the left, soft overcast daylight, warm desk lamp light, harsh midday sun, fluorescent office lighting...).
 - position: where the subject sits ("subject positioned on the left third", "subject positioned slightly to the right"...).
-- has_person: false only when no person is visible.
+- has_person: true only when a person is visible (see PEOPLE ARE OPTIONAL).
 - Screens and papers never show readable words: say "screen facing away" or "softly blurred screen" when needed.
 
 EVERY PROMPT MUST BE CLEARLY DIFFERENT
 - Neighbouring lines never repeat the same combination of environment, action, shot and lens. Change at least three of: place, action, props, shot, lens, lighting, position.
-- Do not let every scene be a person at a laptop or phone: vary places (office, home, street, café, meeting room, metro, campus, shop, outdoors) and activities, driven by what the line says.
+- Do not let every scene show a person: many lines are better as an object close-up, a place or a detail. Vary places (office, home, street, café, meeting room, metro, campus, shop, outdoors) and activities, driven by what the line says.
 - Continuing scenes keep the same people and place but change the shot, angle, lens and moment.
 ${avoidLike ? `\nTHESE PROMPTS ALREADY EXIST; YOURS MUST LOOK CLEARLY DIFFERENT FROM THEM:\n${avoidLike.map(x => '- ' + x.slice(34, 260)).join('\n')}\n` : ''}
 LINES
 ${batch.map(({ it, i }) => `${i + 1}. Narration: "${it.text}"
-   Two lines before: "${all[i - 2] || 'start of video'}" / "${all[i - 1] || 'start of video'}"${it.scene ? `\n   Planned scene: ${JSON.stringify({ visual_concept: it.scene.visual_concept, character_ids: it.scene.character_ids, main_subject: it.scene.main_subject, action: it.scene.action, environment: it.scene.environment, emotion: it.scene.emotion, shot: it.scene.shot, camera: it.scene.camera, composition: it.scene.composition, key_props: it.scene.key_props, lighting: it.scene.lighting })}` : ''}`).join('\n')}
+   Two lines before: "${all[i - 2] || 'start of video'}" / "${all[i - 1] || 'start of video'}"${it.scene ? `\n   Planned scene: ${JSON.stringify({ visual_concept: it.scene.visual_concept, people: it.scene.people, character_ids: it.scene.character_ids, main_subject: it.scene.main_subject, action: it.scene.action, environment: it.scene.environment, emotion: it.scene.emotion, shot: it.scene.shot, camera: it.scene.camera, composition: it.scene.composition, key_props: it.scene.key_props, lighting: it.scene.lighting })}` : ''}`).join('\n')}
 
 Return ONLY a JSON array of ${batch.length} objects with exactly these keys, in the same order:
-[{"subject": "", "action": "", "emotion": "", "environment": "", "details": "", "setting": "", "shot": "", "lens": "", "lighting": "", "position": "", "has_person": true}]`;
+[{"subject": "", "action": "", "emotion": "", "environment": "", "details": "", "setting": "", "shot": "", "lens": "", "lighting": "", "position": "", "has_person": false}]`;
 }
 
 async function strictBatch(batch, avoidLike){
   const arr = parseJSONLoose(await askClaude(strictWriterPrompt(batch, avoidLike), { maxTokens: 500 + batch.length * 450, temperature: 0.7 }));
   if (!Array.isArray(arr)) throw new Error('Unexpected format');
-  return batch.map((_, k) => arr[k] && arr[k].subject ? assemblePrompt(arr[k]) : '');
+  return batch.map(({ it }, k) => arr[k] && arr[k].subject ? assemblePrompt(arr[k], it.scene) : '');
 }
 
 /* Word-overlap similarity of the line-specific part of two prompts (0..1). */
 function similarity(a, b){
-  const words = p => new Set(String(p).slice(STRICT_START.length, String(p).indexOf('subtle expression') > 0 ? String(p).indexOf('subtle expression') : 300).toLowerCase().match(/[a-z]{4,}/g) || []);
+  const cut = p => { const s = String(p), m = s.search(/subtle expression|natural material textures/); return s.slice(STRICT_START.length, m > 0 ? m : 300); };
+  const words = p => new Set(cut(p).toLowerCase().match(/[a-z]{4,}/g) || []);
   const A = words(a), B = words(b); if (!A.size || !B.size) return 0;
   let same = 0; A.forEach(w => { if (B.has(w)) same++; });
   return same / Math.min(A.size, B.size);
@@ -332,20 +352,24 @@ function shrinkForCheck(b64){
   });
 }
 
+const noPeople = it => (it.scene && it.scene.people === 'none') || /no people, no person/.test(it.prompt || '');
+
 async function checkImage(it, b64){
   const sc = it.scene || {};
   const txt = await askClaude(`You are a strict photo editor checking one generated image for a video. Look at the attached image and compare it with what was intended.
 
 NARRATION: "${it.text}"
-INTENDED SCENE: ${it.scene ? JSON.stringify({ visual_concept: sc.visual_concept, main_subject: sc.main_subject, action: sc.action, environment: sc.environment, shot: sc.shot, composition: sc.composition }) : it.prompt.slice(0, 900)}
+PEOPLE EXPECTED: ${noPeople(it) ? 'NO - the image must not show any person, face, hand or body' : 'yes, as described'}
+INTENDED SCENE: ${it.scene ? JSON.stringify({ visual_concept: sc.visual_concept, people: sc.people, main_subject: sc.main_subject, action: sc.action, environment: sc.environment, shot: sc.shot, composition: sc.composition }) : it.prompt.slice(0, 900)}
 
 Check: is it a believable real photograph (not cartoon, illustration, anime, 3D or CGI, no plastic skin)? Correct subject, action and environment? Any readable or garbled text, captions, logos or watermarks? Any distorted face, hands, fingers or body? Correct composition? Consistent professional photo style?
 
-Return ONLY JSON: {"photorealistic": true, "cartoon_or_cgi": false, "subject_ok": true, "action_ok": true, "environment_ok": true, "unwanted_text": false, "distortion": false, "composition_ok": true, "score": 0-10, "issues": ["short issue"], "fix": "one or two sentences to add to the prompt that would fix the issues"}`,
+Return ONLY JSON: {"photorealistic": true, "cartoon_or_cgi": false, "unexpected_person": false, "subject_ok": true, "action_ok": true, "environment_ok": true, "unwanted_text": false, "distortion": false, "composition_ok": true, "score": 0-10, "issues": ["short issue"], "fix": "one or two sentences to add to the prompt that would fix the issues"}`,
     { maxTokens: 500, temperature: 0, images: [await shrinkForCheck(b64)] });
   const r = parseJSONLoose(txt);
   const min = parseFloat($('#qcMin').value) || 7;
-  r.pass = !!r.photorealistic && !r.cartoon_or_cgi && !r.unwanted_text && !r.distortion && (+r.score || 0) >= min;
+  if (!noPeople(it)) r.unexpected_person = false;
+  r.pass = !!r.photorealistic && !r.cartoon_or_cgi && !r.unexpected_person && !r.unwanted_text && !r.distortion && (+r.score || 0) >= min;
   return r;
 }
 
@@ -370,6 +394,7 @@ async function qcAfterGenerate(i, first){
     // Regenerate with a corrected prompt.
     it.status = 'loading'; it.err = `Check failed (${(r.issues || []).slice(0, 2).join('; ') || 'low score'}), regenerating…`; updateCell(i);
     const fix = [r.fix, r.cartoon_or_cgi || !r.photorealistic ? 'This must be an unedited real photograph of real people and places, with natural skin and real materials.' : '',
+      r.unexpected_person ? 'Show no people at all: no person, face, hands or body anywhere in the frame; only the objects and the place.' : '',
       r.unwanted_text ? 'Remove every letter and word: screens, papers and signs are angled away or blurred.' : '',
       r.distortion ? 'Keep hands simple and relaxed with five natural fingers, and faces naturally proportioned.' : ''].filter(Boolean).join(' ');
     const next = await runware(`${it.prompt.replace(/\s+$/, '')} Corrections: ${fix}`.slice(0, 3800));
