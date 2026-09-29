@@ -8,17 +8,23 @@ const OUTAGE = /unavailable|bad gateway|gateway|timed? ?out|overloaded|temporar|
 const isOutage = (status, data) =>
   status >= 500 || (Array.isArray(data && data.errors) && data.errors.some((e) => OUTAGE.test(String(e.message || "") + " " + String(e.code || ""))));
 
-async function forward(apiKey, tasks) {
+// Vercel stops a function after 60 s and answers with an HTML page the browser can't explain, so the relay
+// gives up on Runware a little earlier and returns a readable error instead.
+const RUNWARE_TIMEOUT = 52000;
+
+async function forward(apiKey, tasks, timeout = RUNWARE_TIMEOUT) {
   try {
     const res = await fetch(RUNWARE_URL, {
-      method: "POST",
+      method: "POST", signal: AbortSignal.timeout(timeout),
       headers: { "content-type": "application/json" },
       body: JSON.stringify([{ taskType: "authentication", apiKey }, ...tasks]),
     });
     let data;
     try { data = await res.json(); } catch { data = { errors: [{ message: "Runware answered with HTTP " + res.status }] }; }
     return { status: res.status, data };
-  } catch {
+  } catch (e) {
+    if (e && (e.name === "TimeoutError" || e.name === "AbortError"))
+      return { status: 504, data: { errors: [{ message: "Runware took too long to answer (timed out). Try again; long scripts are sent in smaller parts." }] } };
     return { status: 502, data: { errors: [{ message: "Couldn't reach Runware. Try again in a moment." }] } };
   }
 }
@@ -85,7 +91,7 @@ export default async (req) => {
           ...t, model, taskUUID: tried.length ? crypto.randomUUID() : t.taskUUID,
           settings: { ...t.settings, maxTokens: mi ? 8000 : t.settings.maxTokens },
         }));
-        result = await forward(apiKey, tasksForModel);
+        result = await forward(apiKey, tasksForModel, Math.max(5000, RUNWARE_TIMEOUT - (Date.now() - started)));
         usedModel = model; tried.push(model);
         if (!isOutage(result.status, result.data)) break outer;
         const msg = JSON.stringify((result.data && result.data.errors) || "");

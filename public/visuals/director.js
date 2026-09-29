@@ -13,7 +13,17 @@
    All steps use TEXT_MODEL (Claude Sonnet 5 on Runware); images use IMAGE_MODEL (GPT Image 2). */
 
 const SHOTS = ['wide shot', 'medium shot', 'close-up', 'over-the-shoulder', 'top-down', 'side angle', 'low angle', 'environment shot', 'object close-up', 'screen + person', 'group shot', 'action shot'];
-const PLAN_CHUNK = 12;   // lines per visual-plan request (sequential, so continuity carries over)
+const PLAN_CHUNK = 6;    // lines per visual-plan request (sequential, so continuity carries over; small enough for Vercel's 60 s limit)
+const MAX_FAILS = 2;     // this many failed requests in a row with no success stops the run and shows the error
+
+/* Counts failed Claude requests; a run that never gets an answer stops with the real error instead of
+   silently filling every line from the template. */
+function failTracker(){
+  const t = { inRow: 0, ok: 0, last: '' };
+  t.fail = e => { t.inRow++; t.last = cleanMsg(e && e.message) || 'no answer'; if (!t.ok && t.inRow >= MAX_FAILS) { const err = new Error(t.last); err.stop = true; throw err; } };
+  t.success = () => { t.inRow = 0; t.ok++; };
+  return t;
+}
 
 /* ---------- small helpers ---------- */
 async function askClaude(content, { maxTokens = 4000, temperature = 0.4, images } = {}){
@@ -117,7 +127,7 @@ Return ONLY a JSON array with exactly ${lines.length} objects, in order, each sh
 }
 
 async function planScenes(onProgress){
-  const items = state.items; let prev = [], planned = 0, failed = 0;
+  const items = state.items; let prev = [], planned = 0, failed = 0; const track = failTracker();
   for (let start = 0; start < items.length; start += PLAN_CHUNK){
     if (state.cancel) break;
     const lines = items.slice(start, start + PLAN_CHUNK).map(it => it.text);
@@ -125,8 +135,8 @@ async function planScenes(onProgress){
     for (let attempt = 0; attempt < 2 && !scenes; attempt++){
       try {
         const arr = parseJSONLoose(await askClaude(planPrompt(lines, start, prev), { maxTokens: Math.min(8000, 400 + lines.length * 320), temperature: 0.5 }));
-        if (Array.isArray(arr) && arr.length) scenes = arr;
-      } catch (e){ if (e.auth) throw e; console.warn('Visual plan failed', e); }
+        if (Array.isArray(arr) && arr.length) { scenes = arr; track.success(); }
+      } catch (e){ if (e.auth) throw e; console.warn('Visual plan failed', e); track.fail(e); }
     }
     lines.forEach((_, k) => {
       const sc = scenes && (scenes.find(s => +s.line === start + k + 1) || scenes[k]);
@@ -143,7 +153,7 @@ async function planScenes(onProgress){
     onProgress(Math.min(start + PLAN_CHUNK, items.length));
     renderPrompts();
   }
-  return { planned, failed };
+  return { planned, failed, error: track.last };
 }
 
 /* ---------- 3. Prompt engineering: free-form, in story order ----------
@@ -167,6 +177,7 @@ function finishPrompt(text, scene, hasPerson){
   const noPeople = (scene && scene.people === 'none') || hasPerson === false;
   return `${p}${noPeople && !/no people/i.test(p) ? ' ' + NO_PEOPLE : ''} ${PROMPT_TAIL}`;
 }
+const isTemplatePrompt = p => /instantly connects with this voiceover line/.test(String(p || ''));
 const promptBody = p => String(p || '').replace(PROMPT_TAIL, '').replace(NO_PEOPLE, '').trim();
 
 function writerPrompt(batch, avoidLike){
@@ -231,12 +242,12 @@ async function writeStrictPrompts(indexes, onProgress){
     const last = batches[batches.length - 1];
     if (last && last.length < PROMPT_BATCH && last[last.length - 1].i === entry.i - 1) last.push(entry); else batches.push([entry]);
   });
-  let done = 0, failed = 0;
+  let done = 0, failed = 0; const track = failTracker();
   for (const batch of batches){
     if (state.cancel) break;
     let out = null;
     for (let attempt = 0; attempt < 2 && !out; attempt++){
-      try { out = await writeBatch(batch); } catch (e){ if (e.auth) throw e; console.warn('Prompt batch failed', e); }
+      try { out = await writeBatch(batch); track.success(); } catch (e){ if (e.auth) throw e; console.warn('Prompt batch failed', e); track.fail(e); }
     }
     batch.forEach(({ it }, k) => { if (out && out[k]) it.prompt = out[k]; else failed++; });
     done += batch.length; onProgress(done, list.length); renderPrompts();
@@ -255,7 +266,7 @@ async function writeStrictPrompts(indexes, onProgress){
     catch (e){ if (e.auth) throw e; console.warn('Repetition rewrite failed', e); }
   }
   renderPrompts();
-  return { failed, rewritten: dupes.length };
+  return { failed, rewritten: dupes.length, error: track.last };
 }
 
 async function writeScenePrompts(onProgress){
@@ -269,18 +280,17 @@ async function runDirect(){
   const c0 = state.cost.prompts;
   $('#promptBtn').disabled = true; state.cancel = false;
   try {
-    items.forEach(it => { it.scene = null; });
+    items.forEach(it => { it.scene = null; if (isTemplatePrompt(it.prompt)) it.prompt = ''; });
     if (!$('#bible').value.trim()){
       setStatus('#s2', 'Reading the whole script to understand the video…');
       try { await buildBible(); } catch (e){ if (e.auth) throw e; console.warn('Concept failed', e); }
     }
     const res = await writeStrictPrompts(items.map((_, i) => i), (d, n) => setStatus('#s2', `Writing prompts in story order… ${d} of ${n}`));
-    items.forEach(it => { if (!it.prompt) it.prompt = fallbackPrompt(it.text); });
     renderPrompts();
     const cost = state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : '';
-    setStatus('#s2', res.failed ? `${items.length - res.failed} prompts written${cost}; ${res.failed} came from a template, review them.` : `All ${items.length} prompts written by Claude Sonnet 5${cost}${res.rewritten ? `, ${res.rewritten} rewritten to be more different` : ''}.`, res.failed ? 'err' : 'ok');
+    setStatus('#s2', res.failed ? `${items.length - res.failed} prompts written${cost}; ${res.failed} line(s) got no answer (${res.error}) and are empty. Press Write prompts again to retry them.` : `All ${items.length} prompts written by Claude Sonnet 5${cost}${res.rewritten ? `, ${res.rewritten} rewritten to be more different` : ''}.`, res.failed ? 'err' : 'ok');
   } catch (e){
-    setStatus('#s2', e.auth ? e.message + ' Then press Write prompts again.' : 'Prompt writing stopped: ' + cleanMsg(e.message), 'err');
+    setStatus('#s2', e.auth ? e.message + ' Then press Write prompts again.' : (e.stop ? 'Claude didn’t answer, so no prompts were written. Runware / server said: ' : 'Prompt writing stopped: ') + cleanMsg(e.message), 'err');
   } finally { $('#promptBtn').disabled = false; updateCost(); updateButtons(); }
 }
 
@@ -291,22 +301,29 @@ async function runDirector(){
   const c0 = state.cost.prompts;
   $('#promptBtn').disabled = true; state.cancel = false;
   try {
+    items.forEach(it => { if (isTemplatePrompt(it.prompt)) it.prompt = ''; });
     if (!$('#bible').value.trim()){
       setStatus('#s2', 'Step 1 of 3 · Reading the whole script and casting the characters…');
       try { await buildBible(); } catch (e){ if (e.auth) throw e; console.warn('Bible failed', e); }
     }
     setStatus('#s2', `Step 2 of 3 · Planning scenes, shots and continuity… 0 of ${items.length}`);
-    const plan = await planScenes(n => setStatus('#s2', `Step 2 of 3 · Planning scenes, shots and continuity… ${n} of ${items.length}`));
+    let plan;
+    try { plan = await planScenes(n => setStatus('#s2', `Step 2 of 3 · Planning scenes, shots and continuity… ${n} of ${items.length}`)); }
+    catch (e){
+      if (!e.stop) throw e;
+      // Planning got no answer at all: write the prompts from the script directly (that step stops with the error if Claude is really unreachable).
+      items.forEach(it => { it.scene = null; });
+      plan = { planned: 0, failed: items.length, error: cleanMsg(e.message) };
+    }
     setStatus('#s2', `Step 3 of 3 · Writing prompts in story order… 0 of ${plan.planned}`);
     const res = await writeScenePrompts((d, n) => setStatus('#s2', `Step 3 of 3 · Writing prompts in story order… ${d} of ${n}`));
-    items.forEach(it => { if (!it.prompt) it.prompt = fallbackPrompt(it.text); });
     renderPrompts();
     const cost = state.cost.prompts > c0 ? ` for ${money(state.cost.prompts - c0)}` : '';
     if (res.failed || plan.failed)
-      setStatus('#s2', `Prompts ready${cost}. ${plan.failed ? plan.failed + ' line(s) couldn’t be planned and were written directly. ' : ''}${res.failed ? res.failed + ' prompt(s) came from a template; review them. ' : ''}`, 'err');
+      setStatus('#s2', `Prompts ready${cost}. ${plan.failed ? `${plan.failed} line(s) couldn’t be planned (${plan.error}) and were written from the script directly. ` : ''}${res.failed ? `${res.failed} line(s) got no answer (${res.error}) and are empty; press Write prompts again to retry them.` : ''}`, 'err');
     else setStatus('#s2', `All ${items.length} scenes planned and prompts written by Claude Sonnet 5${cost}${res.rewritten ? ` (${res.rewritten} rewritten to be more different)` : ''}. Check the character bible and edit any prompt before generating.`, 'ok');
   } catch (e){
-    setStatus('#s2', (e.auth ? e.message + ' Then press Write prompts again.' : 'The Visual Director stopped: ' + cleanMsg(e.message)), 'err');
+    setStatus('#s2', (e.auth ? e.message + ' Then press Write prompts again.' : (e.stop ? 'Claude didn’t answer, so no prompts were written. Runware / server said: ' : 'The Visual Director stopped: ') + cleanMsg(e.message)), 'err');
   } finally {
     $('#promptBtn').disabled = false; updateCost(); updateButtons();
   }
